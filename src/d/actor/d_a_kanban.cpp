@@ -42,7 +42,7 @@ class kanban_class : public fopAc_ac_c {
 public:
     bool mb0290;
 
-    int m0294;
+    u32 m0294;
     bool m0298;
     u8 m0299;
     bool m029A;
@@ -95,7 +95,7 @@ public:
 
     int m056C; // TODO: Does this do anything?
 
-    int m0570;
+    u32 mShadowID;
 
     dCcD_Stts mColStatus;
     dCcD_Cyl mColCylinder;
@@ -109,9 +109,10 @@ public:
     float m0004;
     short m0008;
     short m000A;
-    float m000C;
+    float mScale;
 };
 
+static daKanban_HIO_c l_HIO;
 static u32 l_msgId = 0xFFFFFFFF;
 
 /* 000000EC-0000012C       .text __ct__14daKanban_HIO_cFv */
@@ -119,12 +120,87 @@ daKanban_HIO_c::daKanban_HIO_c() {
     m0004 = 0.0f;
     m0008 = 0;
     m000A = 0;
-    m000C = 0.8f;
+    mScale = 0.8f;
 }
 
 /* 00000174-0000047C       .text daKanban_Draw__FP12kanban_class */
-s32 daKanban_Draw(kanban_class*) {
+s32 daKanban_Draw(kanban_class* i_this) {
     /* Nonmatching */
+    g_env_light.settingTevStruct(TEV_TYPE_BG0, &i_this->current.pos, &i_this->mTevStr);
+
+    cXyz drawPos(
+        i_this->current.pos.x,
+        i_this->current.pos.y + 150.0f + g_regHIO.mChild[8].mFloatRegs[18],
+        i_this->current.pos.z
+    );
+
+    i_this->mScale.set(l_HIO.mScale, l_HIO.mScale, l_HIO.mScale);
+    i_this->mShadowID = 0;
+
+    u32 i = 0;
+    u32 bitfield = i_this->m0294;
+
+    for (i; i < 11; i++) {
+        if (bitfield & 1) {
+            J3DModel* mdl = i_this->mModels[i];
+            mdl->setBaseScale(i_this->mScale);
+
+            MtxTrans(
+                i_this->current.pos.x + i_this->m02E4.x,
+                i_this->current.pos.y + i_this->m02E4.y,
+                i_this->current.pos.z + i_this->m02E4.z,
+                FALSE
+            );
+
+            cMtx_XrotM(*calc_mtx, i_this->m02AC.x);
+            cMtx_ZrotM(*calc_mtx, i_this->m02AC.z);
+
+            cMtx_YrotM(*calc_mtx, i_this->shape_angle.y);
+            cMtx_XrotM(*calc_mtx, i_this->shape_angle.x);
+            cMtx_ZrotM(*calc_mtx, i_this->shape_angle.z);
+
+            MtxTrans(
+                i_this->m02CC.x - i_this->m02E4.x,
+                i_this->m02CC.y - i_this->m02E4.y,
+                i_this->m02CC.z - i_this->m02E4.z,
+                TRUE
+            );
+
+            PSMTXCopy(*calc_mtx, mdl->mBaseTransformMtx);
+
+            g_env_light.setLightTevColorType(mdl, &i_this->mTevStr);
+            mDoExt_modelUpdateDL(mdl);
+
+            if (!i_this->mb0290 && i_this->m02C0 == 10) {
+                if (i_this->mShadowID != 0) {
+                    dComIfGd_addRealShadow(i_this->mShadowID, mdl);
+                }
+                else {
+                    i_this->mShadowID = dComIfGd_setShadow(i_this->mShadowID, 1, mdl, &drawPos, g_regHIO.mChild[8].mFloatRegs[19] + 800.0f,
+                                                           g_regHIO.mChild[8].mFloatRegs[17] + 40.0f, i_this->getPosition().y, i_this->mAcch.GetGroundH(),
+                                                           i_this->mAcch.m_gnd, &i_this->mTevStr, 0, 1.0f, dDlst_shadowControl_c::getSimpleTex());
+                }
+            }
+            else if (i_this->mb0290 && !i_this->mAcch.ChkGroundHit()) {
+                s32 parentProc = i_this->mParentProcID;
+
+                if (fopAcIt_Judge(fpcSch_JudgeByID, &parentProc) != NULL) {
+                    if (i_this->mShadowID != 0) {
+                        dComIfGd_addRealShadow(i_this->mShadowID, mdl);
+                    }
+                    else {
+                        i_this->mShadowID = dComIfGd_setShadow(i_this->mShadowID, 1, mdl, &drawPos, g_regHIO.mChild[8].mFloatRegs[19] + 800.0f,
+                                                               g_regHIO.mChild[8].mFloatRegs[17] + 40.0f, i_this->getPosition().y, i_this->mAcch.GetGroundH(),
+                                                               i_this->mAcch.m_gnd, &i_this->mTevStr, 0, 1.0f, dDlst_shadowControl_c::getSimpleTex());
+                    }
+                }
+            }
+        }
+
+        bitfield = bitfield >> 1;
+    }
+
+    return TRUE;
 }
 
 /* 0000047C-0000055C       .text shibuki_set__FP12kanban_class4cXyzf */

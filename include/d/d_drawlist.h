@@ -191,6 +191,9 @@ public:
                        dKy_tevstr_c* pTevStr) {
         return mShadowControl.setReal2(id, param_2, pModel, pPos, param_5, param_6, pTevStr);
     }
+    bool addRealShadow(u32 param_1, J3DModel* pModel) {
+        return mShadowControl.addReal(param_1, pModel);
+    }
 
     static void offWipe() { mWipe = false; }
 
