@@ -11,7 +11,9 @@ public:
 
 class JORReflexible : public JOREventListener {
 public:
+#ifdef ENABLE_JORREFLEXIBLE
     virtual ~JORReflexible() {}
+#endif
 };
 
 class mDoHIO_child_c {

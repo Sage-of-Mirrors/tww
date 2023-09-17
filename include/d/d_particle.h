@@ -46,6 +46,24 @@ public:
     /* 0x010 */ dPa_simpleData_c mSimpleData[32];
 };
 
+class dPa_levelEcallBack {
+public:
+    virtual ~dPa_levelEcallBack() { }
+};
+
+class dPa_rippleEcallBack : public dPa_levelEcallBack {
+public:
+    void setup(JPABaseEmitter*, const cXyz*, const csXyz*, signed char);
+    void end();
+    void execute(JPABaseEmitter*);
+    void draw(JPABaseEmitter*);
+
+    JPABaseEmitter* mpBaseEmitter;
+    cXyz* mpPos;
+    u32 mFlags;
+    float mRate;
+};
+
 class dPa_modelControl_c {
 public:
     dPa_modelControl_c(J3DModelData*);
