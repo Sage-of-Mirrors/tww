@@ -126,7 +126,7 @@ public:
     virtual void changeTextureAnime(u16, u16, int);
     virtual void cancelChangeTextureAnime();
     
-    void getSwordTopPos() const;
+    cXyz getSwordTopPos() const { return mSwordTopPos; }
     void getLeftHandPos() const;
     void getRopeJumpLand() const;
     void checkRopeForceEnd() const;

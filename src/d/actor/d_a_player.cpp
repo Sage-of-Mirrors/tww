@@ -55,4 +55,3 @@ daPy_mtxFollowEcallBack_c::~daPy_mtxFollowEcallBack_c() {
 void daPy_mtxFollowEcallBack_c::setup(JPABaseEmitter*, const cXyz*, const csXyz*, signed char) {
     /* Nonmatching */
 }
-

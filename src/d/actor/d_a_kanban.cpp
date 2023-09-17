@@ -11,12 +11,32 @@
 #include "d/d_bg_s_acch.h"
 #include "d/d_cc_d.h"
 #include "d/d_particle.h"
+#include "d/d_s_play.h"
+#include "d/actor/d_a_player.h"
 #include "m_Do/m_Do_hostIO.h"
 #include "m_Do/m_Do_ext.h"
 #include "m_Do/m_Do_mtx.h"
 
 #include "dolphin/types.h"
 
+
+extern dScnPly_reg_HIO_c g_regHIO;
+
+class daBomb_c {
+public:
+    enum State_e {
+        __dummy,
+    };
+
+    bool chk_state(State_e) const;
+};
+
+namespace daBomb2 {
+    class Act_c {
+    public:
+        bool chk_explode();
+    };
+}
 
 class kanban_class : public fopAc_ac_c {
 public:
@@ -38,6 +58,7 @@ public:
     short m02B4;
 
     short m02B6;
+    short m02B8;
 
     short m02BA;
     short m02BC;
@@ -116,19 +137,103 @@ void sea_water_check(kanban_class*) {
     /* Nonmatching */
 }
 
+int target_info_count;
+fopAc_ac_c* target_info[10];
+
 /* 00000884-00000940       .text bom_search_sub__FPvPv */
-void bom_search_sub(void*, void*) {
-    /* Nonmatching */
+s32 bom_search_sub(void* object, void*) {
+    if (fopAc_IsActor(object)) {
+        fopAc_ac_c* objectAsActor = static_cast<fopAc_ac_c*>(object);
+        bool result = false;
+
+        if (objectAsActor->mBase.mProcName == PROC_BOMB) {
+            if (reinterpret_cast<daBomb_c*>(objectAsActor)->chk_state(daBomb_c::__dummy)) {
+                result = true;
+            }
+        }
+        else if (objectAsActor->mBase.mProcName == PROC_Bomb2) {
+            if (reinterpret_cast<daBomb2::Act_c*>(objectAsActor)->chk_explode()) {
+                result = true;
+            }
+        }
+
+        if (result && target_info_count < 10) {
+            target_info[target_info_count] = objectAsActor;
+            target_info_count++;
+        }
+    }
+
+    return 0;
 }
 
 /* 00000940-00000B84       .text shock_damage_check__FP12kanban_class */
-void shock_damage_check(kanban_class*) {
+bool shock_damage_check(kanban_class* i_this) {
     /* Nonmatching */
+    daPy_py_c* player = reinterpret_cast<daPy_py_c*>(dComIfGp_getPlayer(0));
+    target_info_count = 0;
+
+    for (int i = 0; i < 10; i++) {
+        target_info[i] = NULL;
+    }
+
+    fpcEx_Search((fpcLyIt_JudgeFunc)bom_search_sub, i_this);
+
+    if (target_info_count != 0) {
+        for (int i = 0; i < target_info_count; i++) {
+            cXyz diff;
+            diff.x = target_info[i]->current.pos.x - i_this->current.pos.x;
+            diff.z = target_info[i]->current.pos.z - i_this->current.pos.z;
+
+            if (sqrtf(diff.x * diff.x + diff.z * diff.z) < 1000.0f) {
+                i_this->m02BA = 100;
+                i_this->m02BA += g_regHIO.mChild[8].mShortRegs[4];
+
+                return true;
+            }
+        }
+    }
+
+    if (player->field_0x2a4 & 0x20000) {
+        cXyz sw = player->getSwordTopPos();
+        sw.x -= i_this->current.pos.x;
+        sw.z -= i_this->current.pos.z;
+        
+        if (sqrtf(sw.x * sw.x + sw.z * sw.z) < 1000.0f) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 /* 00000B84-00000E6C       .text cut_point_check__FP12kanban_class */
-void cut_point_check(kanban_class*) {
+void cut_point_check(kanban_class* i_this) {
     /* Nonmatching */
+    fopAc_ac_c* player = dComIfGp_getPlayer(0);
+
+    if (i_this->m02C4 == 0) {
+        short angleY = fopAcM_searchActorAngleY(i_this, player);
+        angleY = abs(i_this->shape_angle.GetY() - angleY);
+
+        if (angleY < 0x6001) {
+            if (angleY > 0x2000 && angleY < 0x6000) {
+                if ((int)fopAcM_searchActorAngleY(i_this, player) & 0x80000000 != 0) {
+                    i_this->m02C4 = 2;
+                }
+            }
+        }
+        else {
+            i_this->m02C4 = 2;
+        }
+    }
+
+    if ((i_this->m02C2 >> (i_this->m02C4 & 0x3F)) & 1 == 0 && (i_this->m02C2 & 2 == 0)) {
+        i_this->m02C2 |= 1 << i_this->m02C4;
+        if (i_this->m0294 & 1 != 0) {
+            i_this->m0294 = 0x7FE;
+            i_this->m029B = false;
+        }
+    }
 }
 
 /* 00000E6C-000012B8       .text mother_move__FP12kanban_class */
