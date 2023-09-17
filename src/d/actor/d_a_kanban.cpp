@@ -146,12 +146,12 @@ s32 bom_search_sub(void* object, void*) {
         fopAc_ac_c* objectAsActor = static_cast<fopAc_ac_c*>(object);
         bool result = false;
 
-        if (objectAsActor->mBase.mProcName == PROC_BOMB) {
+        if (fopAcM_GetName(objectAsActor) == PROC_BOMB) {
             if (reinterpret_cast<daBomb_c*>(objectAsActor)->chk_state(daBomb_c::__dummy)) {
                 result = true;
             }
         }
-        else if (objectAsActor->mBase.mProcName == PROC_Bomb2) {
+        else if (fopAcM_GetName(objectAsActor) == PROC_Bomb2) {
             if (reinterpret_cast<daBomb2::Act_c*>(objectAsActor)->chk_explode()) {
                 result = true;
             }
