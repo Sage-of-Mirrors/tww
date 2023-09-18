@@ -4,6 +4,7 @@
 //
 
 #include "JSystem/JKernel/JKRHeap.h"
+#include "JSystem/J3DGraphBase/J3DTexture.h"
 #include "f_op/f_op_actor_mng.h"
 #include "d/d_com_inf_game.h"
 #include "d/d_kankyo.h"
@@ -213,8 +214,8 @@ void sea_water_check(kanban_class*) {
     /* Nonmatching */
 }
 
-int target_info_count;
-fopAc_ac_c* target_info[10];
+static fopAc_ac_c* target_info[10];
+static int target_info_count;
 
 /* 00000884-00000940       .text bom_search_sub__FPvPv */
 s32 bom_search_sub(void* object, void*) {
@@ -359,7 +360,6 @@ s32 daKanban_IsDelete(kanban_class*) {
 
 /* 000022B0-00002300       .text daKanban_Delete__FP12kanban_class */
 s32 daKanban_Delete(kanban_class* i_this) {
-    /* Nonmatching */
     dComIfG_resDelete(&i_this->mPhs, "Kanban");
     i_this->mRippleCB.end();
 
@@ -368,8 +368,28 @@ s32 daKanban_Delete(kanban_class* i_this) {
 }
 
 /* 00002300-0000249C       .text setTex__FP12J3DModelData */
-void setTex(J3DModelData*) {
-    /* Nonmatching */
+void setTex(J3DModelData* i_mdlData) {
+    J3DTexture* tex = i_mdlData->getTexture();
+
+    if (tex != NULL) {
+        JUTNameTab* texNameTable = i_mdlData->getTextureName();
+
+        if (texNameTable != NULL) {
+            for (u16 i = 0; i < tex->getNum(); i++) {
+                const char* texName = texNameTable->getName(i);
+                static ResTIMG* l_Txi_HamaR0;
+
+                if (texName[0] == 'T') {
+                    l_Txi_HamaR0 = tex->getResTIMG(i);
+                }
+                else if (texName[0] == 'd') {
+                    tex->setResTIMG(i, *l_Txi_HamaR0);
+                }
+            }
+
+            mDoExt_modelTexturePatch(i_mdlData);
+        }
+    }
 }
 
 /* 0000249C-00002614       .text useHeapInit__FP10fopAc_ac_c */
