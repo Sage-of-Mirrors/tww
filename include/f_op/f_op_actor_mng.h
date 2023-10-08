@@ -136,7 +136,6 @@ inline void fopAcM_OffStatus(fopAc_ac_c* pActor, u32 flag) {
 }
 
 inline void fopAcM_SetStatusMap(fopAc_ac_c* pActor, u32 flag) {
-    //pActor->mStatus &= ~0x3F;
     pActor->mStatus = (pActor->mStatus & ~0x3F) | fopAcStts_SHOWMAP_e | flag;
 }
 

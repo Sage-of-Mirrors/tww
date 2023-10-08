@@ -11,6 +11,7 @@
 class fopNpc_npc_c;
 
 class dNpc_JntCtrl_c {
+public:
     /* 0x00 */ s16 mHeadUpDownRot;
     /* 0x02 */ s16 mHeadLeftRightRot;
     /* 0x04 */ s16 mBackboneUpDownRot;

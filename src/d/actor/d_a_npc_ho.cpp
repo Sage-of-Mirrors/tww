@@ -8,32 +8,55 @@
 #include "d/d_bg_s_acch.h"
 #include "d/d_cc_d.h"
 #include "d/d_com_inf_game.h"
+#include "d/d_item_data.h"
 #include "d/d_npc.h"
 #include "d/d_procname.h"
 #include "JSystem/J3DGraphAnimator/J3DNode.h"
 #include "m_Do/m_Do_ext.h"
+#include "m_Do/m_Do_mtx.h"
 #include "dolphin/types.h"
 
 
+#define ST_WAIT 0
+#define ST_TALK_1 1
+#define ST_TALK_2 2
+#define ST_TALK_3 3
+#define ST_TALK_4 4
+#define ST_GIVE_1 5
+#define ST_GIVE_2 6
+#define ST_PREACH 7
+
+#define MAX_PENDANTS 99
+
+u32 l_msgId;
+msg_class* l_msg;
+
+static const u32 l_bck_ix_tbl[] = {
+    9, 7, 8, 6, 8
+};
+
+static const u32 l_btp_ix_tbl[] = {
+    18
+};
+
 class daNpc_Ho_c : public fopAc_ac_c {
 public:
-    daNpc_Ho_c() { m063C = false; m063B = false; }
     s16 XyCheckCB(int);
     void receivePendant(int);
     
-    void initTexPatternAnm(bool);
+    s32 initTexPatternAnm(bool);
     void playTexPatternAnm();
     
     void setAnm(s8);
     void setAnmStatus();
 
-    void chkAttentionLocal();
+    bool chkAttentionLocal();
     void chkAttention();
 
     void eventOrder();
     void checkOrder();
 
-    void next_msg_sub0(u32);
+    u32 next_msg_sub0(u32);
     u16 next_msgStatus(u32*);
     u32 getMsg();
 
@@ -49,17 +72,17 @@ public:
     void setAttention(bool);
     void lookBack();
 
-    void wait01();
-    void talk01();
-    void talk02();
-    void talk03();
+    bool wait01();
+    bool talk01();
+    bool talk02();
+    bool talk03();
 
-    void give01();
-    void give02();
+    bool give01();
+    bool give02();
 
-    void preach();
+    bool preach();
 
-    void wait_action(void*);
+    s32 wait_action(void*);
 
     s32 CreateHeap();
 
@@ -74,33 +97,73 @@ public:
 
     /* 0x02A0 */ u32 mShadowID;
 
-    /* 0x02A4 */ J3DAnmTexPattern* mpCurBtpAnim;
+    /* 0x02A4 */ J3DAnmTexPattern* m_head_tex_pattern;
     /* 0x02A8 */ mDoExt_btpAnm mBtpAnimator;
     /* 0x02BC */ u8 mBtpTimer;
 
-    /* 0x02BE */ u16 mTimer1;
+    /* 0x02BE */ s16 mTimer1;
 
     /* 0x02C0 */ dBgS_ObjAcch mAcch;
     /* 0x0484 */ dBgS_AcchCir mAcchCir;
     /* 0x04C4 */ dCcD_Stts mColStts;
     /* 0x0500 */ dCcD_Cyl mCylinderCol;
 
-    /* 0x0630 */ dNpc_JntCtrl_c* mpJntControl;
-
-    /* 0x0634 */ s16 m0634;
-    /* 0x0636 */ s16 mBackboneRotX;
-    /* 0x0638 */ u8 mHeadJntIdx;
-    /* 0x0639 */ u8 mBackboneJntIdx;
-    /* 0x063A */ bool m063A;
-    /* 0x063B */ bool m063B;
-    /* 0x063C */ bool m063C;
-
-    /* 0x063D */ u8 m063D[0x27]; // TODO: Does anything in this range do anything?
+    /* 0x0630 */ dNpc_JntCtrl_c mJntCtrl;
 
     /* 0x0664 */ cXyz mEyePos;
     /* 0x0670 */ cXyz mAttentionBasePos;
+    /* 0x067C */ s16 mHeadFollowVelocity;
+    /* 0x067E */ bool m067E;
+    /* 0x067F */ u8 m067F;
+
+    /* 0x0680 */ float mLastMorfTime;
+    /* 0x0684 */ u32 mCurrentMsgId;
+
+    /* 0x0688 */ u16 mFlags;
+    /* 0x068A */ u8 m068A;
+
+    /* 0x068B */ u8 mSelectedChoiceIdx;
+    /* 0x068C */ u8 mCurSpeakingAnmIdx;
+    
+    /* 0x068D */ u8 m068D;
+    /* 0x068E */ u8 m068E;
+
+    /* 0x0690 */ s32 mNextMessageId;
+
+    /* 0x0694 */ float mCylinderColRadius;
+
+    typedef s32(daNpc_Ho_c::*StateFunc_t)(void*);
+    /* 0x0698 */ StateFunc_t mStateFunc;
+
+    /* 0x06A4 */ s8 mCurBtpIdx;
+    /* 0x06A5 */ s8 mCurAnmIdx;
+    /* 0x06A6 */ u8 m06A6;
+    
+    /* 0x06A7 */ s8 mCurState;
+    /* 0x06A8 */ s8 mLastState;
 
     /* 0x06A9 */ bool m06A9;
+    /* 0x06AA */ s8 mWaitTimer;
+    /* 0x06AB */ u8 m06AB;
+
+    /* 0x06AC */ u32 mCurFloorSndId;
+
+    /* 0x06B0 */ u8 m06B0;
+
+    s8 getHeadJntNum() { return mJntCtrl.mHeadJntNum; }
+    s16 getHead_x() { return mJntCtrl.mHeadUpDownRot; }
+    s16 getHead_y() { return mJntCtrl.mHeadLeftRightRot; }
+
+    s8 getBackboneJntNum() { return mJntCtrl.mBackboneJntNum; }
+    s16 getBackbone_x() { return mJntCtrl.mBackboneUpDownRot; }
+    s16 getBackbone_y() { return mJntCtrl.mBackboneLeftRightRot; }
+
+    bool ChkOrder(u8 i_eventIdx) { return m06A6 & i_eventIdx; }
+    void ClrOrder() { m06A6 = 0; }
+
+    bool chkFlag(u16 i_flagIdx) { return (mFlags & i_flagIdx) == i_flagIdx; }
+    void setFlag(u16 i_flagIdx) { mFlags |= i_flagIdx; }
+    void clrFlag(u16 i_flagIdx) { mFlags &= ~i_flagIdx; }
 
     // TODO: Move these elsewhere later
     void setEyePos(cXyz);
@@ -108,8 +171,47 @@ public:
 };
 
 /* 00000078-0000022C       .text nodeCallBack_Ho__FP7J3DNodei */
-void nodeCallBack_Ho(J3DNode* i_node, int i_param2) {
+u32 nodeCallBack_Ho(J3DNode* i_node, int i_param2) {
     /* Nonmatching */
+    if (i_param2 == 0) {
+        J3DModel* mdl = j3dSys.getModel();
+        daNpc_Ho_c* ho = (daNpc_Ho_c*)mdl->getUserArea();
+
+        int jntNo = static_cast<J3DJoint*>(i_node)->getJntNo();
+
+        if (ho != NULL) {
+            mDoMtx_copy(mdl->getAnmMtx(jntNo), *calc_mtx);
+
+            if (jntNo == ho->getHeadJntNum()) {
+                cXyz a(0.0f, 0.0f, 0.0f);
+
+                mDoMtx_YrotM(*calc_mtx, -ho->getHead_y());
+                mDoMtx_ZrotM(*calc_mtx, -ho->getHead_x());
+
+                cXyz b;
+                MtxPosition(&a, &b);
+
+                ho->setAttentionBasePos(b);
+
+                a.set(20.0f, -20.0f, 0.0f);
+                MtxPosition(&a, &b);
+
+                ho->setEyePos(b);
+
+                if (ho->m067F != 0xFF) {
+                    ho->m067F++;
+                }
+            }
+            else if (jntNo == ho->getBackboneJntNum()) {
+                mDoMtx_XrotM(*calc_mtx, ho->getBackbone_y());
+            }
+
+            mDoMtx_copy(*calc_mtx, j3dSys.mCurrentMtx);
+            mdl->setAnmMtx(jntNo, *calc_mtx);
+        }
+    }
+
+    return 1;
 }
 
 /* 0000022C-0000024C       .text daNpc_ho_XyCheckCB__FPvi */
@@ -123,53 +225,167 @@ s16 daNpc_Ho_c::XyCheckCB(int) {
 }
 
 /* 00000254-000002F8       .text receivePendant__10daNpc_Ho_cFi */
-void daNpc_Ho_c::receivePendant(int) {
-    /* Nonmatching */
+void daNpc_Ho_c::receivePendant(int i_numPendantsGiven) {
+    s16 curPendantNum = g_dComIfG_gameInfo.save.getEvent().getEventReg(0xC0FF);
+    dComIfGp_setItemBeastNumCount(SPOIL_JOY_PENDANT, -i_numPendantsGiven);
+
+    s32 newPendantNum = curPendantNum + i_numPendantsGiven;
+    if (newPendantNum > MAX_PENDANTS) {
+        dComIfGp_setItemBeastNumCount(SPOIL_JOY_PENDANT, newPendantNum - MAX_PENDANTS);
+        newPendantNum = MAX_PENDANTS;
+    }
+
+    dComIfGs_setEventReg(0xC0FF, newPendantNum);
 }
 
 /* 000002F8-0000040C       .text initTexPatternAnm__10daNpc_Ho_cFb */
-void daNpc_Ho_c::initTexPatternAnm(bool) {
-    /* Nonmatching */
+s32 daNpc_Ho_c::initTexPatternAnm(bool i_param1) {
+    J3DModelData* mdlData = mpMcaMorf->getModel()->getModelData();
+    m_head_tex_pattern = (J3DAnmTexPattern*)dComIfG_getObjectRes("Ho", l_btp_ix_tbl[mCurBtpIdx]);
+
+    JUT_ASSERT(0x140, m_head_tex_pattern != 0);
+
+    int initResult = mBtpAnimator.init(mdlData, m_head_tex_pattern, 1, 2, 1.0f, 0, -1, i_param1, 0);
+    if (initResult == 0) {
+        return 0;
+    }
+
+    mBtpTimer = 0;
+    mTimer1 = 0;
+
+    return 1;
 }
 
 /* 0000040C-00000498       .text playTexPatternAnm__10daNpc_Ho_cFv */
 void daNpc_Ho_c::playTexPatternAnm() {
-    /* Nonmatching */
+    s16 timer = cLib_calcTimer(&mTimer1);
+    if (timer == 0) {
+        if (mBtpTimer >= m_head_tex_pattern->getFrameMax()) {
+            mBtpTimer -= m_head_tex_pattern->getFrameMax();
+            mTimer1 = cM_rndF(100.0f) + 30.0f;
+        }
+        else {
+            mBtpTimer += 1;
+        }
+    }
 }
 
 /* 00000498-0000051C       .text setAnm__10daNpc_Ho_cFSc */
-void daNpc_Ho_c::setAnm(signed char) {
-    /* Nonmatching */
+void daNpc_Ho_c::setAnm(s8 i_newAnmIdx) {
+    if (i_newAnmIdx != mCurAnmIdx && i_newAnmIdx != -1) {
+        mCurAnmIdx = i_newAnmIdx;
+        mLastMorfTime = 0.0f;
+
+        dNpc_setAnm(mpMcaMorf, -1, 8.0f, 1.0f, l_bck_ix_tbl[mCurAnmIdx], -1, "Ho");
+    }
 }
 
 /* 0000051C-00000540       .text setAnmStatus__10daNpc_Ho_cFv */
 void daNpc_Ho_c::setAnmStatus() {
-    /* Nonmatching */
+    setAnm(0);
 }
 
 /* 00000540-000005F4       .text chkAttentionLocal__10daNpc_Ho_cFv */
-void daNpc_Ho_c::chkAttentionLocal() {
-    /* Nonmatching */
+bool daNpc_Ho_c::chkAttentionLocal() {
+    dAttention_c& attention = dComIfGp_getAttention();
+
+    if (chkFlag(0x11)) {
+        return true;
+    }
+
+    if (m068A != 0) {
+        m068A--;
+        return true;
+    }
+
+    if (attention.LockonTruth()) {
+        return this == attention.LockonTarget(0);
+    }
+    
+    return this == attention.ActionTarget(0);
 }
 
 /* 000005F4-00000690       .text chkAttention__10daNpc_Ho_cFv */
 void daNpc_Ho_c::chkAttention() {
-    /* Nonmatching */
+    bool bVar1 = chkFlag(0x04);
+    bool bLocalResult = chkAttentionLocal();
+
+    if (bLocalResult) {
+        setFlag(0x04);
+    }
+    else {
+        clrFlag(0x04);
+    }
+
+    if (bVar1 != chkFlag(0x04) && bVar1 == true) {
+        mJntCtrl.field_0x0A = true;
+    }
 }
 
 /* 00000690-00000708       .text eventOrder__10daNpc_Ho_cFv */
 void daNpc_Ho_c::eventOrder() {
-    /* Nonmatching */
+    if (ChkOrder(1)) {
+        mEvtInfo.onCondition(dEvtCnd_CANTALK_e);
+    }
+
+    if (ChkOrder(2)) {
+        mEvtInfo.onCondition(dEvtCnd_CANTALK_e);
+        fopAcM_orderSpeakEvent(this);
+    }
+
+    if (ChkOrder(4)) {
+        mEvtInfo.onCondition(dEvtCnd_CANTALKITEM_e);
+    }
 }
 
 /* 00000708-000007A8       .text checkOrder__10daNpc_Ho_cFv */
 void daNpc_Ho_c::checkOrder() {
     /* Nonmatching */
+    if (mEvtInfo.checkCommandTalk() && ChkOrder(7)) {
+        if (dComIfGp_event_chkTalkXY()) {
+            setFlag(0x10);
+        }
+        else {
+            setFlag(1);
+        }
+
+        talkInit();
+    }
+
+    ClrOrder();
 }
 
 /* 000007A8-00000884       .text next_msg_sub0__10daNpc_Ho_cFUl */
-void daNpc_Ho_c::next_msg_sub0(u32) {
+u32 daNpc_Ho_c::next_msg_sub0(u32 i_curMsgId) {
     /* Nonmatching */
+    switch (mSelectedChoiceIdx) {
+        case 0:
+            if (i_curMsgId == 0x2712) {
+                if (dComIfGs_isEventBit(0x2201) != 0) {
+                    if (dComIfGs_isEventBit(0x1340) != 0) {
+                        if (dComIfGs_isEventBit(0x1F80) != 0) {
+                            return 0x2720;
+                        }
+
+                        dComIfGs_onEventBit(0x1F80);
+                        
+                        if (dKy_daynight_check() == false) {
+                            dComIfGs_onTmpBit(0x580);
+                        }
+                        
+                        return 0x271E;
+                    }
+                    
+                    return 0x271D;
+                }
+
+                return 0x2716;
+            }
+
+            return 0x272B;
+    }
+
+    return 0x2714;
 }
 
 /* 00000884-00000C0C       .text next_msgStatus__10daNpc_Ho_cFPUl */
@@ -180,21 +396,99 @@ u16 daNpc_Ho_c::next_msgStatus(u32*) {
 /* 00000C0C-00000DA8       .text getMsg__10daNpc_Ho_cFv */
 u32 daNpc_Ho_c::getMsg() {
     /* Nonmatching */
+    switch (mCurState) {
+        case ST_TALK_1:
+            if (dKy_checkEventNightStop() != 0) {
+                return 0x2722;
+            }
+            else if (dComIfGs_isEventBit(0x1E01) == 0) {
+                dComIfGs_onEventBit(0x1E01);
+                return 0x2711;
+            }
+            else {
+                return dComIfGs_getEventReg(0xC0FF) ? 0x2713 : 0x2712;
+            }
+            break;
+        case ST_TALK_3:
+            if (dComIfGp_event_getPreItemNo() != PENDANT || dComIfGs_isEventBit(0x1E04) == 0) {
+                return 0x2739;
+            }
+            else {
+                if (dComIfGs_getEventReg(0xC0FF) == 0) {
+                    return 0x273A;
+                }
+                if (dComIfGs_isEventBit(0x1C08) == 0) {
+                    return 0x2749;
+                }
+                
+                if (dComIfGs_isEventBit(0x1C04) == 0) {
+                    if (dComIfGs_isTmpBit(0x104) != 0) {
+                        return 0x274A;
+                    }
+                    else {
+                        return 0x274C;
+                    }
+                }
+                else {
+                    if (dComIfGs_getEventReg(0xC0FF) >= MAX_PENDANTS) {
+                        return 0x275E;
+                    }
+                    else {
+                        return 0x2754;
+                    }
+                }
+            }
+            break;
+        case ST_TALK_4:
+            return mNextMessageId;
+    }
+
+    return 0;
 }
 
 /* 00000DA8-00000E4C       .text setCollision__10daNpc_Ho_cFv */
 void daNpc_Ho_c::setCollision() {
     /* Nonmatching */
+    cXyz unused_zero(0.0f, 0.0f, 0.0f);
+    
+    cXyz pos = getPosition();
+    double d = mCylinderColRadius;
+
+    mCylinderCol.SetC(pos);
+    mCylinderCol.SetR(d);
+    mCylinderCol.SetH(140.0f);
+
+    dComIfG_Ccsp()->Set(&mCylinderCol);
 }
 
 /* 00000E4C-00000E90       .text msgPushButton__10daNpc_Ho_cFv */
 void daNpc_Ho_c::msgPushButton() {
-    /* Nonmatching */
+    switch (mCurrentMsgId) {
+        case 0x2712:
+        case 0x2713:
+        case 0x2718:
+        case 0x272b:
+            mSelectedChoiceIdx = l_msg->mSelectedChoiceIdx;
+            break;
+    }
 }
 
 /* 00000E90-00000EF0       .text msgAnm__10daNpc_Ho_cFUc */
-void daNpc_Ho_c::msgAnm(u8) {
+void daNpc_Ho_c::msgAnm(u8 i_anmIdx) {
     /* Nonmatching */
+    static s8 msg_anm_table[] = {
+        0, 1, 2, 3, 4
+    };
+
+    if (mCurSpeakingAnmIdx != i_anmIdx) {
+        mCurSpeakingAnmIdx = i_anmIdx;
+
+        if (mCurSpeakingAnmIdx < 5) {
+            setAnm(msg_anm_table[mCurSpeakingAnmIdx]);
+        }
+
+        m068D = false;
+    }
 }
 
 /* 00000EF0-00000F04       .text talkInit__10daNpc_Ho_cFv */
@@ -223,43 +517,87 @@ void daNpc_Ho_c::lookBack() {
 }
 
 /* 00001498-0000157C       .text wait01__10daNpc_Ho_cFv */
-void daNpc_Ho_c::wait01() {
+bool daNpc_Ho_c::wait01() {
     /* Nonmatching */
 }
 
 /* 0000157C-00001678       .text talk01__10daNpc_Ho_cFv */
-void daNpc_Ho_c::talk01() {
+bool daNpc_Ho_c::talk01() {
     /* Nonmatching */
 }
 
 /* 00001678-000016E8       .text talk02__10daNpc_Ho_cFv */
-void daNpc_Ho_c::talk02() {
+bool daNpc_Ho_c::talk02() {
     /* Nonmatching */
 }
 
 /* 000016E8-000017D4       .text talk03__10daNpc_Ho_cFv */
-void daNpc_Ho_c::talk03() {
+bool daNpc_Ho_c::talk03() {
     /* Nonmatching */
 }
 
 /* 000017D4-00001884       .text give01__10daNpc_Ho_cFv */
-void daNpc_Ho_c::give01() {
+bool daNpc_Ho_c::give01() {
     /* Nonmatching */
 }
 
 /* 00001884-0000193C       .text give02__10daNpc_Ho_cFv */
-void daNpc_Ho_c::give02() {
+bool daNpc_Ho_c::give02() {
     /* Nonmatching */
 }
 
 /* 0000193C-00001A00       .text preach__10daNpc_Ho_cFv */
-void daNpc_Ho_c::preach() {
+bool daNpc_Ho_c::preach() {
     /* Nonmatching */
 }
 
 /* 00001A00-00001B2C       .text wait_action__10daNpc_Ho_cFPv */
-void daNpc_Ho_c::wait_action(void*) {
+s32 daNpc_Ho_c::wait_action(void* i_param1) {
     /* Nonmatching */
+    if (mWaitTimer == 0) {
+        mCurState = ST_WAIT;
+        setAnmStatus();
+        mWaitTimer++;
+    }
+    else if (mWaitTimer != -1) {
+        chkAttention();
+
+        bool bAtnEnabled;
+        switch (mCurState) {
+            case ST_WAIT:
+                bAtnEnabled = wait01();
+                break;
+            case ST_TALK_1:
+                bAtnEnabled = talk01();
+                break;
+            case ST_TALK_2:
+                bAtnEnabled = talk02();
+                break;
+            case ST_TALK_3:
+                bAtnEnabled = talk03();
+                break;
+            case ST_TALK_4:
+                bAtnEnabled = talk03();
+                break;
+            case ST_GIVE_1:
+                bAtnEnabled = give01();
+                break;
+            case ST_GIVE_2:
+                bAtnEnabled = give02();
+                break;
+            case ST_PREACH:
+                bAtnEnabled = preach();
+                break;
+            default:
+                bAtnEnabled = false;
+                break;
+        }
+
+        lookBack();
+        setAttention(bAtnEnabled);
+    }
+
+    return 1;
 }
 
 /* 00001B2C-00001C94       .text _draw__10daNpc_Ho_cFv */

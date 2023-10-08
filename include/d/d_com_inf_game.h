@@ -39,6 +39,17 @@ class camera_class;
 class J2DOrthoGraph;
 class dDemo_actor_c;
 
+enum SpoilItemTable {
+    /* 0x00 */ SPOIL_SKULL_NECKLACE,
+    /* 0x01 */ SPOIL_BOKO_BABA_SEED,
+    /* 0x02 */ SPOIL_GOLDEN_FEATHER,
+    /* 0x03 */ SPOIL_HEROS_CREST,
+    /* 0x04 */ SPOIL_RED_CHU_JELLY,
+    /* 0x05 */ SPOIL_GREEN_CHU_JELLY,
+    /* 0x06 */ SPOIL_BLUE_CHU_JELLY,
+    /* 0x07 */ SPOIL_JOY_PENDANT,
+};
+
 class __d_timer_info_c {
 public:
     __d_timer_info_c() {
@@ -226,6 +237,10 @@ public:
     void setItemMagicCount(s16 magic) { mItemMagicCount += magic; }
 
     void setItemLifeCount(f32 num) { mItemLifeCount += num; }
+
+    void setItemBeastNumCount(int i_itemIdx, s16 i_count) {
+        mItemBeastNumCount[i_itemIdx] += i_count;
+    }
     
     s16 getItemArrowNumCount() { return mItemArrowNumCount; }
     void setItemArrowNumCount(s16 num) { mItemArrowNumCount += num; }
@@ -319,8 +334,7 @@ public:
     /* 0x48E2 */ s16 field_0x48e2;
     /* 0x48E4 */ s16 mItemBombNumCount;
     /* 0x48E6 */ s16 field_0x48e6;
-    /* 0x48E8 */ u8 field_0x48E8[0x48F6 - 0x48E8];
-    /* 0x48F6 */ s16 mItemPendantNumCount;
+    /* 0x48E8 */ s16 mItemBeastNumCount[8];
     /* 0x48F8 */ u8 field_0x48F8[0x4918 - 0x48F8];
     /* 0x4918 */ u16 mMsgCountNumber;
     /* 0x491A */ s16 field_0x491a;
@@ -541,6 +555,10 @@ inline BOOL dComIfGs_isOceanSvBit(u8 i_grid, u16 i_bit) {
 
 inline BOOL dComIfGs_isEventBit(u16 id) {
     return g_dComIfG_gameInfo.save.getEvent().isEventBit(id);
+}
+
+inline BOOL dComIfGs_isTmpBit(u16 id) {
+    return g_dComIfG_gameInfo.save.getTmp().isEventBit(id);
 }
 
 inline void dComIfGs_onEventBit(u16 id) {
@@ -1168,6 +1186,10 @@ inline void dComIfGp_setItemRupeeCount(s32 count) {
 
 inline void dComIfGp_setItemLifeCount(f32 amount) {
     g_dComIfG_gameInfo.play.setItemLifeCount(amount);
+}
+
+inline void dComIfGp_setItemBeastNumCount(int i_itemIdx, s16 i_count) {
+    g_dComIfG_gameInfo.play.setItemBeastNumCount(i_itemIdx, i_count);
 }
 
 inline void dComIfGp_setMessageCountNumber(s16 num) {

@@ -466,6 +466,7 @@ public:
     BOOL isEventBit(u16);
     void setEventReg(u16, u8);
     u8 getEventReg(u16);
+    BOOL isTmpBit(u16);
 
     /* 0x0 */ u8 mFlags[0x100];
 };  // Size: 0x100
