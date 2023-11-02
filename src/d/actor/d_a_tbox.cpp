@@ -71,9 +71,9 @@ struct modelInfo {
 
 static modelInfo l_modelInfo[] = {
     { 0x000E, 0x0009, 0x0022, 0x001B, 0x002A, 0x002B },
-    { 0x000F, 0x0008, 0x0023, 0x001C, 0x002A, 0x002B },
-    { 0x0010, 0x0008, 0x0024, 0x001D, 0x002A, 0x002B },
-    { 0x0014, 0x0008, 0xFFFF, 0xFFFF, 0x002C, 0x002D }
+    { 0x000F, 0x0009, 0x0023, 0x001C, 0x002A, 0x002B },
+    { 0x0010, 0x0009, 0x0024, 0x001D, 0x002A, 0x002B },
+    { 0x0014, 0x0009, 0xFFFF, 0xFFFF, 0x002C, 0x002D }
 };
 
 class daTbox_c : public fopAc_ac_c {
@@ -1274,21 +1274,6 @@ bool daTbox_c::actionOpenWait() {
             }
         }
 
-        if (getShapeType() != 0) {
-            mDoAud_subBgmStart(0x80000000 | JA_BGM_OPEN_BOX);
-            mAllColRatio = 0.4f;
-
-            flagOn(0x08);
-            dKy_set_allcol_ratio(mAllColRatio);
-
-            lightReady();
-            mPLight.mPower = 0.0f;
-            mEfLight.mPower = 0.0f;
-
-            dKy_plight_priority_set(&mPLight);
-            dKy_efplight_set(&mEfLight);
-        }
-
         setAction(&daTbox_c::actionDemo);
 
         mStaffId = dComIfGp_evmng_getMyStaffId("TREASURE", NULL, 0);
@@ -1301,11 +1286,8 @@ bool daTbox_c::actionOpenWait() {
             if (getIsTrap()) {
                 mEvtInfo.setEventName("DEFAULT_TREASURE_TRAP");
             }
-            else if (getShapeType() == 0) {
-                mEvtInfo.setEventName("DEFAULT_TREASURE_A");
-            }
             else {
-                mEvtInfo.setEventName("DEFAULT_TREASURE");
+                mEvtInfo.setEventName("DEFAULT_TREASURE_A");
             }
         }
     }
