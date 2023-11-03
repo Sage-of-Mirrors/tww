@@ -5,6 +5,7 @@
 
 #include "dolphin/types.h"
 #include "d/actor/d_a_player.h"
+#include "d/d_com_inf_game.h"
 #include "f_op/f_op_camera_mng.h"
 
 /* 801028FC-80102940       .text changePlayer__9daPy_py_cFP10fopAc_ac_c */
@@ -12,7 +13,8 @@ void daPy_py_c::changePlayer(fopAc_ac_c* newPlayer) {
     if (!newPlayer) {
         return;
     }
-    if (dComIfGp_roomControl_getStayNo() != newPlayer->getRoomNo()) {
+    s8 stayNo = dComIfGp_roomControl_getStayNo();
+    if (stayNo != newPlayer->current.roomNo) {
         return;
     }
     dComIfGp_setPlayer(0, newPlayer);

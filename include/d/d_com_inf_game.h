@@ -358,6 +358,7 @@ public:
 
     void setLkDemoAnmArchive(JKRArchive* i_arc) { mpLkDArc = i_arc; }
     void setStatus(u16 status) { mStatus = status; }
+    void onStatus(u16 status) { mStatus |= status; }
     s32 checkStatus(u16 flags) { return flags & mStatus; }
 
     void setShipId(u8 i_id) { mShipId = i_id; }
@@ -1085,7 +1086,7 @@ inline void dComIfGs_offSwitch(int i_no, int i_roomNo) {
     g_dComIfG_gameInfo.save.offSwitch(i_no, i_roomNo);
 }
 
-inline BOOL dComIfGs_isSwitch(s32 i_no, s32 i_roomNo) {
+inline BOOL dComIfGs_isSwitch(int i_no, int i_roomNo) {
     return g_dComIfG_gameInfo.save.isSwitch(i_no, i_roomNo);
 }
 
@@ -1442,7 +1443,7 @@ inline s32 dComIfGp_roomControl_getTimePass() {
     return g_dComIfG_gameInfo.play.getRoomControl()->GetTimePass();
 }
 
-inline s32 dComIfGp_roomControl_getStayNo() {
+inline int dComIfGp_roomControl_getStayNo() {
     return dStage_roomControl_c::getStayNo();
 }
 
@@ -1652,6 +1653,10 @@ inline void dComIfGp_setLkDemoAnmArchive(JKRArchive* i_arc) {
 
 inline void dComIfGp_setStatus(u16 status) {
     g_dComIfG_gameInfo.play.setStatus(status);
+}
+
+inline void dComIfGp_onStatus(u16 status) {
+    g_dComIfG_gameInfo.play.onStatus(status);
 }
 
 inline void dComIfGp_setShipId(u8 i_id) {
@@ -2160,14 +2165,6 @@ inline void dComIfGd_entryZSortXluListMaskOff(J3DPacket* i_packet, cXyz& param_1
     g_dComIfG_gameInfo.drawlist.entryZSortXluListMaskOff(i_packet, param_1);
 }
 
-inline view_class* dComIfGd_getView() {
-    return (view_class*)g_dComIfG_gameInfo.drawlist.mpCamera;
-}
-
-inline MtxP dComIfGd_getViewRotMtx() {
-    return dComIfGd_getView()->mViewMtxNoTrans;
-}
-
 inline void dComIfGd_set2DOpa(dDlst_base_c* pBase) { g_dComIfG_gameInfo.drawlist.set2DOpa(pBase); }
 inline void dComIfGd_set2DXlu(dDlst_base_c* pBase) { g_dComIfG_gameInfo.drawlist.set2DXlu(pBase); }
 
@@ -2175,7 +2172,10 @@ inline void dComIfGd_peekZ(s16 x, s16 y, u32 * data) { g_dComIfG_gameInfo.drawli
 
 inline void dComIfGd_setWindow(dDlst_window_c* pWindow) { g_dComIfG_gameInfo.drawlist.setWindow(pWindow); }
 inline void dComIfGd_setViewPort(view_port_class* pViewPort) { g_dComIfG_gameInfo.drawlist.setViewPort(pViewPort); }
+inline view_port_class* dComIfGd_getViewport() { return g_dComIfG_gameInfo.drawlist.getViewport(); }
 inline void dComIfGd_setView(view_class* pView) { g_dComIfG_gameInfo.drawlist.setView(pView); }
+inline view_class* dComIfGd_getView() { return g_dComIfG_gameInfo.drawlist.getView(); }
+inline MtxP dComIfGd_getViewRotMtx() { return dComIfGd_getView()->mViewMtxNoTrans; }
 
 /**
  * === ARCHIVE ===
