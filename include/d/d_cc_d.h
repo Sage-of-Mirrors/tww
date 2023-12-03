@@ -11,7 +11,7 @@
 
 enum dCcD_hitSe {};
 
-enum dCcG_At_Spl {};
+enum dCcG_At_Spl { AT_SPL_UNK0, AT_SPL_UNK1};
 
 enum dCcG_Tg_Spl {};
 

@@ -4,155 +4,255 @@
 //
 
 #include "d/actor/d_a_bst.h"
+#include "d/d_com_inf_game.h"
+#include "d/d_procname.h"
+#include "f_op/f_op_msg_mng.h"
+#include "JSystem/J3DGraphAnimator/J3DNode.h"
+#include "m_do/m_Do_mtx.h"
+#include "SSystem/SComponent/c_lib.h"
 #include "dolphin/types.h"
+
+static bst_class* boss;
+static bst_class* hand[2];
+
+static u32 msg;
+static s8 msg_end;
+
+static daBst_HIO_c l_HIO;
 
 /* 000000EC-00000110       .text __ct__11daBst_HIO_cFv */
 daBst_HIO_c::daBst_HIO_c() {
-    /* Nonmatching */
+    m0004 = -1;
+
+    m0005 = 0;
+    m0006 = 0;
 }
 
 /* 00000110-00000174       .text message_set__FP9bst_classUl */
-void message_set(bst_class*, unsigned long) {
-    /* Nonmatching */
+BOOL message_set(bst_class* i_bst, u32 i_msgIdx) {
+    if (msg == 0xFFFFFFFF) {
+        msg = fopMsgM_messageSet(i_msgIdx, i_bst);
+        msg_end = false;
+        
+        return TRUE;
+    }
+
+    return FALSE;
 }
 
 /* 00000174-000001FC       .text message_cont__FP9bst_class */
-void message_cont(bst_class*) {
-    /* Nonmatching */
+void message_cont(bst_class* i_bst) {
+    if (msg != 0xFFFFFFFF) {
+        msg_class* msgPtr = fopMsgM_SearchByID(msg);
+
+        if (msgPtr == NULL) {
+            return;
+        }
+
+        if (msgPtr->mMode == 0x0E) {
+            if (!msg_end) {
+                return;
+            }
+
+            msgPtr->mMode = 0x10;
+            fopMsgM_messageSendOn();
+        }
+        else if (msgPtr->mMode == 0x12) {
+             msgPtr->mMode = 0x13;
+             msg = 0xFFFFFFFF;
+        }
+    }
 }
 
 /* 000001FC-00000268       .text set_hand_AT__FP9bst_classUc */
-void set_hand_AT(bst_class*, unsigned char) {
-    /* Nonmatching */
+void set_hand_AT(bst_class* i_bst, u8 i_prm1) {
+    for (int i = 0; i < 0x13; i++) {
+        if (i_prm1 != 0) {
+            i_bst->mHitInfo[i].OnAtSetBit();
+        }
+        else {
+            i_bst->mHitInfo[i].OffAtSetBit();
+        }
+
+        i_bst->mHitInfo[i].SetAtSpl(AT_SPL_UNK1);
+    }
 }
 
 /* 00000268-000002C0       .text set_hand_CO__FP9bst_classUc */
-void set_hand_CO(bst_class*, unsigned char) {
-    /* Nonmatching */
+void set_hand_CO(bst_class* i_bst, u8 i_prm1) {
+    for (int i = 0; i < 0x13; i++) {
+        if (i_prm1 != 0) {
+            i_bst->mHitInfo[i].OnCoSetBit();
+        }
+        else {
+            i_bst->mHitInfo[i].OffCoSetBit();
+        }
+    }
 }
 
 /* 000002C0-000003E8       .text anm_init__FP9bst_classifUcfi */
-void anm_init(bst_class*, int, float, unsigned char, float, int) {
-    /* Nonmatching */
+void anm_init(bst_class* i_bst, int i_anmIdx, float i_morfTime, u8 i_loopMode, float i_speed, int i_anmSndIdx) {
+    if (i_anmSndIdx >= 0) {
+        void* anmSound = dComIfG_getObjectRes("Bst", i_anmSndIdx);
+        J3DAnmTransform* anm = (J3DAnmTransform*)dComIfG_getObjectRes("Bst", i_anmIdx);
+        i_bst->m02B8->setAnm(anm, i_loopMode, i_morfTime, i_speed, 0.0f, -1.0f, anmSound);
+    }
+    else {
+        J3DAnmTransform* anm = (J3DAnmTransform*)dComIfG_getObjectRes("Bst", i_anmIdx);
+        i_bst->m02B8->setAnm(anm, i_loopMode, i_morfTime, i_speed, 0.0f, -1.0f, NULL);
+    }
 }
 
 /* 000003E8-00000514       .text nodeCallBackHead__FP7J3DNodei */
-static BOOL nodeCallBackHead(J3DNode*, int) {
+static BOOL nodeCallBackHead(J3DNode* i_node, int i_prm1) {
     /* Nonmatching */
+    J3DJoint* jnt = static_cast<J3DJoint*>(i_node);
+
+
+    if (i_prm1 == 0) {
+        s32 jntIdx = jnt->getJntNo();
+        J3DModel* mdl = j3dSys.getModel();
+
+        bst_class* bst = (bst_class*)mdl->getUserArea();
+
+        if (bst != NULL) {
+            mDoMtx_copy(mdl->getAnmMtx(jntIdx), *calc_mtx);
+
+            if (jntIdx == 9) {
+                mDoMtx_YrotM(*calc_mtx, -bst->mYRot1);
+            }
+            else if (jntIdx == 0x0C) {
+                mDoMtx_YrotM(*calc_mtx, bst->mYRot1);
+            }
+            else if (jntIdx == 0x0A) {
+                mDoMtx_YrotM(*calc_mtx, -bst->mYRot0);
+            }
+            else if (jntIdx == 0x0B) {
+                mDoMtx_YrotM(*calc_mtx, bst->mYRot0);
+            }
+
+            MtxP m = mdl->getAnmMtx(jntIdx);
+            mdl->setAnmMtx(jntIdx, *calc_mtx);
+            mDoMtx_copy(*calc_mtx, j3dSys.mCurrentMtx);
+        }
+    }
+
+    return TRUE;
 }
 
 /* 00000550-000005B4       .text beam_draw__FP9bst_class */
-void beam_draw(bst_class*) {
+void beam_draw(bst_class* i_bst) {
     /* Nonmatching */
 }
 
 /* 000005B4-00000950       .text daBst_Draw__FP9bst_class */
-static BOOL daBst_Draw(bst_class*) {
+static BOOL daBst_Draw(bst_class* i_bst) {
     /* Nonmatching */
+    return TRUE;
 }
 
 /* 00000950-00000B1C       .text pos_move__FP9bst_classUc */
-void pos_move(bst_class*, unsigned char) {
+void pos_move(bst_class* i_bst, unsigned char) {
     /* Nonmatching */
 }
 
 /* 00000B1C-00000E58       .text stay__FP9bst_class */
-void stay(bst_class*) {
+void stay(bst_class* i_bst) {
     /* Nonmatching */
 }
 
 /* 00000E58-000014E8       .text fly__FP9bst_class */
-void fly(bst_class*) {
+void fly(bst_class* i_bst) {
     /* Nonmatching */
 }
 
 /* 000014E8-00001C14       .text down_attack__FP9bst_class */
-void down_attack(bst_class*) {
+void down_attack(bst_class* i_bst) {
     /* Nonmatching */
 }
 
 /* 00001C14-000023C8       .text paa_attack__FP9bst_class */
-void paa_attack(bst_class*) {
+void paa_attack(bst_class* i_bst) {
     /* Nonmatching */
 }
 
 /* 00002404-00002E08       .text kumi_attack__FP9bst_class */
-void kumi_attack(bst_class*) {
+void kumi_attack(bst_class* i_bst) {
     /* Nonmatching */
 }
 
 /* 00002E08-0000318C       .text harai_attack__FP9bst_class */
-void harai_attack(bst_class*) {
+void harai_attack(bst_class* i_bst) {
     /* Nonmatching */
 }
 
 /* 0000318C-00003470       .text sleep__FP9bst_class */
-void sleep(bst_class*) {
+void sleep(bst_class* i_bst) {
     /* Nonmatching */
 }
 
 /* 00003470-000035BC       .text beam_set__FP9bst_class */
-void beam_set(bst_class*) {
+void beam_set(bst_class* i_bst) {
     /* Nonmatching */
 }
 
 /* 000035BC-00003B94       .text beam_attack__FP9bst_class */
-void beam_attack(bst_class*) {
+void beam_attack(bst_class* i_bst) {
     /* Nonmatching */
 }
 
 /* 00003B94-00003DD8       .text damage__FP9bst_class */
-void damage(bst_class*) {
+void damage(bst_class* i_bst) {
     /* Nonmatching */
 }
 
 /* 00003DD8-00003EC4       .text bom_eat_check__FP9bst_class */
-void bom_eat_check(bst_class*) {
+void bom_eat_check(bst_class* i_bst) {
     /* Nonmatching */
 }
 
 /* 00003EC4-000049A8       .text head_damage__FP9bst_class */
-void head_damage(bst_class*) {
+void head_damage(bst_class* i_bst) {
     /* Nonmatching */
 }
 
 /* 000049A8-00004BCC       .text head_hukki__FP9bst_class */
-void head_hukki(bst_class*) {
+void head_hukki(bst_class* i_bst) {
     /* Nonmatching */
 }
 
 /* 00004BCC-000051E0       .text col_set__FP9bst_class */
-void col_set(bst_class*) {
+void col_set(bst_class* i_bst) {
     /* Nonmatching */
 }
 
 /* 000051E0-00005224       .text player_way_check__FP9bst_class */
-void player_way_check(bst_class*) {
+void player_way_check(bst_class* i_bst) {
     /* Nonmatching */
 }
 
 /* 00005224-0000591C       .text damage_check__FP9bst_class */
-void damage_check(bst_class*) {
+void damage_check(bst_class* i_bst) {
     /* Nonmatching */
 }
 
 /* 0000591C-00005D9C       .text hana_demo__FP9bst_class */
-void hana_demo(bst_class*) {
+void hana_demo(bst_class* i_bst) {
     /* Nonmatching */
 }
 
 /* 00005D9C-00006088       .text end_demo__FP9bst_class */
-void end_demo(bst_class*) {
+void end_demo(bst_class* i_bst) {
     /* Nonmatching */
 }
 
 /* 00006088-00006418       .text move__FP9bst_class */
-void move(bst_class*) {
+void move(bst_class* i_bst) {
     /* Nonmatching */
 }
 
 /* 00006418-00006DC0       .text main_cont__FP9bst_class */
-void main_cont(bst_class*) {
+void main_cont(bst_class* i_bst) {
     /* Nonmatching */
 }
 
@@ -167,47 +267,75 @@ void beam_wall_check(cXyz*, cXyz*) {
 }
 
 /* 00007740-00007B58       .text beam_move__FP9bst_class */
-void beam_move(bst_class*) {
+void beam_move(bst_class* i_bst) {
     /* Nonmatching */
 }
 
 /* 00007CF0-0000815C       .text end_brkbtk_set__FP9bst_class */
-void end_brkbtk_set(bst_class*) {
+void end_brkbtk_set(bst_class* i_bst) {
     /* Nonmatching */
 }
 
 /* 0000815C-00009FCC       .text demo_camera__FP9bst_class */
-void demo_camera(bst_class*) {
+void demo_camera(bst_class* i_bst) {
     /* Nonmatching */
 }
 
 /* 00009FCC-0000A1A4       .text bst_kankyo__FP9bst_class */
-void bst_kankyo(bst_class*) {
+void bst_kankyo(bst_class* i_bst) {
     /* Nonmatching */
 }
 
 /* 0000A1A4-0000A9C8       .text daBst_Execute__FP9bst_class */
-static BOOL daBst_Execute(bst_class*) {
+static BOOL daBst_Execute(bst_class* i_bst) {
     /* Nonmatching */
+    return TRUE;
 }
 
 /* 0000A9C8-0000A9D0       .text daBst_IsDelete__FP9bst_class */
-static BOOL daBst_IsDelete(bst_class*) {
-    /* Nonmatching */
+static BOOL daBst_IsDelete(bst_class* i_bst) {
+    return TRUE;
 }
 
 /* 0000A9D0-0000AADC       .text daBst_Delete__FP9bst_class */
-static BOOL daBst_Delete(bst_class*) {
+static BOOL daBst_Delete(bst_class* i_bst) {
     /* Nonmatching */
+    return TRUE;
 }
 
 /* 0000AADC-0000B2D0       .text useHeapInit__FP10fopAc_ac_c */
-static BOOL useHeapInit(fopAc_ac_c*) {
+static BOOL useHeapInit(fopAc_ac_c* i_bst) {
     /* Nonmatching */
+    return TRUE;
 }
 
 /* 0000B318-0000B860       .text daBst_Create__FP10fopAc_ac_c */
-static s32 daBst_Create(fopAc_ac_c*) {
+static s32 daBst_Create(fopAc_ac_c* i_bst) {
     /* Nonmatching */
+    return TRUE;
 }
 
+static actor_method_class l_daBst_Method = {
+    (process_method_func)daBst_Create,
+    (process_method_func)daBst_Delete,
+    (process_method_func)daBst_Execute,
+    (process_method_func)daBst_IsDelete,
+    (process_method_func)daBst_Draw,
+};
+
+actor_process_profile_definition g_profile_BST = {
+    fpcLy_CURRENT_e,
+    7,
+    fpcPi_CURRENT_e,
+    PROC_BST,
+    &g_fpcLf_Method.mBase,
+    sizeof(bst_class),
+    0,
+    0,
+    &g_fopAc_Method.base,
+    0x00E5,
+    &l_daBst_Method,
+    fopAcStts_BOSS_e | fopAcStts_UNK40000_e | fopAcStts_UNK4000_e,
+    fopAc_ACTOR_e,
+    fopAc_CULLBOX_2_e,
+};

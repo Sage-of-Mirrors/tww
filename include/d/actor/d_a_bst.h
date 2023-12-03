@@ -2,6 +2,8 @@
 #define D_A_BST_H
 
 #include "f_op/f_op_actor.h"
+#include "m_Do/m_Do_hostIO.h"
+#include "d/d_cc_d.h"
 
 class mDoExt_McaMorf;
 class mDoExt_baseAnm;
@@ -9,7 +11,10 @@ class mDoExt_baseAnm;
 class bst_class : public fopAc_ac_c {
 public:
     /* 0x0000 */ f32 z;
-    /* 0x0004 */ u8 m0004[0x00F8 - 0x0004];
+    /* 0x0004 */ u8 m0004[0x0028 - 0x0004];
+    /* 0x02B8 */ mDoExt_McaMorf* m02B8;
+    /* 0x02BC */ mDoExt_baseAnm* m02BC;
+    /* 0x02C0 */ mDoExt_baseAnm* m02C0;
     /* 0x00F8 */ u16 m00F8;
     /* 0x00FA */ u16 m00FA;
     /* 0x00FC */ u8 m00FC[0x01C4 - 0x00FC];
@@ -51,9 +56,6 @@ public:
     /* 0x0286 */ u8 m0286[0x02B4 - 0x0286];
     /* 0x02B4 */ s8 m02B4;
     /* 0x02B5 */ u8 m02B5[0x02B8 - 0x02B5];
-    /* 0x02B8 */ mDoExt_McaMorf* m02B8;
-    /* 0x02BC */ mDoExt_baseAnm* m02BC;
-    /* 0x02C0 */ mDoExt_baseAnm* m02C0;
     /* 0x02C4 */ s8 m02C4;
     /* 0x02C5 */ u8 m02C5[0x02C8 - 0x02C5];
     /* 0x02C8 */ int m02C8;
@@ -63,9 +65,22 @@ public:
     /* 0x02D5 */ u8 m02D5[0x0388 - 0x02D5];
     /* 0x0388 */ int m0388;
     /* 0x038C */ u32 m038C;
-    /* 0x0390 */ u8 m0390[0x2E9C - 0x0390];
+    /* 0x0390 */ u8 m0390[0x1410 - 0x0390];
+    /* 0x15D0 */ dCcD_Sph mHitInfo[19];
     /* 0x2E9C */ u8 msFrameCount;
-    /* 0x2E9D */ u8 m2E9D[0x2FE4 - 0x2E9D];
+    /* 0x2E9D */ u8 m2E9D[0x32E4 - 0x2E9D];
+    s16 mYRot0;
+    s16 mYRot1;
+};
+
+class daBst_HIO_c : public JORReflexible {
+public:
+    daBst_HIO_c();
+    virtual ~daBst_HIO_c() { }
+
+    s8 m0004;
+    u8 m0005;
+    u8 m0006;
 };
 
 #endif /* D_A_BST_H */
