@@ -361,6 +361,16 @@ public:
     void setItemRupeeCount(s32 count) { mItemRupeeCount += count; }
     void setMessageCountNumber(s16 num) { mMsgCountNumber = num; }
 
+    s16 getMiniGameRupee() { return mMiniGameRupee; }
+    void plusMiniGameRupee(s16 count) { 
+        if(mMiniGameRupee + count > 0) {
+            mMiniGameRupee += count;
+        }
+        else {
+            mMiniGameRupee = 0;
+        }
+    }
+
     void setLkDemoAnmArchive(JKRArchive* i_arc) { mpLkDArc = i_arc; }
     void setStatus(u16 status) { mStatus = status; }
     void onStatus(u16 status) { mStatus |= status; }
@@ -455,6 +465,7 @@ public:
     JKRArchive* getFontArchive() { return mpFont0Archive; }
     JKRArchive* getRubyArchive() { return mpFont1Archive; }
     void setAnmArchive(JKRArchive * pArc) { mpAnmArchive = pArc; }
+    JKRArchive* getAnmArchive() { return mpAnmArchive; }
     void setLkDArc(JKRArchive * pArc) { mpLkDArc = pArc; }
     void setFmapArchive(JKRArchive * pArc) { mpFmapArchive = pArc; }
     void setItemResArchive(JKRArchive * pArc) { mpItemResArchive = pArc; }
@@ -646,7 +657,8 @@ public:
     /* 0x4A28 */ u32 mPlayerStatus[2][2];
     /* 0x4A38 */ u8 field_0x4A38[0x4A3A - 0x4A38];
     /* 0x4A3A */ u8 mMiniGameType;
-    /* 0x4A3B */ u8 field_0x4A3B[0x4A40 - 0x4A3B];
+    /* 0x4A3C */ s16 mMiniGameRupee;
+    /* 0x4A3D */ u8 field_0x4A3E[0x4A40 - 0x4A3E];
     /* 0x4A40 */ __d_timer_info_c mTimerInfo;
     /* 0x4A54 */ dDlst_window_c* mCurrentWindow;
     /* 0x4A58 */ view_class* mCurrentView;
@@ -1321,16 +1333,36 @@ inline void  dComIfGs_onGetBottleItem(u8 i_itemNo) {
     g_dComIfG_gameInfo.save.getPlayer().getGetItem().onBottleItem(i_itemNo);
 }
 
-inline BOOL dComIfGs_checkEmptyBottle() {
-    return g_dComIfG_gameInfo.save.getPlayer().getItem().checkEmptyBottle();
+inline void dComIfGs_setBottleItemIn(u8 prevItemNo, u8 newItemNo) {
+    g_dComIfG_gameInfo.save.getPlayer().getItem().setBottleItemIn(prevItemNo, newItemNo);
+}
+
+inline void dComIfGs_setEmptyBottleItemIn(u8 i_itemNo) {
+    g_dComIfG_gameInfo.save.getPlayer().getItem().setEmptyBottleItemIn(i_itemNo);
 }
 
 inline void dComIfGs_setEmptyBottle() {
     g_dComIfG_gameInfo.save.getPlayer().getItem().setEmptyBottle();
 }
 
-inline void dComIfGs_setEmptyBottleItemIn(u8 i_itemNo) {
-    g_dComIfG_gameInfo.save.getPlayer().getItem().setEmptyBottleItemIn(i_itemNo);
+inline void dComIfGs_setEquipBottleItemIn(u8 i_btnIdx, u8 i_itemNo) {
+    g_dComIfG_gameInfo.save.getPlayer().getItem().setEquipBottleItemIn(i_btnIdx, i_itemNo);
+}
+
+inline void dComIfGs_setEquipBottleItemEmpty(u8 i_btnIdx) {
+    g_dComIfG_gameInfo.save.getPlayer().getItem().setEquipBottleItemEmpty(i_btnIdx);
+}
+
+inline void dComIfGs_setEquipBottleItemEmpty() {
+    g_dComIfG_gameInfo.save.getPlayer().getItem().setEquipBottleItemEmpty();
+}
+
+inline u8 dComIfGs_checkBottle(u8 i_itemNo) {
+    return g_dComIfG_gameInfo.save.getPlayer().getItem().checkBottle(i_itemNo);
+}
+
+inline BOOL dComIfGs_checkEmptyBottle() {
+    return g_dComIfG_gameInfo.save.getPlayer().getItem().checkEmptyBottle();
 }
 
 inline BOOL dComIfGs_checkGetBottle() {
@@ -1500,6 +1532,8 @@ inline dSv_player_status_c_c* dComIfGs_getpPlayerStatusC(int i_idx) {
 }
 
 u8 dComIfGs_checkGetItemNum(u8 i_itemNo);
+
+stage_scls_info_class* dComIfGd_getMeshSceneList(Vec& vec);
 
 BOOL dComIfGs_checkSeaLandingEvent(s8 i_roomNo);
 
@@ -1814,6 +1848,14 @@ inline void dComIfGp_map_mapBufferSendAGB(int param_0) {
     dMap_c::mapBufferSendAGB(param_0);
 }
 
+inline void dComIfGp_map_setImage(int param_0, int param_1, f32 param_2) {
+    dMap_c::setImage(param_0, param_1, param_2);
+}
+
+inline void dComIfGp_map_deleteImage(int param_0) {
+    dMap_c::deleteImage(param_0);
+}
+
 inline dDemo_manager_c* dComIfGp_demo_get() {
     return g_dComIfG_gameInfo.play.getDemo();
 }
@@ -2066,6 +2108,14 @@ inline void dComIfGp_setDoStatus(u8 status) {
 
 inline void dComIfGp_setRStatusForce(u8 status) {
     g_dComIfG_gameInfo.play.setRStatusForce(status);
+}
+
+inline s16 dComIfGp_getMiniGameRupee() {
+    return g_dComIfG_gameInfo.play.getMiniGameRupee();
+}
+
+inline void dComIfGp_plusMiniGameRupee(s16 count) { 
+    g_dComIfG_gameInfo.play.plusMiniGameRupee(count);
 }
 
 inline s32 dComIfGp_getWindowNum() { return g_dComIfG_gameInfo.play.getWindowNum(); }
@@ -2480,6 +2530,7 @@ inline void dComIfGd_reset() { g_dComIfG_gameInfo.drawlist.reset(); }
  */
 
 inline void dComIfGp_setAnmArchive(JKRArchive * pArc) { g_dComIfG_gameInfo.play.setAnmArchive(pArc); }
+inline JKRArchive* dComIfGp_getAnmArchive() { return g_dComIfG_gameInfo.play.getAnmArchive(); }
 inline void dComIfGp_setMsgArchive(JKRArchive * pArc) { g_dComIfG_gameInfo.play.setMsgArchive(pArc); }
 inline void dComIfGp_setDmsgArchive(JKRArchive * pArc) { g_dComIfG_gameInfo.play.setDmsgArchive(pArc); }
 inline void dComIfGp_setTmsgArchive(JKRArchive * pArc) { g_dComIfG_gameInfo.play.setTmsgArchive(pArc); }
