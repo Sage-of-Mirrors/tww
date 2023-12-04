@@ -12,6 +12,8 @@
 #include "SSystem/SComponent/c_lib.h"
 #include "dolphin/types.h"
 
+
+
 static bst_class* boss;
 static bst_class* hand[2];
 
@@ -68,13 +70,13 @@ void message_cont(bst_class* i_bst) {
 void set_hand_AT(bst_class* i_bst, u8 i_prm1) {
     for (int i = 0; i < 0x13; i++) {
         if (i_prm1 != 0) {
-            i_bst->mHitInfo[i].OnAtSetBit();
+            i_bst->mHandColSphArray[i].OnAtSetBit();
         }
         else {
-            i_bst->mHitInfo[i].OffAtSetBit();
+            i_bst->mHandColSphArray[i].OffAtSetBit();
         }
 
-        i_bst->mHitInfo[i].SetAtSpl(AT_SPL_UNK1);
+        i_bst->mHandColSphArray[i].SetAtSpl(AT_SPL_UNK1);
     }
 }
 
@@ -82,10 +84,10 @@ void set_hand_AT(bst_class* i_bst, u8 i_prm1) {
 void set_hand_CO(bst_class* i_bst, u8 i_prm1) {
     for (int i = 0; i < 0x13; i++) {
         if (i_prm1 != 0) {
-            i_bst->mHitInfo[i].OnCoSetBit();
+            i_bst->mHandColSphArray[i].OnCoSetBit();
         }
         else {
-            i_bst->mHitInfo[i].OffCoSetBit();
+            i_bst->mHandColSphArray[i].OffCoSetBit();
         }
     }
 }
@@ -95,11 +97,11 @@ void anm_init(bst_class* i_bst, int i_anmIdx, float i_morfTime, u8 i_loopMode, f
     if (i_anmSndIdx >= 0) {
         void* anmSound = dComIfG_getObjectRes("Bst", i_anmSndIdx);
         J3DAnmTransform* anm = (J3DAnmTransform*)dComIfG_getObjectRes("Bst", i_anmIdx);
-        i_bst->m02B8->setAnm(anm, i_loopMode, i_morfTime, i_speed, 0.0f, -1.0f, anmSound);
+        i_bst->mpBodyAnm->setAnm(anm, i_loopMode, i_morfTime, i_speed, 0.0f, -1.0f, anmSound);
     }
     else {
         J3DAnmTransform* anm = (J3DAnmTransform*)dComIfG_getObjectRes("Bst", i_anmIdx);
-        i_bst->m02B8->setAnm(anm, i_loopMode, i_morfTime, i_speed, 0.0f, -1.0f, NULL);
+        i_bst->mpBodyAnm->setAnm(anm, i_loopMode, i_morfTime, i_speed, 0.0f, -1.0f, NULL);
     }
 }
 
@@ -107,7 +109,6 @@ void anm_init(bst_class* i_bst, int i_anmIdx, float i_morfTime, u8 i_loopMode, f
 static BOOL nodeCallBackHead(J3DNode* i_node, int i_prm1) {
     /* Nonmatching */
     J3DJoint* jnt = static_cast<J3DJoint*>(i_node);
-
 
     if (i_prm1 == 0) {
         s32 jntIdx = jnt->getJntNo();
@@ -119,16 +120,16 @@ static BOOL nodeCallBackHead(J3DNode* i_node, int i_prm1) {
             mDoMtx_copy(mdl->getAnmMtx(jntIdx), *calc_mtx);
 
             if (jntIdx == 9) {
-                mDoMtx_YrotM(*calc_mtx, -bst->mYRot1);
+                mDoMtx_YrotM(*calc_mtx, -bst->m2E7A);
             }
             else if (jntIdx == 0x0C) {
-                mDoMtx_YrotM(*calc_mtx, bst->mYRot1);
+                mDoMtx_YrotM(*calc_mtx, bst->m2E7A);
             }
             else if (jntIdx == 0x0A) {
-                mDoMtx_YrotM(*calc_mtx, -bst->mYRot0);
+                mDoMtx_YrotM(*calc_mtx, -bst->m2E78);
             }
             else if (jntIdx == 0x0B) {
-                mDoMtx_YrotM(*calc_mtx, bst->mYRot0);
+                mDoMtx_YrotM(*calc_mtx, bst->m2E78);
             }
 
             MtxP m = mdl->getAnmMtx(jntIdx);
@@ -143,6 +144,11 @@ static BOOL nodeCallBackHead(J3DNode* i_node, int i_prm1) {
 /* 00000550-000005B4       .text beam_draw__FP9bst_class */
 void beam_draw(bst_class* i_bst) {
     /* Nonmatching */
+    for (int i = 0; i < 10; i++) {
+        if (i_bst->mBeamS8Array[i] != 0) {
+            mDoExt_modelUpdateDL(i_bst->mpBeamMdls[i]);
+        }
+    }
 }
 
 /* 000005B4-00000950       .text daBst_Draw__FP9bst_class */
@@ -313,6 +319,10 @@ static BOOL useHeapInit(fopAc_ac_c* i_bst) {
 static s32 daBst_Create(fopAc_ac_c* i_bst) {
     /* Nonmatching */
     return TRUE;
+}
+
+bst_class::bst_class() {
+
 }
 
 static actor_method_class l_daBst_Method = {
