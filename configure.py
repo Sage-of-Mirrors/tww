@@ -343,7 +343,7 @@ config.libs = [
             Object(Matching,    "d/d_save_init.cpp"),
             Object(Matching,    "d/d_shop.cpp", extra_cflags=['-pragma "nosyminline on"']),
             Object(NonMatching, "d/d_jnt_hit.cpp"),
-            Object(NonMatching, "d/d_chain.cpp"),
+            Object(Matching,    "d/d_chain.cpp"),
             Object(NonMatching, "d/d_cloth_packet.cpp"),
             Object(NonMatching, "d/d_a_obj.cpp"),
             Object(NonMatching, "d/d_a_obj_tribox_static.cpp"),
@@ -1619,7 +1619,7 @@ config.libs = [
     ActorRel(NonMatching, "d_a_wz"),
     ActorRel(NonMatching, "d_a_ygcwp"),
     ActorRel(NonMatching, "d_a_yougan"),
-    ActorRel(NonMatching, "d_a_ghostship", extra_cflags=['-pragma "nosyminline on"']),
+    ActorRel(Matching,    "d_a_ghostship", extra_cflags=['-pragma "nosyminline on"']),
     ActorRel(NonMatching, "d_a_movie_player"),
 ]
 
