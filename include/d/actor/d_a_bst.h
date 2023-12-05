@@ -64,7 +64,11 @@ public:
     /* 0x2E7A */ s16 m2E7A;
 
     // ...
-    /* 0x2E7C */ u8 m2E7C[0x2F00 - 0x2E7C];
+    /* 0x2E7C */ u8 m2E7C[0x2E90 - 0x2E7C];
+
+    /* 0x2E90 */ int mAttProcIds[2];
+
+    /* 0x2E98 */ u8 m2E98[0x2F00 - 0x2E98];
 
     /* 0x2F00 */ dPa_smokeEcallBack mSmokeCB;
     /* 0x2F20 */ dKy_tevstr_c mTevStr_2F20;
@@ -77,7 +81,7 @@ public:
     /* 0x2FE0 */ mDoExt_brkAnm* mpWallRegMdl;
 
     /* 0x2FE4 */ bool mb2FE4;
-    /* 0x2FE5 */ bool mb2FE5; 
+    /* 0x2FE5 */ bool mbHioSet;
 
     // /* 0x0000 */ f32 z;
     // /* 0x0004 */ u8 m0004[0x0028 - 0x0004];

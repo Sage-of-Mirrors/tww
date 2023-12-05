@@ -7,18 +7,22 @@
 #include "d/d_com_inf_game.h"
 #include "d/d_procname.h"
 #include "f_op/f_op_msg_mng.h"
+#include "f_pc/f_pc_searcher.h"
 #include "JSystem/J3DGraphAnimator/J3DNode.h"
 #include "m_do/m_Do_mtx.h"
 #include "SSystem/SComponent/c_lib.h"
 #include "dolphin/types.h"
 
-
+#define BODY_TYPE_HEAD 0
+#define BODY_TYPE_LEFT_HAND 1
+#define BODY_TYPE_RIGHT_HAND 2
 
 static bst_class* boss;
 static bst_class* hand[2];
 
 static u32 msg;
 static s8 msg_end;
+static bool hio_set;
 
 static daBst_HIO_c l_HIO;
 
@@ -305,7 +309,29 @@ static BOOL daBst_IsDelete(bst_class* i_bst) {
 
 /* 0000A9D0-0000AADC       .text daBst_Delete__FP9bst_class */
 static BOOL daBst_Delete(bst_class* i_bst) {
-    /* Nonmatching */
+    dComIfG_resDelete(&i_bst->mPhs, "Bst");
+    
+    if (i_bst->mbHioSet) {
+        hio_set = false;
+        mDoHIO_root.m_subroot.deleteChild(l_HIO.m0004);
+    }
+
+    if (i_bst->mBodyType == BODY_TYPE_HEAD) {
+        for (int i = 0; i < 2; i++) {
+            fopAc_ac_c* result = fopAcM_SearchByID(i_bst->mAttProcIds[i]);
+
+            if (result != NULL) {
+                fopAcM_delete(result);
+            }
+        }
+    }
+
+    i_bst->mSmokeCB.end();
+
+    for (int i = 0; i < 10; i++) {
+        mDoAud_seDeleteObject(&i_bst->mBeamPosArray[i]);
+    }
+
     return TRUE;
 }
 
