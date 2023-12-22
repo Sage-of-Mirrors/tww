@@ -4,7 +4,6 @@
 //
 
 #include "d/actor/d_a_disappear.h"
-#include "JSystem/JKernel/JKRHeap.h"
 #include "f_op/f_op_actor.h"
 #include "f_op/f_op_actor_mng.h"
 #include "d/d_procname.h"
@@ -28,7 +27,7 @@ static BOOL daDisappear_Execute(disappear_class* i_this) {
 
             if (health != 1 && health != 3) {
                 if (health == 2) {
-                    fopAcM_createItemForBoss(&i_this->current.pos, 0, i_this->current.roomNo, &i_this->current.angle, NULL, 0);
+                    fopAcM_createItemForBoss(&i_this->current.pos, 0, i_this->current.roomNo, &i_this->current.angle);
                 }
                 else if (health >= 0x0A && health <= 0x0D) {
                     if (health < 0x0D) {
@@ -36,7 +35,7 @@ static BOOL daDisappear_Execute(disappear_class* i_this) {
                             0, 10, 16
                         };
 
-                        fopAcM_createItem(&i_this->current.pos, ki_item_d[health - 0xA], -1, -1, 0, NULL, 4, NULL);
+                        fopAcM_createItem(&i_this->current.pos, ki_item_d[health - 0xA], -1, -1, 0, NULL, 4);
                     }
                 }
                 else {
@@ -64,8 +63,7 @@ static BOOL daDisappear_Delete(disappear_class*) {
 
 /* 800E7AD0-800E7DBC       .text set_disappear__FP15disappear_classf */
 void set_disappear(disappear_class* i_this, float scale) {
-    s8 rev = dComIfGp_getReverb(i_this->current.roomNo);
-    mDoAud_seStart(JA_SE_CM_MONS_EXPLODE, &i_this->mEyePos, 0, rev);
+    fopAcM_seStart(i_this, JA_SE_CM_MONS_EXPLODE, 0);
 
     cXyz particleScale(scale, scale, scale);
     i_this->mTimer = 58 + g_regHIO.mChild[8].mShortRegs[0];

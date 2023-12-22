@@ -76,23 +76,23 @@ dCcD_SrcCyl cc_cyl_src = {
     // dCcD_SrcGObjInf
     {
         /* Flags             */ 0,
-        /* SrcObjAt Type     */ AT_TYPE_SKULL_HAMMER,
-        /* SrcObjAt Atp      */ 0,
-        /* SrcObjAt SPrm     */ 0x0F,
-        /* SrcObjTg Type     */ AT_TYPE_ALL,
-        /* SrcObjTg SPrm     */ 0x03,
-        /* SrcObjCo SPrm     */ 0x75,
+        /* SrcObjAt  Type    */ AT_TYPE_SKULL_HAMMER,
+        /* SrcObjAt  Atp     */ 0,
+        /* SrcObjAt  SPrm    */ AT_SPRM_SET | AT_SPRM_GRP,
+        /* SrcObjTg  Type    */ AT_TYPE_ALL,
+        /* SrcObjTg  SPrm    */ TG_SPRM_SET | TG_SPRM_UNK2,
+        /* SrcObjCo  SPrm    */ CO_SPRM_SET | CO_SPRM_UNK4 | CO_SPRM_VSGRP,
         /* SrcGObjAt Se      */ 0,
         /* SrcGObjAt HitMark */ 0,
         /* SrcGObjAt Spl     */ 0,
         /* SrcGObjAt Mtrl    */ 0,
-        /* SrcGObjAt GFlag   */ 0,
+        /* SrcGObjAt SPrm    */ 0,
         /* SrcGObjTg Se      */ 0x05,
         /* SrcGObjTg HitMark */ 0x0C,
         /* SrcGObjTg Spl     */ 0,
         /* SrcGObjTg Mtrl    */ 0,
-        /* SrcGObjTg GFlag   */ 0x03,
-        /* SrcGObjCo GFlag   */ 0,
+        /* SrcGObjTg SPrm    */ G_TG_SPRM_SHIELD | G_TG_SPRM_NO_CON_HIT,
+        /* SrcGObjCo SPrm    */ 0,
     },
     // cM3dGCylS
     {
@@ -181,7 +181,7 @@ BOOL enemy_ice(enemyice* ei) {
         ei->mCyl.SetStts(&ei->mStts);
         ei->mCyl.SetR(ei->mWallRadius);
         ei->mCyl.SetH(ei->mCylHeight);
-        ei->mBgAcch.Set(&ac->current.pos, &ac->next.pos, ac, 1, &ei->mBgAcchCir, &ei->mSpeed, NULL, NULL);
+        ei->mBgAcch.Set(&ac->current.pos, &ac->next.pos, ac, 1, &ei->mBgAcchCir, &ei->mSpeed);
         ei->mBgAcchCir.SetWall(40.0f, ei->mWallRadius);
         
         if (ei->mParticleScale < 0.1f) {
@@ -406,23 +406,23 @@ dCcD_SrcSph fire_at_sph_src = {
     // dCcD_SrcGObjInf
     {
         /* Flags             */ 0,
-        /* SrcObjAt Type     */ AT_TYPE_FIRE,
-        /* SrcObjAt Atp      */ 0x02,
-        /* SrcObjAt SPrm     */ 0x0F,
-        /* SrcObjTg Type     */ 0,
-        /* SrcObjTg SPrm     */ 0,
-        /* SrcObjCo SPrm     */ 0,
+        /* SrcObjAt  Type    */ AT_TYPE_FIRE,
+        /* SrcObjAt  Atp     */ 0x02,
+        /* SrcObjAt  SPrm    */ AT_SPRM_SET | AT_SPRM_GRP,
+        /* SrcObjTg  Type    */ 0,
+        /* SrcObjTg  SPrm    */ 0,
+        /* SrcObjCo  SPrm    */ 0,
         /* SrcGObjAt Se      */ 0,
         /* SrcGObjAt HitMark */ 0,
         /* SrcGObjAt Spl     */ 0,
         /* SrcGObjAt Mtrl    */ 0,
-        /* SrcGObjAt GFlag   */ 0x01,
+        /* SrcGObjAt SPrm    */ G_AT_SPRM_NO_CON_HIT,
         /* SrcGObjTg Se      */ 0,
         /* SrcGObjTg HitMark */ 0,
         /* SrcGObjTg Spl     */ 0,
         /* SrcGObjTg Mtrl    */ 0,
-        /* SrcGObjTg GFlag   */ 0,
-        /* SrcGObjCo GFlag   */ 0,
+        /* SrcGObjTg SPrm    */ 0,
+        /* SrcGObjCo SPrm    */ 0,
     },
     // cM3dGSphS
     {

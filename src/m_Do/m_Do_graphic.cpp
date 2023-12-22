@@ -16,6 +16,7 @@
 #include "m_Do/m_Do_mtx.h"
 #include "m_Do/m_Do_printf.h"
 #include "JSystem/J2DGraph/J2DOrthoGraph.h"
+#include "JSystem/J2DGraph/J2DPrint.h"
 #include "JSystem/JFramework/JFWDisplay.h"
 #include "JSystem/JFramework/JFWSystem.h"
 #include "JSystem/JKernel/JKRHeap.h"
@@ -29,10 +30,6 @@
 #include "JSystem/JUtility/JUTVideo.h"
 #include "JSystem/JUtility/JUTXfb.h"
 #include "dolphin/base/PPCArch.h"
-
-namespace J2DPrint {
-    void setBuffer(u32);
-}
 
 JUTFader * mDoGph_gInf_c::mFader;
 ResTIMG * mDoGph_gInf_c::mFrameBufferTimg;
@@ -275,7 +272,7 @@ bool mDoGph_AfterOfDraw() {
     if (!fapGmHIO_isMenu()) {
         if (JUTGamePad::getPortStatus(JUTGamePad::Port_1).button == 0 && fapGmHIO_getMeter() != 0 && !JFWSystem::getSystemConsole()->isVisible()) {
         }
-    }  
+    }
 
     GXSetZCompLoc(GX_TRUE);
     GXSetZMode(GX_FALSE, GX_ALWAYS, GX_FALSE);
@@ -595,7 +592,7 @@ void encode_s3tc(u8*, u8*, int, int, GXTexFmt) {
 }
 
 /* 8000A530-8000A744       .text setUpRectangle__Fv */
-void setUpRectangle() { 
+void setUpRectangle() {
     GXSetNumChans(0);
     GXSetNumTexGens(1);
     GXSetTexCoordGen2(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY, GX_FALSE, GX_PTIDENTITY);
@@ -697,7 +694,7 @@ void mDoGph_screenCaptureDraw() {
         drawRectangle(centerX, centerY - sizeH, centerX + sizeW, centerY);
         drawRectangle(centerX - sizeW, centerY, centerX, centerY + sizeH);
         drawRectangle(centerX, centerY, centerX + sizeW, centerY + sizeH);
-    }             
+    }
 
 out:
     GXSetProjectionv(projv);

@@ -12,7 +12,6 @@ static u8 dummy3[4] = {0x02, 0x00, 0x02, 0x01};
 static f64 dummy4[2] = {3.0, 0.5};
 
 #include "d/actor/d_a_agbsw0.h"
-#include "JSystem/JKernel/JKRHeap.h"
 #include "f_op/f_op_actor_mng.h"
 #include "d/d_com_inf_game.h"
 #include "d/d_procname.h"
@@ -32,23 +31,23 @@ static dCcD_SrcCyl l_cyl_src = {
     // dCcD_SrcGObjInf
     {
         /* Flags             */ 0,
-        /* SrcObjAt Type     */ 0,
-        /* SrcObjAt Atp      */ 0,
-        /* SrcObjAt SPrm     */ 0,
-        /* SrcObjTg Type     */ AT_TYPE_BOMB,
-        /* SrcObjTg SPrm     */ 0x09,
-        /* SrcObjCo SPrm     */ 0,
+        /* SrcObjAt  Type    */ 0,
+        /* SrcObjAt  Atp     */ 0,
+        /* SrcObjAt  SPrm    */ 0,
+        /* SrcObjTg  Type    */ AT_TYPE_BOMB,
+        /* SrcObjTg  SPrm    */ TG_SPRM_SET | TG_SPRM_UNK8,
+        /* SrcObjCo  SPrm    */ 0,
         /* SrcGObjAt Se      */ 0,
         /* SrcGObjAt HitMark */ 0,
         /* SrcGObjAt Spl     */ 0,
         /* SrcGObjAt Mtrl    */ 0,
-        /* SrcGObjAt GFlag   */ 0,
+        /* SrcGObjAt SPrm    */ 0,
         /* SrcGObjTg Se      */ 0,
         /* SrcGObjTg HitMark */ 0,
         /* SrcGObjTg Spl     */ 0,
         /* SrcGObjTg Mtrl    */ 0,
-        /* SrcGObjTg GFlag   */ 0x04,
-        /* SrcGObjCo GFlag   */ 0,
+        /* SrcGObjTg SPrm    */ G_TG_SPRM_NO_HIT_MARK,
+        /* SrcGObjCo SPrm    */ 0,
     },
     // cM3dGCylS
     {
@@ -1042,7 +1041,7 @@ BOOL daAgbsw0_c::ExeSubMW() {
                 se_flag = 1;
             }
 
-            dComIfGp_evmng_getMyStaffId("AGB_SW0", 0, 0);
+            dComIfGp_evmng_getMyStaffId("AGB_SW0");
             fopAc_ac_c* player = dComIfGp_getPlayer(0);
             cXyz diff = mEyePos - player->current.pos;
             f32 dist = diff.absXZ();
@@ -1062,7 +1061,7 @@ BOOL daAgbsw0_c::ExeSubMW() {
             }
         }
         else {
-            fopAcM_orderOtherEvent2(this, "DEFAULT_AGB_LOOK_ATTENTION", 4, -1);
+            fopAcM_orderOtherEvent2(this, "DEFAULT_AGB_LOOK_ATTENTION", 4);
         }
     }
 
@@ -1106,7 +1105,7 @@ BOOL daAgbsw0_c::ExeSubT() {
                     mTimer = 30;
                 }
                 else {
-                    g_dComIfG_gameInfo.play.mCcS.Set(&mCyl);
+                    dComIfG_Ccsp()->Set(&mCyl);
                 }
             }
         }
@@ -1197,7 +1196,7 @@ BOOL daAgbsw0_c::ExeSubR() {
                 current.pos.y += mScale.y / 2.0f;
             }
 
-            fopAcM_fastCreateItem(&current.pos, itemNo, fopAcM_GetHomeRoomNo(this), 0, 0, 0.0f, cM_rndF(10.0f) + 40.0f, -7.0f, -1, 0);
+            fopAcM_fastCreateItem(&current.pos, itemNo, fopAcM_GetHomeRoomNo(this), 0, 0, 0.0f, cM_rndF(10.0f) + 40.0f, -7.0f);
             fopAcM_seStart(agb, JA_SE_CV_CHI_MEGAHORN, 0);
             MailSend(-1, 0, 0xFF, 0xFF, 0);
 
@@ -1462,7 +1461,7 @@ BOOL daAgbsw0_c::ExeSubD() {
                     if(0 <= itemNo && itemNo < 0x1F && itemNo != KAKERA_HEART && itemNo != UTUWA_HEART && itemNo != SMALL_KEY) {
                         s8 roomNo = fopAcM_GetHomeRoomNo(this);
                         f32 rnd = cM_rndF(10.0f) + 40.0f;
-                        fopAcM_fastCreateItem(&current.pos, itemNo, roomNo, 0, 0, 0.0f, rnd, -7.0f, -1, 0);
+                        fopAcM_fastCreateItem(&current.pos, itemNo, roomNo, 0, 0, 0.0f, rnd, -7.0f);
                         MailSend(-1, 0, 0xFF, 0xFF, 0x11);
                     }
 

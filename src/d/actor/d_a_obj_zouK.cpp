@@ -11,7 +11,6 @@
 #include "d/d_kankyo_rain.h"
 #include "d/d_procname.h"
 #include "m_Do/m_Do_mtx.h"
-#include "JSystem/JKernel/JKRHeap.h"
 #include "JSystem/JUtility/JUTAssert.h"
 
 namespace daObjZouk {
@@ -30,23 +29,23 @@ namespace daObjZouk {
         // dCcD_SrcGObjInf
         {
             /* Flags             */ 0,
-            /* SrcObjAt Type     */ 0,
-            /* SrcObjAt Atp      */ 0,
-            /* SrcObjAt SPrm     */ 0,
-            /* SrcObjTg Type     */ AT_TYPE_ALL & ~(AT_TYPE_LIGHT | AT_TYPE_UNK400000 | AT_TYPE_LEAF_WIND | AT_TYPE_UNK20000 | AT_TYPE_WATER),
-            /* SrcObjTg SPrm     */ 0x0F,
-            /* SrcObjCo SPrm     */ 0x79,
+            /* SrcObjAt  Type    */ 0,
+            /* SrcObjAt  Atp     */ 0,
+            /* SrcObjAt  SPrm    */ 0,
+            /* SrcObjTg  Type    */ AT_TYPE_ALL & ~(AT_TYPE_LIGHT | AT_TYPE_UNK400000 | AT_TYPE_LEAF_WIND | AT_TYPE_UNK20000 | AT_TYPE_WATER),
+            /* SrcObjTg  SPrm    */ TG_SPRM_SET | TG_SPRM_GRP,
+            /* SrcObjCo  SPrm    */ CO_SPRM_SET | CO_SPRM_UNK8 | CO_SPRM_VSGRP,
             /* SrcGObjAt Se      */ 0,
             /* SrcGObjAt HitMark */ 0,
             /* SrcGObjAt Spl     */ 0,
             /* SrcGObjAt Mtrl    */ 0,
-            /* SrcGObjAt GFlag   */ 0,
+            /* SrcGObjAt SPrm    */ 0,
             /* SrcGObjTg Se      */ 0,
             /* SrcGObjTg HitMark */ 0,
             /* SrcGObjTg Spl     */ 0,
             /* SrcGObjTg Mtrl    */ 0,
-            /* SrcGObjTg GFlag   */ 0x03,
-            /* SrcGObjCo GFlag   */ 0,
+            /* SrcGObjTg SPrm    */ G_TG_SPRM_SHIELD | G_TG_SPRM_NO_CON_HIT,
+            /* SrcGObjCo SPrm    */ 0,
         },
         // cM3dGCylS
         {
@@ -260,7 +259,7 @@ bool daObjZouk::Act_c::_execute() {
 }
 
 static void dummy() {
-    const f32 floats[] = { 
+    const f32 floats[] = {
         1200.0f, 500.0f, 26.0f,
         530.0f, 418.0f, 1003.0f,
         305.0f, 235.0f, 1323.0f,
@@ -278,8 +277,6 @@ bool daObjZouk::Act_c::_draw() {
     dComIfGd_setSimpleShadow2(&current.pos, mGndY, 388.0f, mGndChk, shape_angle.y, 1.0f, dDlst_shadowControl_c::getSimpleTex());
     return true;
 }
-
-camera_class * dCam_getCamera();
 
 /* 000015F0-00001804       .text setEffectMtx__Q29daObjZouk5Act_cFPC4cXyzf */
 void daObjZouk::Act_c::setEffectMtx(const cXyz* pos, f32 scale) {

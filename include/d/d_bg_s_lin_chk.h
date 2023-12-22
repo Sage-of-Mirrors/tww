@@ -16,16 +16,16 @@ public:
 
     virtual ~dBgS_LinChk() {}
 
-    /* 0x00 cBgS_LinChk */;
-    /* 0x58 dBgS_Chk */;
-};
+    /* 0x00 cBgS_LinChk */
+    /* 0x58 dBgS_Chk */
+};  // Size: 0x6C
 
 class dBgS_LinkLinChk : public dBgS_LinChk {
 public:
     dBgS_LinkLinChk() { SetLink(); }
 
-    virtual ~dBgS_LinkLinChk();
-};
+    virtual ~dBgS_LinkLinChk() {}
+};  // Size: 0x6C
 
 class dBgS_RopeLinChk : public dBgS_LinChk {
 public:
@@ -38,7 +38,7 @@ class dBgS_BoomerangLinChk : public dBgS_LinChk {
 public:
     dBgS_BoomerangLinChk() { SetBoomerang(); }
 
-    virtual ~dBgS_BoomerangLinChk();
+    virtual ~dBgS_BoomerangLinChk() {}
 };
 
 class dBgS_ArrowLinChk : public dBgS_LinChk {
@@ -68,9 +68,11 @@ public:
 
 class dBgS_CamLinChk : public dBgS_LinChk {
 public:
-    dBgS_CamLinChk();
+    dBgS_CamLinChk() {
+        mbCamThrough = true;
+    }
 
-    virtual ~dBgS_CamLinChk();
+    virtual ~dBgS_CamLinChk() {}
 };
 
 class dBgS_CamLinChk_NorWtr : public dBgS_CamLinChk {

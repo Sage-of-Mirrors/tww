@@ -44,16 +44,16 @@ public:
     virtual f32 getScaleOutTiming() = 0;
     virtual f32 getScaleInValueX() = 0;
     virtual f32 getScaleInValueY() = 0;
-    virtual u32 getAnmTypeX() = 0;
-    virtual u32 getAnmTypeY() = 0;
+    virtual u8 getAnmTypeX() = 0;
+    virtual u8 getAnmTypeY() = 0;
     virtual u32 getAnmCycleX() = 0;
     virtual u32 getAnmCycleY() = 0;
     virtual f32 getIncreaseRateX() = 0;
     virtual f32 getIncreaseRateY() = 0;
     virtual f32 getDecreaseRateX() = 0;
     virtual f32 getDecreaseRateY() = 0;
-    virtual u32 getPivotX() = 0;
-    virtual u32 getPivotY() = 0;
+    virtual u8 getPivotX() = 0;
+    virtual u8 getPivotY() = 0;
     virtual f32 getRandomScale() = 0;
     virtual BOOL isEnableAlpha() = 0;
     virtual BOOL isEnableSinWave() = 0;
@@ -61,7 +61,7 @@ public:
     virtual f32 getAlphaOutTiming() = 0;
     virtual f32 getAlphaInValue() = 0;
     virtual f32 getAlphaBaseValue() = 0;
-    virtual u32 getAlphaWaveType() = 0;
+    virtual u8 getAlphaWaveType() = 0;
     virtual f32 getAlphaWaveParam1() = 0;
     virtual f32 getAlphaWaveParam2() = 0;
     virtual f32 getAlphaWaveParam3() = 0;
@@ -90,16 +90,16 @@ public:
     virtual f32 getScaleOutTiming() { return mpData->mScaleOutTiming; }
     virtual f32 getScaleInValueX() { return mpData->mScaleInValueX; }
     virtual f32 getScaleInValueY() { return mpData->mScaleInValueY; }
-    virtual u32 getAnmTypeX() { return (mpData->mFlag >> 18) & 0x01; }
-    virtual u32 getAnmTypeY() { return (mpData->mFlag >> 19) & 0x01; }
+    virtual u8 getAnmTypeX() { return (mpData->mFlag >> 18) & 0x01; }
+    virtual u8 getAnmTypeY() { return (mpData->mFlag >> 19) & 0x01; }
     virtual u32 getAnmCycleX() { return mpData->mAnmCycleX; }
     virtual u32 getAnmCycleY() { return mpData->mAnmCycleY; }
     virtual f32 getIncreaseRateX() { return mIncreaseRateX; }
     virtual f32 getIncreaseRateY() { return mIncreaseRateY; }
     virtual f32 getDecreaseRateX() { return mDecreaseRateX; }
     virtual f32 getDecreaseRateY() { return mDecreaseRateY; }
-    virtual u32 getPivotX() { return (mpData->mFlag >> 14) & 0x03; }
-    virtual u32 getPivotY() { return (mpData->mFlag >> 16) & 0x03; }
+    virtual u8 getPivotX() { return (mpData->mFlag >> 14) & 0x03; }
+    virtual u8 getPivotY() { return (mpData->mFlag >> 16) & 0x03; }
     virtual f32 getRandomScale() { return mpData->mRandomScale; }
     virtual BOOL isEnableAlpha() { return (mpData->mFlag & 0x01); }
     virtual BOOL isEnableSinWave() { return (mpData->mFlag & 0x02); }
@@ -107,7 +107,7 @@ public:
     virtual f32 getAlphaOutTiming() { return mpData->mAlphaOutTiming; }
     virtual f32 getAlphaInValue() { return mpData->mAlphaInValue; }
     virtual f32 getAlphaBaseValue() { return mpData->mAlphaBaseValue; }
-    virtual u32 getAlphaWaveType() { return (mpData->mFlag >> 2) & 0x03; }
+    virtual u8 getAlphaWaveType() { return (mpData->mFlag >> 2) & 0x03; }
     virtual f32 getAlphaWaveParam1() { return mpData->mAlphaWaveParam1; }
     virtual f32 getAlphaWaveParam2() { return mpData->mAlphaWaveParam2; }
     virtual f32 getAlphaWaveParam3() { return mpData->mAlphaWaveParam3; }

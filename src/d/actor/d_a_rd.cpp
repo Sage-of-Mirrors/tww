@@ -6,7 +6,6 @@
 #include "d/actor/d_a_rd.h"
 #include "d/d_procname.h"
 #include "f_op/f_op_actor_mng.h"
-#include "JSystem/JKernel/JKRHeap.h"
 #include "d/d_com_inf_game.h"
 #include "m_Do/m_Do_mtx.h"
 #include "d/d_lib.h"
@@ -35,23 +34,23 @@ const dCcD_SrcCyl daRd_c::m_cyl_src = {
     // dCcD_SrcGObjInf
     {
         /* Flags             */ 0,
-        /* SrcObjAt Type     */ 0,
-        /* SrcObjAt Atp      */ 0,
-        /* SrcObjAt SPrm     */ 0,
-        /* SrcObjTg Type     */ ~(AT_TYPE_WATER | AT_TYPE_UNK20000 | AT_TYPE_LEAF_WIND | AT_TYPE_UNK400000),
-        /* SrcObjTg SPrm     */ 0x09,
-        /* SrcObjCo SPrm     */ 0x7F,
+        /* SrcObjAt  Type    */ 0,
+        /* SrcObjAt  Atp     */ 0,
+        /* SrcObjAt  SPrm    */ 0,
+        /* SrcObjTg  Type    */ ~(AT_TYPE_WATER | AT_TYPE_UNK20000 | AT_TYPE_LEAF_WIND | AT_TYPE_UNK400000),
+        /* SrcObjTg  SPrm    */ TG_SPRM_SET | TG_SPRM_UNK8,
+        /* SrcObjCo  SPrm    */ CO_SPRM_SET | CO_SPRM_IGRP | CO_SPRM_VSGRP,
         /* SrcGObjAt Se      */ 0,
         /* SrcGObjAt HitMark */ 0,
         /* SrcGObjAt Spl     */ 0,
         /* SrcGObjAt Mtrl    */ 0,
-        /* SrcGObjAt GFlag   */ 0,
+        /* SrcGObjAt SPrm    */ 0,
         /* SrcGObjTg Se      */ 0x23,
         /* SrcGObjTg HitMark */ 0,
         /* SrcGObjTg Spl     */ 0,
         /* SrcGObjTg Mtrl    */ 0,
-        /* SrcGObjTg GFlag   */ 0x06,
-        /* SrcGObjCo GFlag   */ 0,
+        /* SrcGObjTg SPrm    */ G_TG_SPRM_NO_CON_HIT | G_TG_SPRM_NO_HIT_MARK,
+        /* SrcGObjCo SPrm    */ 0,
     },
     // cM3dGCylS
     {
@@ -237,7 +236,7 @@ static BOOL createHeap_CB(fopAc_ac_c* i_this) {
 /* 000006C0-0000096C       .text _createHeap__6daRd_cFv */
 BOOL daRd_c::_createHeap() {
     J3DModelData* modelData = static_cast<J3DModelData*>(dComIfG_getObjectRes(m_arc_name, RD_BDL_RD));
-	JUT_ASSERT(504, modelData != 0);
+    JUT_ASSERT(504, modelData != 0);
     
     mpMorf = new mDoExt_McaMorf(
         modelData,
@@ -258,7 +257,7 @@ BOOL daRd_c::_createHeap() {
     }
     
     J3DAnmTextureSRTKey* btk = static_cast<J3DAnmTextureSRTKey*>(dComIfG_getObjectRes(m_arc_name, RD_BTK_RD_CLOSE));
-	JUT_ASSERT(525, btk != 0);
+    JUT_ASSERT(525, btk != 0);
     if (!mBtkAnm.init(modelData, btk, true, 0, 1.0f, 0, -1, false, 0)) {
         return FALSE;
     }
@@ -266,7 +265,7 @@ BOOL daRd_c::_createHeap() {
     modelData->getJointNodePointer(0x0C)->setCallBack(nodeHeadControl_CB); // ree_atama_1
     
     J3DAnmTevRegKey* brk = static_cast<J3DAnmTevRegKey*>(dComIfG_getObjectRes(m_arc_name, RD_BRK_NML));
-	JUT_ASSERT(550, brk != 0);
+    JUT_ASSERT(550, brk != 0);
     if (!mBrkAnm.init(modelData, brk, true, 0, 1.0f, 0, -1, false, 0)) {
         return FALSE;
     }
@@ -843,7 +842,7 @@ void daRd_c::modeDeath() {
     mGroup = fopAc_ENV_e;
     
     if (cLib_calcTimer(&mTimer1) == 0) {
-        fopAcM_createDisappear(this, &current.pos, 5, 0, 0xFF);
+        fopAcM_createDisappear(this, &current.pos, 5);
         fopAcM_delete(this);
     }
 }
@@ -963,7 +962,7 @@ void daRd_c::modeCryInit() {
     if (dComIfGp_evmng_startCheck("DEFAULT_RD_CRY")) {
         dComIfGp_event_reset();
     }
-    fopAcM_orderOtherEvent2(this, "DEFAULT_RD_CRY", 1, -1);
+    fopAcM_orderOtherEvent2(this, "DEFAULT_RD_CRY", 1);
     fopAcM_monsSeStart(this, JA_SE_CV_RD_SCREAM, 0);
     mTimer1 = l_HIO.m54;
     mBreakFreeCounter = l_HIO.m78;
@@ -1385,7 +1384,7 @@ void daRd_c::setBrkAnm(s8 idx) {
     
     J3DModel* model = mpMorf->getModel();
     J3DAnmTevRegKey* brk = static_cast<J3DAnmTevRegKey*>(dComIfG_getObjectRes(m_arc_name, a_anm_idx_tbl[idx]));
-	JUT_ASSERT(1890, brk != 0);
+    JUT_ASSERT(1890, brk != 0);
     mBrkAnm.init(model->getModelData(), brk, true, a_play_mod_tbl[idx], 1.0f, 0, -1, true, 0);
 }
 
@@ -1774,7 +1773,7 @@ void daRd_c::createInit() {
     mCyl.Set(m_cyl_src);
     mCyl.SetStts(&mStts);
     mAcchCir.SetWall(30.0f, 30.0f);
-    mAcch.Set(&fopAcM_GetPosition_p(this), &fopAcM_GetOldPosition_p(this), this, 1, &mAcchCir, &fopAcM_GetSpeed_p(this), NULL, NULL);
+    mAcch.Set(&fopAcM_GetPosition_p(this), &fopAcM_GetOldPosition_p(this), this, 1, &mAcchCir, &fopAcM_GetSpeed_p(this));
     mAcch.SetRoofNone();
     J3DModelData* modelData = mpMorf->getModel()->getModelData();
     mJntCtrl.setHeadJntNum(0x0A); // ree_kubi_1

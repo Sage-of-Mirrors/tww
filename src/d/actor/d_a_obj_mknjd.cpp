@@ -8,7 +8,6 @@
 #include "f_pc/f_pc_manager.h"
 #include "f_op/f_op_msg.h"
 #include "f_op/f_op_draw_tag.h"
-#include "JSystem/JKernel/JKRHeap.h"
 #include "JSystem/JUtility/JUTAssert.h"
 #include "JSystem/J3DGraphBase/J3DSys.h"
 #include "JAZelAudio/JAIZelBasic.h"
@@ -233,9 +232,9 @@ int daObjMknjD::Act_c::CreateHeap() {
 
 /* 00000620-000008E8       .text Create__Q210daObjMknjD5Act_cFv */
 int daObjMknjD::Act_c::Create() {
-    mCullMtx = mMainMdl->getBaseTRMtx();
+    fopAcM_SetMtx(this, mMainMdl->getBaseTRMtx());
     init_mtx();
-    mCullMtx = mBreakMdl->getBaseTRMtx();
+    fopAcM_SetMtx(this, mBreakMdl->getBaseTRMtx());
     init_mtx();
 
     fopAcM_setCullSizeBox(this, -400.0f, -1.0f, -400.0f, 400.0f, 405.0f, 400.0f);
@@ -455,7 +454,7 @@ void daObjMknjD::Act_c::privateCut() {
 
     daPy_py_c* player = (daPy_py_c*)dComIfGp_getPlayer(0);
 
-    int staffIdx = dComIfGp_evmng_getMyStaffId("MknjD", NULL, 0);
+    int staffIdx = dComIfGp_evmng_getMyStaffId("MknjD");
     if (staffIdx != -1) {
         mActionIdx = dComIfGp_evmng_getMyActIdx(staffIdx, cut_name_table, ARRAY_SIZE(cut_name_table), 1, 0);
 
@@ -474,7 +473,7 @@ void daObjMknjD::Act_c::privateCut() {
                         setPlayerAngle(staffIdx);
                         break;
                     case ACT_BREAK:
-                        mDoAud_seStart(JA_SE_READ_RIDDLE_1, NULL, 0, 0);
+                        mDoAud_seStart(JA_SE_READ_RIDDLE_1);
 
                         int switchId = prm_get_swSave();
                         fopAcM_onSwitch(this, switchId);
@@ -483,7 +482,7 @@ void daObjMknjD::Act_c::privateCut() {
 
                         if (mpBgW != NULL) {
                             if (mpBgW->ChkUsed()) {
-                                g_dComIfG_gameInfo.play.mBgS.Release(mpBgW);
+                                dComIfG_Bgsp()->Release(mpBgW);
                             }
                         }
 

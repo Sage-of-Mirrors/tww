@@ -11,9 +11,11 @@
  */
 
 #include "d/actor/d_a_player_main.h"
+#include "d/actor/d_a_player_HIO.h"
 #include "f_op/f_op_camera.h"
 #include "d/d_com_inf_game.h"
 #include "d/d_item_data.h"
+#include "d/d_procname.h"
 
 /* 80154334-801543A0       .text setHyoiModel__9daPy_lk_cFv */
 void daPy_lk_c::setHyoiModel() {
@@ -28,18 +30,18 @@ void daPy_lk_c::setHyoiModel() {
 
 /* 801543A0-801546F4       .text procFoodThrow_init__9daPy_lk_cFv */
 BOOL daPy_lk_c::procFoodThrow_init() {
-    if (mCurProcID == PROC_FOOD_THROW_e) {
+    if (mCurProc == PROC_FOOD_THROW_e) {
         return TRUE;
     }
     if (m3630 != -1) {
-        mDoAud_seStart(JA_SE_ITEM_TARGET_OUT, NULL, 0, 0);
+        mDoAud_seStart(JA_SE_ITEM_TARGET_OUT);
         return FALSE;
     }
     
     dBgS* bgs = dComIfG_Bgsp(); // This is kinda weird, maybe fakematch
     
     if (!dComIfGp_event_runCheck()) {
-        if (!dComIfGp_event_compulsory(this, NULL, -1)) {
+        if (!dComIfGp_event_compulsory(this)) {
             return FALSE;
         } else {
             mDemo.setSpecialDemoType();
@@ -112,12 +114,42 @@ BOOL daPy_lk_c::procFoodThrow_init() {
 
 /* 801546F4-80154880       .text procFoodThrow__9daPy_lk_cFv */
 BOOL daPy_lk_c::procFoodThrow() {
-    /* Nonmatching */
+    J3DFrameCtrl& frameCtrl = mFrameCtrlUnder[0];
+    setShipRidePosUseItem();
+    if (frameCtrl.getRate() < 0.01f) {
+        if (mDemo.getDemoType() != 5) {
+            dComIfGp_evmng_cutEnd(mStaffIdx);
+        } else {
+            dComIfGp_event_reset();
+            u32 playerPID = fopAcM_GetID(this);
+            dCam_getBody()->EndEventCamera(playerPID);
+            endDemoMode();
+        }
+    } else if (frameCtrl.checkPass(9.0f)) {
+        seStartOnlyReverb(JA_SE_LK_ESA_THROW);
+        void* esa = fopAcM_fastCreate(PROC_ESA, 0xFFFF0014, &field_0x2d4, fopAcM_GetRoomNo(this), &shape_angle);
+        if (esa) {
+            m3630 = fopAcM_GetID(esa);
+            if (mDemo.getDemoType() != 5) {
+                u8 btnIdx = dComIfGp_event_getTalkXYBtn();
+                if (btnIdx == 1) {
+                    dComIfGs_setReserveBaitEmpty(0);
+                } else if (btnIdx == 2) {
+                    dComIfGs_setReserveBaitEmpty(1);
+                } else {
+                    dComIfGs_setReserveBaitEmpty(2);
+                }
+            } else {
+                dComIfGs_setReserveBaitEmpty(mLastUsedItemButtonIdx);
+            }
+        }
+    }
+    return TRUE;
 }
 
 /* 80154880-80154A48       .text procFoodSet_init__9daPy_lk_cFv */
 BOOL daPy_lk_c::procFoodSet_init() {
-    if (mCurProcID == PROC_FOOD_SET_e) {
+    if (mCurProc == PROC_FOOD_SET_e) {
         if (mDemo.getParam0() == 1) {
             if (mHeldItemType == ANIMAL_ESA) {
                 u8 btnIdx = dComIfGp_event_getTalkXYBtn();
@@ -138,7 +170,7 @@ BOOL daPy_lk_c::procFoodSet_init() {
     }
     
     if (!dComIfGp_event_runCheck()) {
-        if (!dComIfGp_event_compulsory(this, NULL, -1)) {
+        if (!dComIfGp_event_compulsory(this)) {
             return FALSE;
         }
         mDemo.setDemoType(5);

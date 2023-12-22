@@ -6,6 +6,7 @@
 #include "f_op/f_op_actor_mng.h"
 #include "f_op/f_op_actor.h"
 #include "f_op/f_op_scene_mng.h"
+#include "f_op/f_op_camera.h"
 #include "d/d_com_inf_game.h"
 #include "d/d_item_data.h"
 #include "d/d_stage.h"
@@ -16,6 +17,7 @@
 #include "d/actor/d_a_player_main.h"
 #include "d/actor/d_a_item.h"
 #include "d/actor/d_a_sea.h"
+#include "d/actor/d_a_ib.h"
 #include "m_Do/m_Do_ext.h"
 #include "m_Do/m_Do_lib.h"
 #include "m_Do/m_Do_printf.h"
@@ -408,7 +410,7 @@ bool fopAcM_entrySolidHeap(fopAc_ac_c* i_this, heapCallbackFunc createHeapCB, u3
 }
 
 /* 800250E4-80025100       .text fopAcM_setCullSizeBox__FP10fopAc_ac_cffffff */
-void fopAcM_setCullSizeBox(fopAc_ac_c* i_this, float minX, float minY, float minZ, float maxX, float maxY, float maxZ) {
+void fopAcM_setCullSizeBox(fopAc_ac_c* i_this, f32 minX, f32 minY, f32 minZ, f32 maxX, f32 maxY, f32 maxZ) {
     i_this->mCull.mBox.mMin.x = minX;
     i_this->mCull.mBox.mMin.y = minY;
     i_this->mCull.mBox.mMin.z = minZ;
@@ -418,7 +420,7 @@ void fopAcM_setCullSizeBox(fopAc_ac_c* i_this, float minX, float minY, float min
 }
 
 /* 80025100-80025114       .text fopAcM_setCullSizeSphere__FP10fopAc_ac_cffff */
-void fopAcM_setCullSizeSphere(fopAc_ac_c* i_this, float x, float y, float z, float r) {
+void fopAcM_setCullSizeSphere(fopAc_ac_c* i_this, f32 x, f32 y, f32 z, f32 r) {
     i_this->mCull.mSphere.mCenter.x = x;
     i_this->mCull.mSphere.mCenter.y = y;
     i_this->mCull.mSphere.mCenter.z = z;
@@ -488,14 +490,16 @@ f32 fopAcM_searchActorDistance2(fopAc_ac_c* i_this, fopAc_ac_c* i_other) {
 
 /* 800253C0-80025470       .text fopAcM_searchActorDistanceXZ__FP10fopAc_ac_cP10fopAc_ac_c */
 f32 fopAcM_searchActorDistanceXZ(fopAc_ac_c* i_this, fopAc_ac_c* i_other) {
-    /* Nonmatching */
-    return (i_other->current.pos - i_this->current.pos).absXZ();
+    cXyz& this_pos = fopAcM_GetPosition_p(i_this);
+    cXyz& other_pos = fopAcM_GetPosition_p(i_other);
+    return (other_pos - this_pos).absXZ();
 }
 
 /* 80025470-800254BC       .text fopAcM_searchActorDistanceXZ2__FP10fopAc_ac_cP10fopAc_ac_c */
 f32 fopAcM_searchActorDistanceXZ2(fopAc_ac_c* i_this, fopAc_ac_c* i_other) {
-    /* Nonmatching */
-    return (i_other->current.pos - i_this->current.pos).abs2XZ();
+    cXyz& this_pos = fopAcM_GetPosition_p(i_this);
+    cXyz& other_pos = fopAcM_GetPosition_p(i_other);
+    return (other_pos - this_pos).abs2XZ();
 }
 
 /* 800254BC-800255B4       .text fopAcM_rollPlayerCrash__FP10fopAc_ac_cfUl */
@@ -517,7 +521,7 @@ s32 fopAcM_rollPlayerCrash(fopAc_ac_c* i_this, f32 distAdjust, u32 flag) {
 }
 
 /* 800255B4-80025660       .text fopAcM_checkCullingBox__FPA4_fffffff */
-s32 fopAcM_checkCullingBox(Mtx pMtx, float x0, float y0, float z0, float x1, float y1, float z1) {
+s32 fopAcM_checkCullingBox(Mtx pMtx, f32 x0, f32 y0, f32 z0, f32 x1, f32 y1, f32 z1) {
     Vec p0 = { x0, y0, z0 };
     Vec p1 = { x1, y1, z1 };
     Mtx viewMtx;
@@ -690,7 +694,6 @@ s32 fopAcM_orderCatchEvent(fopAc_ac_c* i_this, fopAc_ac_c* i_partner) {
 
 /* 80025C34-80025CC8       .text fopAcM_orderOtherEvent2__FP10fopAc_ac_cPcUsUs */
 s32 fopAcM_orderOtherEvent2(fopAc_ac_c* i_this, char* pEventName, u16 flag, u16 hind) {
-    /* Nonmatching */
     u16 prio = dComIfGp_evmng_getEventPrio(dComIfGp_evmng_getEventIdx(pEventName, 0xFF));
     if (prio == 0)
         prio = 0xFF;
@@ -710,7 +713,6 @@ s32 fopAcM_orderChangeEvent(fopAc_ac_c* i_this, fopAc_ac_c* i_partner, char* pEv
 
 /* 80025D94-80025E1C       .text fopAcM_orderChangeEventId__FP10fopAc_ac_csUsUs */
 s32 fopAcM_orderChangeEventId(fopAc_ac_c* i_this, s16 eventIdx, u16 flag, u16 hind) {
-    /* Nonmatching */
     u16 prio = dComIfGp_evmng_getEventPrio(eventIdx);
     if (prio == 0)
         prio = 0xFF;
@@ -720,7 +722,6 @@ s32 fopAcM_orderChangeEventId(fopAc_ac_c* i_this, s16 eventIdx, u16 flag, u16 hi
 
 /* 80025E1C-80025EA4       .text fopAcM_orderChangeEventId__FP10fopAc_ac_cP10fopAc_ac_csUsUs */
 s32 fopAcM_orderChangeEventId(fopAc_ac_c* i_this, fopAc_ac_c* i_partner, s16 eventIdx, u16 flag, u16 hind) {
-    /* Nonmatching */
     u16 prio = dComIfGp_evmng_getEventPrio(eventIdx);
     if (prio == 0)
         prio = 0xFF;
@@ -779,7 +780,7 @@ fopAc_ac_c* fopAcM_getEventPartner(fopAc_ac_c* i_this) {
 }
 
 /* 80026118-800261E8       .text fopAcM_createItemForPresentDemo__FP4cXyziUciiP5csXyzP4cXyz */
-s32 fopAcM_createItemForPresentDemo(cXyz* pos, int i_itemNo, u8 param_3, int roomNo, int param_5, csXyz* rot, cXyz* scale) {
+s32 fopAcM_createItemForPresentDemo(cXyz* pos, int i_itemNo, u8 argFlag, int roomNo, int param_5, csXyz* rot, cXyz* scale) {
     JUT_ASSERT(2413, 0 <= i_itemNo && i_itemNo < 256);
 
     dComIfGp_event_setGtItm(i_itemNo);
@@ -788,7 +789,7 @@ s32 fopAcM_createItemForPresentDemo(cXyz* pos, int i_itemNo, u8 param_3, int roo
         return -1;
     }
 
-    return fopAcM_createDemoItem(pos, i_itemNo, roomNo, rot, param_5, scale, param_3);
+    return fopAcM_createDemoItem(pos, i_itemNo, roomNo, rot, param_5, scale, argFlag);
 }
 
 /* 800261E8-800262B4       .text fopAcM_createItemForTrBoxDemo__FP4cXyziiiP5csXyzP4cXyz */
@@ -801,7 +802,7 @@ s32 fopAcM_createItemForTrBoxDemo(cXyz* pos, int i_itemNo, int roomNo, int param
         return -1;
     }
 
-    return fopAcM_createDemoItem(pos, i_itemNo, roomNo, rot, param_5, scale, 0);
+    return fopAcM_createDemoItem(pos, i_itemNo, roomNo, rot, param_5, scale, 0x00);
 }
 
 /* 800262B4-80026694       .text fopAcM_createItemFromTable__FP4cXyziiiiP5csXyziP4cXyz */
@@ -871,7 +872,7 @@ s32 fopAcM_createItemFromTable(cXyz* p_pos, int i_itemNo, int i_itemBitNo, int r
                 }
 
                 itemNo = getItemNoByLife((s8)itemNo);
-                daItem_c* item = (daItem_c*)fopAcM_fastCreateItem2(&pos, itemNo, i_itemBitNo, roomNo, type, &angle, 8, NULL);
+                daItem_c* item = (daItem_c*)fopAcM_fastCreateItem2(&pos, itemNo, i_itemBitNo, roomNo, type, &angle, 8);
 
                 lastItemPID = fopAcM_GetID(item);
                 if (lastItemPID == fpcM_ERROR_PROCESS_ID_e) {
@@ -895,8 +896,23 @@ s32 fopAcM_createItemFromTable(cXyz* p_pos, int i_itemNo, int i_itemBitNo, int r
 }
 
 /* 80026694-800267C8       .text fopAcM_createRaceItemFromTable__FP4cXyziiiP5csXyzP4cXyzi */
-void fopAcM_createRaceItemFromTable(cXyz*, int, int, int, csXyz*, cXyz*, int) {
-    /* Nonmatching */
+s32 fopAcM_createRaceItemFromTable(cXyz* pos, int i_itemNo, int i_itemBitNo, int i_roomNo, csXyz* angle, cXyz* scale, int param_7) {
+    JUT_ASSERT(2660, 0 <= i_itemNo && i_itemNo < 64 && (-1 <= i_itemBitNo && i_itemBitNo <= 79) || i_itemBitNo == 127);
+    
+    if (i_itemNo >= 0x20 && i_itemNo <= 0x3E) {
+        ItemTableList* itemTableList = dComIfGp_getItemTable();
+        int itemIdx = (int)cM_rndF(15.9999f);
+        int tableIdx = i_itemNo - 0x20;
+        i_itemNo = itemTableList->mItemTables[tableIdx][itemIdx];
+    }
+    
+    if (i_itemNo == 0x3F || i_itemNo == 0xFF) {
+        return -1;
+    }
+    
+    i_itemNo = getItemNoByLife(i_itemNo);
+    
+    return fopAcM_createRaceItem(pos, i_itemNo, i_itemBitNo, angle, i_roomNo, scale, param_7);
 }
 
 /* 800267C8-8002688C       .text fopAcM_createShopItem__FP4cXyziP5csXyziP4cXyzPFPv_i */
@@ -907,7 +923,7 @@ s32 fopAcM_createShopItem(cXyz* pos, int i_itemNo, csXyz* rot, int roomNo, cXyz*
         return -1;
     }
 
-    return fopAcM_create(PROC_ShopItem, i_itemNo, pos, roomNo, rot, scale, 0xFF, createFunc);
+    return fopAcM_create(PROC_ShopItem, i_itemNo, pos, roomNo, rot, scale, -1, createFunc);
 }
 
 /* 8002688C-80026980       .text fopAcM_createRaceItem__FP4cXyziiP5csXyziP4cXyzi */
@@ -919,18 +935,18 @@ s32 fopAcM_createRaceItem(cXyz* pos, int i_itemNo, int i_itemBitNo, csXyz* rot, 
 
     i_itemNo = check_itemno(i_itemNo);
     u32 params = (i_itemBitNo & 0x7F) << 0x08 | i_itemNo & 0xFF | (param_7 & 0xF) << 0xF;
-    fopAcM_create(PROC_RACEITEM, params, pos, roomNo, rot, scale, 0xFF, NULL);
+    fopAcM_create(PROC_RACEITEM, params, pos, roomNo, rot, scale);
 }
 
 /* 80026980-80026A68       .text fopAcM_createDemoItem__FP4cXyziiP5csXyziP4cXyzUc */
-s32 fopAcM_createDemoItem(cXyz* pos, int i_itemNo, int i_itemBitNo, csXyz* rot, int roomNo, cXyz* scale, u8 param_7) {
+s32 fopAcM_createDemoItem(cXyz* pos, int i_itemNo, int i_itemBitNo, csXyz* rot, int roomNo, cXyz* scale, u8 argFlag) {
     JUT_ASSERT(2813, 0 <= i_itemNo && i_itemNo < 256 && (-1 <= i_itemBitNo && i_itemBitNo <= 79) || i_itemBitNo == 127);
     if (i_itemNo == NO_ITEM) {
         return -1;
     }
 
-    u32 params = i_itemNo & 0xFF | (i_itemBitNo & 0x7F) << 0x08 | (param_7 & 0xFF) << 0x10;
-    return fopAcM_create(PROC_Demo_Item, params, pos, roomNo, rot, scale, 0xFF, NULL);
+    u32 params = i_itemNo & 0xFF | (i_itemBitNo & 0x7F) << 0x08 | (argFlag & 0xFF) << 0x10;
+    return fopAcM_create(PROC_Demo_Item, params, pos, roomNo, rot, scale);
 }
 
 /* 80026A68-80026ADC       .text fopAcM_createItemForBoss__FP4cXyziiP5csXyzP4cXyzi */
@@ -946,15 +962,49 @@ s32 fopAcM_createItemForBoss(cXyz* pos, int, int roomNo, csXyz* rot, cXyz* scale
 
 /* 80026ADC-80026C90       .text fopAcM_createItem__FP4cXyziiiiP5csXyziP4cXyz */
 s32 fopAcM_createItem(cXyz* pos, int i_itemNo, int i_itemBitNo, int roomNo, int type, csXyz* rot, int action, cXyz* scale) {
-    /* Nonmatching */
+    int switchNo = 0xFF;
+    int switchNo2 = 0xFF;
+    
+    JUT_ASSERT(2915, 0 <= i_itemNo && i_itemNo < 256 && (-1 <= i_itemBitNo && i_itemBitNo <= 79) || i_itemBitNo == 127);
+    
+    if (i_itemNo == NO_ITEM) {
+        return -1;
+    }
+    
+    csXyz prmRot = csXyz::Zero;
+    if (rot) {
+        prmRot = *rot;
+    }
+    prmRot.z = switchNo;
+    
+    u8 itemNo = check_itemno(i_itemNo);
+    u32 params = (i_itemBitNo & 0xFF) << 0x08 | itemNo & 0xFF | switchNo2 << 16 | (type & 3) << 24 | action << 26;
+    
+    switch (i_itemNo) {
+    case RECOVER_FAIRY:
+        return fopAcM_create(PROC_NPC_FA1, 1, pos, roomNo, rot, scale);
+    case TRIPLE_HEART:
+        // Make the two extra hearts first, then fall-through to make the third heart as normal.
+        for (int i = 0; i < 2; i++) {
+            fopAcM_create(PROC_ITEM, params, pos, roomNo, &prmRot, scale);
+        }
+        // Fall-through
+    default:
+        return fopAcM_create(PROC_ITEM, params, pos, roomNo, &prmRot, scale);
+    }
 }
 
 /* 80026C90-80026E5C       .text fopAcM_fastCreateItem2__FP4cXyziiiiP5csXyziP4cXyz */
 void* fopAcM_fastCreateItem2(cXyz* pos, int i_itemNo, int i_itemBitNo, int roomNo, int type,
-                             csXyz* rot, int action, cXyz* scale) {
-    /* Nonmatching (regswap) */
+                             csXyz* rot, int action, cXyz* scale)
+{
+    int switchNo = 0xFF;
+    int switchNo2 = 0xFF;
+    
     JUT_ASSERT(2995, 0 <= i_itemNo && i_itemNo < 256 && (-1 <= i_itemBitNo && i_itemBitNo <= 79) || i_itemBitNo == 127);
 
+    int i;
+    
     csXyz prmRot = csXyz::Zero;
 
     if (i_itemNo == NO_ITEM) {
@@ -964,23 +1014,22 @@ void* fopAcM_fastCreateItem2(cXyz* pos, int i_itemNo, int i_itemBitNo, int roomN
     if (rot) {
         prmRot = *rot;
     }
-    prmRot.z = 0xFF;
+    prmRot.z = switchNo;
 
-    u32 params = check_itemno(i_itemNo);
-    params = (i_itemBitNo & 0xFF) << 0x08 | params & 0xFF | 0x00FF0000 | (type & 3) << 24 | action << 26;
+    u8 itemNo = check_itemno(i_itemNo);
+    u32 params = (i_itemBitNo & 0xFF) << 0x08 | itemNo & 0xFF | switchNo2 << 16 | (type & 3) << 24 | action << 26;
 
-    daItem_c* item;
     switch (i_itemNo) {
     case RECOVER_FAIRY:
-        return fopAcM_fastCreate(PROC_NPC_FA1, 1, pos, roomNo, rot, scale, 0xFF, NULL, NULL);
+        return fopAcM_fastCreate(PROC_NPC_FA1, 1, pos, roomNo, rot, scale);
     case TRIPLE_HEART:
         // Make the two extra hearts first, then fall-through to make the third heart as normal.
-        for (int i = 0; i < 2; i++) {
-            fopAcM_fastCreate(PROC_ITEM, params, pos, roomNo, &prmRot, scale, 0xFF, NULL, NULL);
+        for (i = 0; i < 2; i++) {
+            fopAcM_fastCreate(PROC_ITEM, params, pos, roomNo, &prmRot, scale);
         }
         // Fall-through
     default:
-        return fopAcM_fastCreate(PROC_ITEM, params, pos, roomNo, &prmRot, scale, 0xFF, NULL, NULL);
+        return fopAcM_fastCreate(PROC_ITEM, params, pos, roomNo, &prmRot, scale);
     }
 }
 
@@ -990,7 +1039,7 @@ fopAc_ac_c* fopAcM_createItemForKP2(cXyz* pos, int i_itemNo, int roomNo, csXyz* 
     if (i_itemNo == NO_ITEM)
         return NULL;
 
-    fopAc_ac_c* ac = (fopAc_ac_c*)fopAcM_fastCreate(PROC_SPC_ITEM01, i_itemNo | (i_itemBitNo & 0xFFFF) << 8, pos, roomNo, rot, scale, 0xFF, NULL, NULL);
+    fopAc_ac_c* ac = (fopAc_ac_c*)fopAcM_fastCreate(PROC_SPC_ITEM01, i_itemNo | (i_itemBitNo & 0xFFFF) << 8, pos, roomNo, rot, scale);
     if (ac != NULL) {
         fopAcM_SetSpeedF(ac, speedF);
         ac->speed.y = speedY;
@@ -1001,7 +1050,7 @@ fopAc_ac_c* fopAcM_createItemForKP2(cXyz* pos, int i_itemNo, int roomNo, csXyz* 
 
 /* 80026F5C-80026F98       .text fopAcM_createItemForSimpleDemo__FP4cXyziiP5csXyzP4cXyzff */
 daItem_c* fopAcM_createItemForSimpleDemo(cXyz* pos, int i_itemNo, int roomNo, csXyz* rot, cXyz* scale, f32 speedF, f32 speedY) {
-    daItem_c* item = (daItem_c*)fopAcM_fastCreateItem(pos, i_itemNo, roomNo, rot, scale, speedF, speedY, -7.0f, 0xFFFFFFFF, NULL);
+    daItem_c* item = (daItem_c*)fopAcM_fastCreateItem(pos, i_itemNo, roomNo, rot, scale, speedF, speedY, -7.0f);
     if (item != NULL)
         item->setStatus(5);
     return item;
@@ -1010,13 +1059,21 @@ daItem_c* fopAcM_createItemForSimpleDemo(cXyz* pos, int i_itemNo, int roomNo, cs
 /* 80026F98-80027254       .text fopAcM_fastCreateItem__FP4cXyziiP5csXyzP4cXyzfffiPFPv_i */
 void* fopAcM_fastCreateItem(cXyz* pos, int i_itemNo, int roomNo, csXyz* rot, cXyz* scale,
                             f32 speedF, f32 speedY, f32 gravity, int i_itemBitNo, createFunc createFunc) {
-    /* Nonmatching (regswaps) */
+    /* Nonmatching - single regswap on params */
+    int type = 0;
+    int action = 0xA;
+    int switchNo = 0xFF;
+    int switchNo2 = 0xFF;
+    
     JUT_ASSERT(3201, 0 <= i_itemNo && i_itemNo < 256);
     if (i_itemNo == NO_ITEM) {
         return NULL;
     }
-
-    u32 params = (u8)check_itemno(i_itemNo) & 0xFF | (i_itemBitNo & 0xFF) << 0x08 | 0x28FF0000;
+    
+    int i;
+    
+    u8 itemNo = check_itemno(i_itemNo);
+    u32 params = (i_itemBitNo & 0xFF) << 0x08 | itemNo & 0xFF | switchNo2 << 16 | (type & 3) << 24 | action << 26;
 
     if (isHeart(i_itemNo)) {
         speedF = 2.0f * speedF;
@@ -1026,20 +1083,20 @@ void* fopAcM_fastCreateItem(cXyz* pos, int i_itemNo, int roomNo, csXyz* rot, cXy
     csXyz prmRot;
     switch (i_itemNo) {
     case RECOVER_FAIRY:
-        item = (daItem_c*)fopAcM_fastCreate(PROC_NPC_FA1, 1, pos, roomNo, rot, scale, 0xFF, NULL, NULL);
+        item = (daItem_c*)fopAcM_fastCreate(PROC_NPC_FA1, 1, pos, roomNo, rot, scale);
         return item;
     case TRIPLE_HEART:
         // Make the two extra hearts first, then fall-through to make the third heart as normal.
-        for (int i = 0; i < 2; i++) {
+        for (i = 0; i < 2; i++) {
             if (rot) {
                 prmRot = *rot;
             } else {
                 prmRot = csXyz::Zero;
             }
-            prmRot.z = 0xFF;
+            prmRot.z = switchNo;
             prmRot.y += (int)cM_rndFX(0x2000);
 
-            item = (daItem_c*)fopAcM_fastCreate(PROC_ITEM, params, pos, roomNo, &prmRot, scale, 0xFF, createFunc, NULL);
+            item = (daItem_c*)fopAcM_fastCreate(PROC_ITEM, params, pos, roomNo, &prmRot, scale, -1, createFunc);
             if (item) {
                 item->speedF = speedF * (1.0f + cM_rndFX(0.3f));
                 item->speed.y = speedY * (1.0f + cM_rndFX(0.2f));
@@ -1055,7 +1112,7 @@ void* fopAcM_fastCreateItem(cXyz* pos, int i_itemNo, int roomNo, csXyz* rot, cXy
         }
         prmRot.z = 0xFF;
 
-        item = (daItem_c*)fopAcM_fastCreate(PROC_ITEM, params, pos, roomNo, &prmRot, scale, 0xFF, createFunc, NULL);
+        item = (daItem_c*)fopAcM_fastCreate(PROC_ITEM, params, pos, roomNo, &prmRot, scale, -1, createFunc);
         if (item) {
             item->speedF = speedF;
             item->speed.y = speedY;
@@ -1076,24 +1133,119 @@ BOOL stealItem_CB(void* actor) {
 }
 
 /* 80027280-800273D4       .text fopAcM_createStealItem__FP4cXyziiP5csXyzi */
-void fopAcM_createStealItem(cXyz* p_pos, int i_tblNo, int, csXyz*, int) {
-    /* Nonmatching */
+void* fopAcM_createStealItem(cXyz* p_pos, int i_tblNo, int i_roomNo, csXyz* p_angle, int i_itemBitNo) {
+    u8 itemNo = getEmonoItemFromLifeBallTable(i_tblNo);
+    
+    if (isLimitedItem(itemNo)) {
+        if (
+            (i_itemBitNo == 0x1F || i_itemBitNo == -1 || i_itemBitNo == 0xFF) ||
+            (
+                !(i_itemBitNo == 0x1F || i_itemBitNo == -1 || i_itemBitNo == 0xFF) &&
+                fopAcM_isItemForIb(i_itemBitNo, itemNo, i_roomNo)
+            )
+        ) {
+            i_itemBitNo = -1;
+            itemNo = getItemFromLifeBallTableWithoutEmono(i_tblNo);
+        }
+    } else if (isNonSavedEmono(itemNo)) {
+        if (i_itemBitNo != 0) {
+            itemNo = getItemFromLifeBallTableWithoutEmono(i_tblNo);
+        }
+        i_itemBitNo = -1;
+    } else {
+        if (itemNo == NO_ITEM) {
+            itemNo = getItemFromLifeBallTableWithoutEmono(i_tblNo);
+        }
+        i_itemBitNo = -1;
+    }
+    
+    return fopAcM_fastCreateItem(p_pos, itemNo, i_roomNo, p_angle, NULL, 0.0f, 0.0f, -6.0f, i_itemBitNo, stealItem_CB);
 }
 
 /* 800273D4-8002777C       .text fopAcM_createItemFromEnemyTable__FUsiiP4cXyzP5csXyz */
-void fopAcM_createItemFromEnemyTable(u16, int, int, cXyz*, csXyz*) {
-    /* Nonmatching */
+void* fopAcM_createItemFromEnemyTable(u16 itemTableIdx, int i_itemBitNo, int i_roomNo, cXyz* p_pos, csXyz* p_angle) {
+    int items[16];
+    int itemIdx = (int)cM_rndF(15.999f);
+    cXyz scale = cXyz::Zero;
+    
+    items[0]  = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM0,  itemTableIdx);
+    items[1]  = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM1,  itemTableIdx);
+    items[2]  = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM2,  itemTableIdx);
+    items[3]  = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM3,  itemTableIdx);
+    items[4]  = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM4,  itemTableIdx);
+    items[5]  = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM5,  itemTableIdx);
+    items[6]  = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM6,  itemTableIdx);
+    items[7]  = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM7,  itemTableIdx);
+    items[8]  = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM8,  itemTableIdx);
+    items[9]  = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM9,  itemTableIdx);
+    items[10] = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM10, itemTableIdx);
+    items[11] = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM11, itemTableIdx);
+    items[12] = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM12, itemTableIdx);
+    items[13] = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM13, itemTableIdx);
+    items[14] = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM14, itemTableIdx);
+    items[15] = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM15, itemTableIdx);
+    
+    if (isLimitedItem(items[itemIdx])) {
+        if (
+            (i_itemBitNo == 0x1F || i_itemBitNo == -1 || i_itemBitNo == 0xFF) ||
+            (
+                !(i_itemBitNo == 0x1F || i_itemBitNo == -1 || i_itemBitNo == 0xFF) &&
+                fopAcM_isItemForIb(i_itemBitNo, items[itemIdx], i_roomNo)
+            )
+        ) {
+            i_itemBitNo = -1;
+            items[itemIdx] = YELLOW_RUPEE;
+        }
+    } else if (isNonSavedEmono(items[itemIdx])) {
+        if (i_itemBitNo != 0) {
+            items[itemIdx] = getItemFromLifeBallTableWithoutEmono((u16)itemTableIdx);
+        }
+        i_itemBitNo = -1;
+    } else {
+        i_itemBitNo = -1;
+    }
+    
+    items[itemIdx] = getItemNoByLife(items[itemIdx]);
+    
+    return fopAcM_fastCreateItem(
+        p_pos, items[itemIdx], i_roomNo, NULL, &scale,
+        cM_rndFX(5.0f), 50.0f + cM_rndFX(10.0f), -6.0f, i_itemBitNo
+    );
 }
 
 /* 8002777C-800278D8       .text fopAcM_createIball__FP4cXyziiP5csXyzi */
-s32 fopAcM_createIball(cXyz*, int, int, csXyz*, int) {
-    /* Nonmatching */
+s32 fopAcM_createIball(cXyz* p_pos, int itemTableIdx, int i_roomNo, csXyz* p_angle, int i_itemBitNo) {
+    int dropChance = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_percent, (u16)itemTableIdx);
+    int randPercent = cM_rndF(99.999f);
+    
+    if (strcmp(dComIfGp_getStartStageName(), "Cave09") == 0 ||
+        strcmp(dComIfGp_getStartStageName(), "Cave10") == 0 ||
+        strcmp(dComIfGp_getStartStageName(), "Cave11") == 0)
+    {
+        // Savage Labyrinth
+        return -1;
+    }
+    
+    if (dropChance > randPercent) {
+        daIball_c::remove_old();
+        void* item = fopAcM_fastCreate(
+            PROC_Iball, (u16)itemTableIdx | (i_itemBitNo & 0xFF) << 0x10,
+            p_pos, i_roomNo
+        );
+        return fopAcM_GetID(item);
+    } else {
+        void* item = fopAcM_createItemFromEnemyTable(
+            itemTableIdx, i_itemBitNo,
+            i_roomNo, p_pos, p_angle
+        );
+        return fopAcM_GetID(item);
+    }
 }
 
 /* 800278D8-80027920       .text fopAcM_createWarpFlower__FP4cXyzP5csXyziUc */
 void fopAcM_createWarpFlower(cXyz* p_pos, csXyz* p_angle, int i_roomNo, u8 param_4) {
     u32 params = param_4;
-    fopAcM_create(PROC_WARPFLOWER, params, p_pos, i_roomNo, p_angle, NULL, 0xFF, NULL);
+    fopAcM_create(PROC_WARPFLOWER, params, p_pos, i_roomNo, p_angle);
 }
 
 /* 80027920-80027970       .text enemySearchJugge__FPvPv */
@@ -1124,7 +1276,7 @@ fopAc_ac_c* fopAcM_myRoomSearchEnemy(s8 roomNo) {
 /* 80027A9C-80027B24       .text fopAcM_createDisappear__FP10fopAc_ac_cP4cXyzUcUcUc */
 s32 fopAcM_createDisappear(fopAc_ac_c* i_actor, cXyz* p_pos, u8 i_scale, u8 i_health, u8 i_switchNo) {
     u32 params = (i_switchNo & 0xFF) << 0x10 | (i_scale & 0xFF) << 0x08 | i_health & 0xFF;
-    fopAc_ac_c* disappear = (fopAc_ac_c*)fopAcM_fastCreate(PROC_DISAPPEAR, params, p_pos, fopAcM_GetRoomNo(i_actor), &i_actor->current.angle, NULL, -1, NULL, NULL);
+    fopAc_ac_c* disappear = (fopAc_ac_c*)fopAcM_fastCreate(PROC_DISAPPEAR, params, p_pos, fopAcM_GetRoomNo(i_actor), &i_actor->current.angle);
     if (disappear) {
         disappear->mItemTableIdx = i_actor->mItemTableIdx;
     }
@@ -1132,8 +1284,49 @@ s32 fopAcM_createDisappear(fopAc_ac_c* i_actor, cXyz* p_pos, u8 i_scale, u8 i_he
 }
 
 /* 80027B24-80027E28       .text fopAcM_getGroundAngle__FP10fopAc_ac_cP5csXyz */
-void fopAcM_getGroundAngle(fopAc_ac_c*, csXyz*) {
-    /* Nonmatching */
+BOOL fopAcM_getGroundAngle(fopAc_ac_c* actor, csXyz* p_angle) {
+    // TODO: clean this up
+    dBgS_GndChk gndChk;
+    BOOL ret = TRUE;
+    cXyz pos(actor->current.pos);
+    pos.y += 50.0f;
+    gndChk.SetPos(&pos);
+    pos.y = dComIfG_Bgsp()->GroundCross(&gndChk);
+    s16 targetAngleX;
+    int targetAngleZ;
+    if (pos.y != -1e09f) {
+        f32 origY = pos.y + 50.0f;
+        gndChk.GetPointP()->set(pos.x, origY, pos.z + 10.0f);
+        f32 origX = gndChk.GetPointP()->x;
+        f32 origZ = gndChk.GetPointP()->z;
+        f32 groundY = dComIfG_Bgsp()->GroundCross(&gndChk);
+        if (groundY != -1e09f) {
+            targetAngleX = -cM_atan2s(groundY - pos.y, origZ - pos.z);
+        } else {
+            pos.y = pos.y; // ?? fakematch?
+            ret = FALSE;
+        }
+        
+        origX = pos.x + 10.0f;
+        origY = pos.y + 50.0f;
+        f32 tempZ = pos.z;
+        gndChk.GetPointP()->set(origX, origY, tempZ);
+        groundY = dComIfG_Bgsp()->GroundCross(&gndChk);
+        if (groundY != -1e09f) {
+            targetAngleZ = cM_atan2s(groundY - pos.y, origX - pos.x);
+        } else {
+            ret = FALSE;
+        }
+    } else {
+        ret = FALSE;
+    }
+    
+    if (ret) {
+        cLib_addCalcAngleS(&p_angle->x, targetAngleX, 4, 0x200, 0x80);
+        cLib_addCalcAngleS(&p_angle->z, targetAngleZ, 4, 0x200, 0x80);
+    }
+    
+    return ret;
 }
 
 /* 80027E28-80027E5C       .text fopAcM_setCarryNow__FP10fopAc_ac_ci */
@@ -1158,18 +1351,33 @@ void fopAcM_cancelCarryNow(fopAc_ac_c* i_this) {
 }
 
 /* 80027ED8-800281D8       .text fopAcM_viewCutoffCheck__FP10fopAc_ac_cf */
-void fopAcM_viewCutoffCheck(fopAc_ac_c*, float) {
-    /* Nonmatching */
+BOOL fopAcM_viewCutoffCheck(fopAc_ac_c* actor, f32 param_2) {
+    if (param_2 > 0.0f) {
+        camera_class* camera = dComIfGp_getCamera(0);
+        cXyz delta = (camera->mLookat.mEye - actor->mEyePos);
+        if (delta.abs() > param_2) {
+            dBgS_LinChk linChk;
+            linChk.Set(&camera->mLookat.mEye, &actor->mEyePos, actor);
+            return dComIfG_Bgsp()->LineCross(&linChk);
+        }
+    }
+    return FALSE;
 }
 
 /* 800281D8-800282F8       .text fopAcM_otoCheck__FP10fopAc_ac_cf */
-s32 fopAcM_otoCheck(fopAc_ac_c*, float) {
-    /* Nonmatching */
+s32 fopAcM_otoCheck(fopAc_ac_c* actor, f32 param_2) {
+    SND_INFLUENCE* sound = dKy_Sound_get();
+    if (sound->field_0x14 != fpcM_ERROR_PROCESS_ID_e && sound->field_0x14 != fopAcM_GetID(actor)) {
+        cXyz delta = (sound->field_0x0 - actor->current.pos);
+        if (delta.abs() < param_2) {
+            return sound->field_0xc;
+        }
+    }
+    return 0;
 }
 
 /* 800282F8-8002833C       .text fopAcM_getProcNameString__FP10fopAc_ac_c */
 const char * fopAcM_getProcNameString(fopAc_ac_c* i_this) {
-    /* Nonmatching */
     const char * pProcNameString = dStage_getName2(fpcM_GetProfName(i_this), i_this->mSubtype);
     if (pProcNameString != NULL)
         return pProcNameString;
@@ -1207,7 +1415,7 @@ fopAc_ac_c* fopAcM_searchFromName(char* pProcName, u32 paramMask, u32 parameter)
 }
 
 /* 80028448-80028560       .text fopAcM_getWaterY__FPC4cXyzPf */
-s32 fopAcM_getWaterY(const cXyz* pPos, float* pDstWaterY) {
+s32 fopAcM_getWaterY(const cXyz* pPos, f32* pDstWaterY) {
     static dBgS_WtrChk water_check;
     s32 ret = 0;
 
@@ -1262,7 +1470,7 @@ void fpoAcM_relativePos(fopAc_ac_c* i_this, cXyz* absPos, cXyz* relPos) {
 
 #ifndef __INTELLISENSE__
 /* 80029178-80029198       .text __ct__20fopAc_cullSizeSphereF4cXyzf */
-fopAc_cullSizeSphere::fopAc_cullSizeSphere(cXyz p, float r) {
+fopAc_cullSizeSphere::fopAc_cullSizeSphere(cXyz p, f32 r) {
     mCenter = p;
     mRadius = r;
 }

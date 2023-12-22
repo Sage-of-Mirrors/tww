@@ -14,7 +14,7 @@ class dDlst_base_c {
 public:
     dDlst_base_c() {}
     virtual ~dDlst_base_c() {}
-    virtual void draw();
+    virtual void draw() {}
 };
 
 class dDlst_2D_c : public dDlst_base_c {
@@ -75,6 +75,26 @@ public:
 class dDlst_2DM_c : public dDlst_base_c {
 public:
     virtual void draw();
+
+    s16 field_0x4;
+    s16 field_0x6;
+    s16 field_0x8;
+    s16 field_0xa;
+    u8 field_0xc;
+    GXColor field_0xd;
+    GXColor field_0x11;
+    void* field_0x18;
+    short field_0x1c;
+    u16 field_0x1e;
+    u16 field_0x20;
+    s16 field_0x22;
+    s16 field_0x24;
+    void* field_0x28;
+    short field_0x2c;
+    u16 field_0x2e;
+    u16 field_0x30;
+    s16 field_0x32;
+    s16 field_0x34;
 };
 
 class dDlst_2Dm_c : public dDlst_base_c {
@@ -120,7 +140,7 @@ public:
 class dDlst_snapShot_c : public dDlst_base_c {
 public:
     ~dDlst_snapShot_c() {};
-    void draw(); 
+    void draw();
 };
 
 class dDlst_window_c {

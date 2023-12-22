@@ -3,14 +3,12 @@
  */
 
 #include "d/actor/d_a_obj_pbka.h"
-#include "JSystem/JKernel/JKRHeap.h"
 #include "f_op/f_op_actor_mng.h"
 #include "d/d_com_inf_game.h"
 #include "m_Do/m_Do_mtx.h"
 #include "d/d_procname.h"
 
-BOOL daObjPbka_c::_draw()
-{
+BOOL daObjPbka_c::_draw() {
     dKy_tevstr_c * pTevStr;
     g_env_light.settingTevStruct(TEV_TYPE_BG0, &current.pos, pTevStr = &mTevStr);
     g_env_light.setLightTevColorType(mpModel, pTevStr);
@@ -37,8 +35,8 @@ BOOL daObjPbka_c::CreateHeap() {
 }
 
 void daObjPbka_c::CreateInit() {
-    mCullMtx =  mpModel->getBaseTRMtx();
-    fopAcM_setCullSizeBox(this,-300.0,-300.0,-300.0,300.0,300.0,300.0);
+    fopAcM_SetMtx(this, mpModel->getBaseTRMtx());
+    fopAcM_setCullSizeBox(this, -300.0f, -300.0f, -300.0f, 300.0f, 300.0f, 300.0f);
     mCullSizeFar = 1.0f;
     set_mtx();
 }
@@ -83,11 +81,11 @@ static BOOL daObjPbka_Draw(void* i_this) {
 
 static BOOL daObjPbka_Execute(void* i_this) {
     daObjPbka_c* a_this = (daObjPbka_c*)i_this;
-        a_this->current.angle.y += 0x500;
-        a_this->shape_angle.y = a_this->current.angle.y;
-        mDoAud_seStart(JA_SE_OBJ_BOMB_SHOP_FAN, &a_this->current.pos, 0 , dComIfGp_getReverb(fopAcM_GetRoomNo(a_this)));
-        a_this->set_mtx();
-        return TRUE;
+    a_this->current.angle.y += 0x500;
+    a_this->shape_angle.y = a_this->current.angle.y;
+    fopAcM_seStartCurrent(a_this, JA_SE_OBJ_BOMB_SHOP_FAN, 0);
+    a_this->set_mtx();
+    return TRUE;
 }
 
 static BOOL daObjPbka_IsDelete(void*) {

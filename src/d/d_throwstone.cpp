@@ -10,7 +10,6 @@
 #include "d/d_demo.h"
 #include "d/d_procname.h"
 #include "m_Do/m_Do_mtx.h"
-#include "JSystem/JKernel/JKRHeap.h"
 
 const char daThrowstone_c::M_arcname[] = "Aisi";
 
@@ -44,7 +43,7 @@ s32 daThrowstone_c::_create() {
             mDoMtx_stack_c::scaleM(mScale);
 
             mDoMtx_copy(mDoMtx_stack_c::get(), mMtx);
-            mCullMtx = mpModel->getBaseTRMtx();
+            fopAcM_SetMtx(this, mpModel->getBaseTRMtx());
 
             mDoMtx_copy(mpModel->getBaseTRMtx(), mMtx);
         }

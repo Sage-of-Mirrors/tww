@@ -5,7 +5,6 @@
 
 #include "d/actor/d_a_obj_hfuck1.h"
 #include "f_op/f_op_actor_mng.h"
-#include "JSystem/JKernel/JKRHeap.h"
 #include "JSystem/JUtility/JUTAssert.h"
 #include "d/d_cc_d.h"
 #include "d/d_com_inf_game.h"
@@ -21,23 +20,23 @@ namespace {
         // dCcD_SrcGObjInf
         {
             /* Flags             */ 0,
-            /* SrcObjAt Type     */ 0,
-            /* SrcObjAt Atp      */ 0,
-            /* SrcObjAt SPrm     */ 0,
-            /* SrcObjTg Type     */ AT_TYPE_HOOKSHOT,
-            /* SrcObjTg SPrm     */ 9,
-            /* SrcObjCo SPrm     */ 0,
+            /* SrcObjAt  Type    */ 0,
+            /* SrcObjAt  Atp     */ 0,
+            /* SrcObjAt  SPrm    */ 0,
+            /* SrcObjTg  Type    */ AT_TYPE_HOOKSHOT,
+            /* SrcObjTg  SPrm    */ TG_SPRM_SET | TG_SPRM_UNK8,
+            /* SrcObjCo  SPrm    */ 0,
             /* SrcGObjAt Se      */ 0,
             /* SrcGObjAt HitMark */ 0,
             /* SrcGObjAt Spl     */ 0,
             /* SrcGObjAt Mtrl    */ 0,
-            /* SrcGObjAt GFlag   */ 0,
+            /* SrcGObjAt SPrm    */ 0,
             /* SrcGObjTg Se      */ 0,
             /* SrcGObjTg HitMark */ 0,
             /* SrcGObjTg Spl     */ 0,
             /* SrcGObjTg Mtrl    */ 0,
-            /* SrcGObjTg GFlag   */ 6,
-            /* SrcGObjCo GFlag   */ 0,
+            /* SrcGObjTg SPrm    */ G_TG_SPRM_NO_CON_HIT | G_TG_SPRM_NO_HIT_MARK,
+            /* SrcGObjCo SPrm    */ 0,
         },
         // cM3dGSphS
         {

@@ -5,7 +5,6 @@
 
 #include "d/actor/d_a_mozo.h"
 #include "f_op/f_op_actor_mng.h"
-#include "JSystem/JKernel/JKRHeap.h"
 #include "JSystem/JUtility/JUTAssert.h"
 #include "d/d_com_inf_game.h"
 #include "d/d_kankyo.h"
@@ -169,7 +168,7 @@ s32 daMozo_c::CreateInit() {
     mQuatRotation = ZeroQuat;
 
     fopAcM_setCullSizeBox(this, -1000.f, -1000.f, -1000.f, 1000.0f, 1000.0f, 1000.0f);
-    mCullMtx = mAnimMorf->getModel()->getBaseTRMtx();
+    fopAcM_SetMtx(this, mAnimMorf->getModel()->getBaseTRMtx());
 
     // TODO: Insert missing code here
 

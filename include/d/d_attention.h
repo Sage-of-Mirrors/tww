@@ -86,10 +86,10 @@ public:
     void requestF(fopAc_ac_c*, s16, int);
 
 private:
-    u32 field_0x0;
-    u32 field_0x4;
-    f32 field_0x8;
-    u32 mLookTargetID;
+    /* 0x0 */ u32 field_0x0;
+    /* 0x4 */ u32 field_0x4;
+    /* 0x8 */ f32 field_0x8;
+    /* 0xC */ u32 mLookTargetID;
 };  // Size: 0x10
 
 class dAttList_c {
@@ -166,7 +166,7 @@ public:
     BOOL chkFlag(u32 flag) { return (mFlags & flag) ? TRUE : FALSE; }
     void setFlag(u32 flag) { mFlags |= flag; }
     void clrFlag(u32 flag) { mFlags &= ~flag; }
-    bool Lockon() { return LockonTruth() || chkFlag(0x20000000); }
+    bool Lockon() { return LockonTruth() || chkFlag(0x20000000); } // regswap
     void CatchRequest(fopAc_ac_c* param_0, u8 param_1, f32 param_2, f32 param_3,
                       f32 param_4, s16 param_5, int param_6) {
         mCatch.request(param_0, param_1, param_2, param_3, param_4, param_5, param_6);

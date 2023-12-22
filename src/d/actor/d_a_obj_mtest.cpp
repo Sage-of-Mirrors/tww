@@ -5,7 +5,6 @@
 
 #include "d/actor/d_a_obj_mtest.h"
 #include "d/d_procname.h"
-#include "JSystem/JKernel/JKRHeap.h"
 #include "JSystem/J3DGraphAnimator/J3DModel.h"
 #include "d/d_com_inf_game.h"
 #include "m_Do/m_Do_mtx.h"
@@ -15,7 +14,7 @@ static f32 dummy1[3] = {1.0f, 1.0f, 1.0f};
 static f32 dummy2[3] = {1.0f, 1.0f, 1.0f};
 static u8 dummy3[4] = {0x02, 0x00, 0x02, 0x01};
 static f64 dummy4[2] = {3.0, 0.5};
-u8 dummy5[0x4C];
+static u8 dummy5[0x4C];
 
 char* daObjMtest::Act_c::M_arcname[Type_Max] = {
     "Mtest",
@@ -74,23 +73,23 @@ const dCcD_SrcCyl daObjMtest::Act_c::M_cyl_src = {
     // dCcD_SrcGObjInf
     {
         /* Flags             */ 0,
-        /* SrcObjAt Type     */ 0,
-        /* SrcObjAt Atp      */ 0,
-        /* SrcObjAt SPrm     */ 0,
-        /* SrcObjTg Type     */ AT_TYPE_BOMB,
-        /* SrcObjTg SPrm     */ 0x09,
-        /* SrcObjCo SPrm     */ 0,
+        /* SrcObjAt  Type    */ 0,
+        /* SrcObjAt  Atp     */ 0,
+        /* SrcObjAt  SPrm    */ 0,
+        /* SrcObjTg  Type    */ AT_TYPE_BOMB,
+        /* SrcObjTg  SPrm    */ TG_SPRM_SET | TG_SPRM_UNK8,
+        /* SrcObjCo  SPrm    */ 0,
         /* SrcGObjAt Se      */ 0,
         /* SrcGObjAt HitMark */ 0,
         /* SrcGObjAt Spl     */ 0,
         /* SrcGObjAt Mtrl    */ 0,
-        /* SrcGObjAt GFlag   */ 0,
+        /* SrcGObjAt SPrm    */ 0,
         /* SrcGObjTg Se      */ 0,
         /* SrcGObjTg HitMark */ 0,
         /* SrcGObjTg Spl     */ 0,
         /* SrcGObjTg Mtrl    */ 0,
-        /* SrcGObjTg GFlag   */ 0,
-        /* SrcGObjCo GFlag   */ 0,
+        /* SrcGObjTg SPrm    */ 0,
+        /* SrcGObjCo SPrm    */ 0,
     },
     // cM3dGCylS
     {

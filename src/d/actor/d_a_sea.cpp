@@ -8,7 +8,6 @@
 #include "d/d_procname.h"
 #include "d/d_stage.h"
 #include "m_Do/m_Do_lib.h"
-#include "JSystem/JKernel/JKRHeap.h"
 #include "d/actor/d_a_daiocta.h"
 
 daSea_packet_c l_cloth;
@@ -58,7 +57,7 @@ u8 pos_around[16] = {
 };
 
 /* 8015B0A4-8015B0FC       .text Pos2Index__25daSea_WaterHeightInfo_MngFfPf */
-int daSea_WaterHeightInfo_Mng::Pos2Index(f32 v, f32* dst) { 
+int daSea_WaterHeightInfo_Mng::Pos2Index(f32 v, f32* dst) {
     int idx = (v + 450000.0f) / 100000.0f;
     if (dst != NULL)
         *dst = (v + 450000.0f) - idx * 100000.0f;
@@ -201,7 +200,7 @@ bool daSea_packet_c::create(cXyz& pos) {
     GXInitTexObjLOD(&mTexSea1, (GXTexFilter)timg->minFilter, (GXTexFilter)timg->magFilter,
         timg->minLOD * 0.125f, timg->maxLOD * 0.125f, 0.0f,
         (GXBool)timg->biasClamp, (GXBool)timg->doEdgeLOD,
-        (GXAnisotropy)timg->maxAnisotropy);                                                                   
+        (GXAnisotropy)timg->maxAnisotropy);
 
     timg = (ResTIMG*)dComIfG_getObjectRes("Always", ALWAYS_BTI_B_WYURAYURA_TEX1);
     mDoLib_setResTimgObj(timg, &mpTexWyurayura, 0, NULL);
@@ -219,9 +218,7 @@ void daSea_packet_c::CleanUp() {
 }
 
 /* 8015B7E4-8015B84C       .text __ct__14daSea_packet_cFv */
-daSea_packet_c::daSea_packet_c() {
-    /* Nonmatching */
-}
+daSea_packet_c::daSea_packet_c() {}
 
 /* 8015B84C-8015B86C       .text SetFlat__14daSea_packet_cFv */
 void daSea_packet_c::SetFlat() {
@@ -290,7 +287,7 @@ void daSea_GetPoly(void*, void (*)(void*, cXyz&, cXyz&, cXyz&), const cXyz&, con
 
 /* 8015C010-8015C11C       .text SetCullStopFlag__14daSea_packet_cFv */
 void daSea_packet_c::SetCullStopFlag() {
-    /* Nonmatching */ 
+    /* Nonmatching */
     if (strcmp(dComIfGp_getStartStageName(), "A_umikz") == 0) {
         mCullStopFlag = false;
     } else {

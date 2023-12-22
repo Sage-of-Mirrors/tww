@@ -4,7 +4,6 @@
 //
 
 #include "d/actor/d_a_nh.h"
-#include "JSystem/JKernel/JKRHeap.h"
 #include "f_op/f_op_actor_mng.h"
 #include "d/d_com_inf_game.h"
 #include "d/d_procname.h"
@@ -23,23 +22,23 @@ static dCcD_SrcCyl l_cyl_src = {
     // dCcD_SrcGObjInf
     {
         /* Flags             */ 0,
-        /* SrcObjAt Type     */ 0,
-        /* SrcObjAt Atp      */ 0,
-        /* SrcObjAt SPrm     */ 0,
-        /* SrcObjTg Type     */ AT_TYPE_ALL,
-        /* SrcObjTg SPrm     */ 0x03,
-        /* SrcObjCo SPrm     */ 0x19,
+        /* SrcObjAt  Type    */ 0,
+        /* SrcObjAt  Atp     */ 0,
+        /* SrcObjAt  SPrm    */ 0,
+        /* SrcObjTg  Type    */ AT_TYPE_ALL,
+        /* SrcObjTg  SPrm    */ TG_SPRM_SET | TG_SPRM_UNK2,
+        /* SrcObjCo  SPrm    */ CO_SPRM_SET | CO_SPRM_UNK8 | CO_SPRM_UNK10,
         /* SrcGObjAt Se      */ 0,
         /* SrcGObjAt HitMark */ 0,
         /* SrcGObjAt Spl     */ 0,
         /* SrcGObjAt Mtrl    */ 0,
-        /* SrcGObjAt GFlag   */ 0,
+        /* SrcGObjAt SPrm    */ 0,
         /* SrcGObjTg Se      */ 0,
         /* SrcGObjTg HitMark */ 0,
         /* SrcGObjTg Spl     */ 0,
         /* SrcGObjTg Mtrl    */ 0,
-        /* SrcGObjTg GFlag   */ 0x04,
-        /* SrcGObjCo GFlag   */ 0,
+        /* SrcGObjTg SPrm    */ G_TG_SPRM_NO_HIT_MARK,
+        /* SrcGObjCo SPrm    */ 0,
     },
     // cM3dGCylS
     {
@@ -133,7 +132,7 @@ s32 daNh_c::create() {
         return cPhs_ERROR_e;
     }
     
-    mCullMtx = mpModel->getBaseTRMtx();
+    fopAcM_SetMtx(this, mpModel->getBaseTRMtx());
     
     if (l_HIO.mChildID < 0) {
         l_HIO.mChildID = mDoHIO_root.mDoHIO_createChild("森のほたる", &l_HIO);
@@ -173,7 +172,7 @@ BOOL daNh_c::init() {
 void daNh_c::action(void* arg) {
     if (mCurrActionFunc == NULL) {
         speedF = 0.0f;
-        setAction(&waitAction, NULL);
+        setAction(&daNh_c::waitAction, NULL);
     }
     (this->*mCurrActionFunc)(arg);
 }
@@ -218,7 +217,7 @@ BOOL daNh_c::checkBinCatch() {
 /* 800F9F3C-800FA108       .text searchPlayer__6daNh_cFv */
 BOOL daNh_c::searchPlayer() {
     if (isTypeBottle()) {
-        setAction(&escapeAction, NULL);
+        setAction(&daNh_c::escapeAction, NULL);
         return TRUE;
     }
     
@@ -229,7 +228,7 @@ BOOL daNh_c::searchPlayer() {
     mPlayerDist = playerDist;
     if (playerDelta.absXZ() > 0.001f && playerDist < 600.0f && playerDistDelta > l_HIO.prm.mMinFrightenSpeed) {
         // Player is nearby and moving closer. The Forest Firefly becomes frightened and tries to escape.
-        setAction(&escapeAction, NULL);
+        setAction(&daNh_c::escapeAction, NULL);
         return TRUE;
     }
     
@@ -299,7 +298,7 @@ BOOL daNh_c::waitAction(void*) {
     } else if (mActionStatus != ACTION_ENDING) {
         cLib_addCalc(&speedF, 0.0f, 0.1f, 10.0f, 1.0f);
         if (getHomeDistance() > 50.0f) {
-            setAction(&returnAction, NULL);
+            setAction(&daNh_c::returnAction, NULL);
         }
     }
     return TRUE;
@@ -310,11 +309,11 @@ BOOL daNh_c::checkEscapeEnd() {
     cXyz homeDelta = orig.pos - current.pos;
     if (!isTypeBottle()) {
         if (cLib_calcTimer(&mEscapeTimer) == 0) {
-            setAction(&waitAction, NULL);
+            setAction(&daNh_c::waitAction, NULL);
             return TRUE;
         }
         if (homeDelta.abs2XZ() > l_HIO.prm.mMaxHomeDist*l_HIO.prm.mMaxHomeDist) {
-            setAction(&returnAction, NULL);
+            setAction(&daNh_c::returnAction, NULL);
             return TRUE;
         }
     }
@@ -353,7 +352,7 @@ BOOL daNh_c::returnAction(void*) {
         mEscapeTimer = 5*30;
     } else if (mActionStatus != ACTION_ENDING) {
         if (getHomeDistance() < 50.0f) {
-            setAction(&waitAction, NULL);
+            setAction(&daNh_c::waitAction, NULL);
         } else {
             s16 targetAngle = cLib_targetAngleY(&current.pos, &orig.pos);
             cXyz homeDelta = orig.pos - current.pos;

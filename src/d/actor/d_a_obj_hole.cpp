@@ -11,7 +11,6 @@
 #include "d/d_procname.h"
 #include "f_op/f_op_actor_mng.h"
 #include "f_op/f_op_camera_mng.h"
-#include "JSystem/JKernel/JKRHeap.h"
 #include "JSystem/JUtility/JUTAssert.h"
 #include "m_Do/m_Do_ext.h"
 #include "m_Do/m_Do_mtx.h"
@@ -119,7 +118,7 @@ void daObj_Hole_c::modeWait() {
 }
 
 // Required to make rodata match
-const u8 dummy5[] = { 0x00, 0xFF, 0x00, 0x80};
+static const u8 dummy5[] = { 0x00, 0xFF, 0x00, 0x80};
 
 /* 000004F0-000004F4       .text modeEventInit__12daObj_Hole_cFv */
 void daObj_Hole_c::modeEventInit() {
@@ -129,19 +128,19 @@ void daObj_Hole_c::modeEventInit() {
 /* 000004F4-000005D0       .text modeEvent__12daObj_Hole_cFv */
 void daObj_Hole_c::modeEvent() {
     if (mEvtInfo.checkCommandDemoAccrpt()) {
-        int staffId = dComIfGp_evmng_getMyStaffId("Ypit00", NULL, 0);
+        int staffId = dComIfGp_evmng_getMyStaffId("Ypit00");
 
         if (dComIfGp_evmng_endCheck("DEFAULT_PITFALL")) {
             if (mExitIdx != 0xFF) {
                 dLib_setNextStageBySclsNum(mExitIdx, current.roomNo);
             }
             else {
-                dComIfGp_setNextStage(dComIfGp_getStartStageName(), 0, current.roomNo, 0xFF, 0.0f, 0, 1, 0);
+                dComIfGp_setNextStage(dComIfGp_getStartStageName(), 0, current.roomNo);
             }
         }
     }
     else {
-        fopAcM_orderOtherEvent2(this, "DEFAULT_PITFALL", 1, 0xFFFF);
+        fopAcM_orderOtherEvent2(this, "DEFAULT_PITFALL", 1);
     }
 }
 
@@ -214,7 +213,7 @@ void daObj_Hole_c::createInit() {
     fopAcM_setCullSizeFar(this, 10.0f);
 
     mAcchCir.SetWall(100.0f, 10.0f);
-    mAcch.Set(&current.pos, &next.pos, this, 1, &mAcchCir, &speed, NULL, NULL);
+    mAcch.Set(&current.pos, &next.pos, this, 1, &mAcchCir, &speed);
 
     mAcch.SetWallNone();
     mAcch.SetRoofNone();

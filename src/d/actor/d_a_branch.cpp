@@ -4,7 +4,6 @@
 //
 
 #include "d/actor/d_a_branch.h"
-#include "JSystem/JKernel/JKRHeap.h"
 #include "JSystem/JUtility/JUTAssert.h"
 #include "f_op/f_op_actor_mng.h"
 #include "d/d_procname.h"
@@ -66,7 +65,7 @@ BOOL daBranch_c::solidHeapCB(fopAc_ac_c* i_this) {
 /* 00000248-0000049C       .text CreateHeap__10daBranch_cFv */
 s32 daBranch_c::CreateHeap() {
     /* Nonmatching */
-    int basIds[] = { 8, 0 }; 
+    int basIds[] = { 8, 0 };
     int bckIds[] = { 7, 2 };
     int bmdIds[] = { 6, 5 };
     int t[] = {0, 0};
@@ -91,7 +90,7 @@ s32 daBranch_c::CreateHeap() {
             -1,
             1,
             0,
-            0, 
+            0,
             0x11020203
         );
 
@@ -192,7 +191,7 @@ static s32 daBranch_Create(fopAc_ac_c* i_this) {
             state = cPhs_ERROR_e;
         }
         else {
-            branch->mCullMtx = branch->mModel[0]->mBaseTransformMtx;
+            fopAcM_SetMtx(i_this, branch->mModel[0]->getBaseTRMtx());
             fopAcM_setCullSizeBox(i_this, 0.0f, 0.0f, -50.0f, 300.0f, 100.0f, 50.0f);
             
             branch->m02B8 = 6;

@@ -11,23 +11,11 @@
 #include "JSystem/JUtility/JUTAssert.h"
 #include "dolphin/types.h"
 
-class JPADrawClipBoard {
-public:
-    ~JPADrawClipBoard();
-};
-
-class JPADrawVisitorContainer {
-public:
-    JPADrawVisitorContainer();
-    ~JPADrawVisitorContainer();
-};
-
 JPADrawVisitorContainer JPADraw::vc;
 JPADrawClipBoard JPADraw::cb;
 
 /* 80267F40-80268634       .text initialize__7JPADrawFP14JPABaseEmitterP18JPATextureResource */
 bool JPADraw::initialize(JPABaseEmitter* emtr, JPATextureResource* texRes) {
-    /* Nonmatching */
     JPADrawContext::pcb = &cb;
     dc.pbe = emtr;
     dc.pbsp = dc.pbe->getEmitterDataBlockInfoPtr()->getBaseShape();
@@ -85,7 +73,7 @@ bool JPADraw::initialize(JPABaseEmitter* emtr, JPATextureResource* texRes) {
         mpCalcChldVis[i] = NULL;
 
     JPADrawVisitorDefFlags flags;
-    flags.mbIsEnableDrawParent = dc.pssp != NULL && dc.pssp->isEnableDrawParent();
+    flags.mbIsEnableDrawParent = dc.pssp == NULL || dc.pssp->isEnableDrawParent();
     flags.mbHasPrmAnm = dc.pbsp->isEnablePrm() && dc.pbsp->isEnablePrmAnm();
     flags.mbHasEnvAnm = dc.pbsp->isEnableEnv() && dc.pbsp->isEnableEnvAnm();
     flags.mbIsStripe = dc.pbsp->getType() == JPABaseShape::JPAType_Stripe || dc.pbsp->getType() == JPABaseShape::JPAType_StripeCross;
@@ -94,8 +82,10 @@ bool JPADraw::initialize(JPABaseEmitter* emtr, JPATextureResource* texRes) {
 
     setDrawExecVisitorsBeforeCB(flags);
 
-    // TODO: setup visitor container
-    // mpExecEmtrPVis[execEmtrVisNum++] = vc.something;
+    mpExecEmtrPVis[execEmtrPVisNum++] = &vc.mExecCallBack;
+    mpExecEmtrCVis[execEmtrCVisNum++] = &vc.mExecCallBack;
+    mpExecPtclVis[execPtclVisNum++] = &vc.mExecCallBack;
+    mpExecChldVis[execChldVisNum++] = &vc.mExecCallBack;
 
     setDrawExecVisitorsAfterCB(flags);
     setDrawCalcVisitors(flags);
@@ -112,81 +102,825 @@ bool JPADraw::initialize(JPABaseEmitter* emtr, JPATextureResource* texRes) {
 }
 
 /* 80268634-802688D4       .text draw__7JPADrawFPA4_f */
-void JPADraw::draw(float(*)[4]) {
-    /* Nonmatching */
+void JPADraw::draw(MtxP drawMtx) {
+    GXClearVtxDesc();
+    GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
+    GXSetVtxDesc(GX_VA_TEX0, GX_DIRECT);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
+    GXSetCurrentMtx(0);
+    GXSetNumChans(0);
+    GXSetTevDirect(GX_TEVSTAGE0);
+    GXSetTevDirect(GX_TEVSTAGE1);
+    GXSetTevDirect(GX_TEVSTAGE2);
+    GXSetCoPlanar(GX_DISABLE);
+    GXSetChanCtrl(GX_COLOR0A0, GX_DISABLE, GX_SRC_REG, GX_SRC_REG, 0, GX_DF_NONE, GX_AF_NONE);
+    GXSetChanCtrl(GX_COLOR1A1, GX_DISABLE, GX_SRC_REG, GX_SRC_REG, 0, GX_DF_NONE, GX_AF_NONE);
+    GXSetBlendMode(dc.pbsp->getBlendMode1(), dc.pbsp->getSrcBlendFactor1(), dc.pbsp->getDstBlendFactor1(), dc.pbsp->getBlendOp1());
+    cb.mPrmColor = dc.pbe->mGlobalPrmColor;
+    cb.mEnvColor = dc.pbe->mGlobalEnvColor;
+    cb.mDrawMtxPtr = drawMtx;
+    cb.mSetupTev.setupTev(dc.pbsp, dc.petx);
+    for (int i = 0; i < execEmtrVisNum; i++) {
+        mpExecEmtrVis[i]->exec(&dc);
+    }
+    if (dc.pbsp->isEnableAnmTone()) {
+        zDraw();
+    }
+    field_0xc2 &= ~0x01;
+    if (dc.pbsp->getChildOrder() && dc.pssp) {
+        drawChild();
+    }
+    drawParticle();
+    if (!dc.pbsp->getChildOrder() && dc.pssp) {
+        drawChild();
+    }
+    GXSetAlphaCompare(GX_ALWAYS, 0, GX_AOP_AND, GX_ALWAYS, 0);
 }
 
 /* 802688D4-80268940       .text calc__7JPADrawFv */
 void JPADraw::calc() {
-    /* Nonmatching */
+    for (s32 i = 0; i < calcEmtrVisNum; i++)
+        mpCalcEmtrVis[i]->calc(&dc);
 }
 
 /* 80268940-802689C4       .text calcParticle__7JPADrawFP15JPABaseParticle */
-void JPADraw::calcParticle(JPABaseParticle*) {
-    /* Nonmatching */
+void JPADraw::calcParticle(JPABaseParticle* ptcl) {
+    ptcl->mRotateAngle += ptcl->mRotateSpeed;
+    for (s32 i = 0; i < calcPtclVisNum; i++)
+        mpCalcPtclVis[i]->calc(&dc, ptcl);
 }
 
 /* 802689C4-80268A48       .text calcChild__7JPADrawFP15JPABaseParticle */
-void JPADraw::calcChild(JPABaseParticle*) {
-    /* Nonmatching */
+void JPADraw::calcChild(JPABaseParticle* ptcl) {
+    ptcl->mRotateAngle += ptcl->mRotateSpeed;
+    for (s32 i = 0; i < calcChldVisNum; i++)
+        mpCalcChldVis[i]->calc(&dc, ptcl);
 }
 
 /* 80268A48-80268F28       .text initParticle__7JPADrawFP15JPABaseParticle */
-void JPADraw::initParticle(JPABaseParticle*) {
-    /* Nonmatching */
+void JPADraw::initParticle(JPABaseParticle* ptcl) {
+    ptcl->mAxis.set(JPABaseEmitter::emtrInfo.mEmitterGlobalRot[0][1], JPABaseEmitter::emtrInfo.mEmitterGlobalRot[1][1], JPABaseEmitter::emtrInfo.mEmitterGlobalRot[2][1]);
+    ptcl->mPrmColor = mPrmColor;
+    ptcl->mEnvColor = mEnvColor;
+    ptcl->mAlphaOut = 1.0f;
+    ptcl->mLoopOffset = dc.pbe->getRandomF() * dc.pbsp->getLoopOffset();
+    if (dc.pesp != NULL) {
+        if (dc.pesp->isEnableRotate()) {
+            ptcl->mRotateAngle = (dc.pesp->getRotateAngle() * 32768.0f) + (dc.pbe->getRandomSF() * dc.pesp->getRotateRandomAngle() * 65536.0f);
+            s16 rotateSpeed;
+            if (dc.pbe->getRandomRF() < dc.pesp->getRotateDirection()) {
+                rotateSpeed = dc.pesp->getRotateSpeed() * (dc.pesp->getRotateRandomSpeed() * dc.pbe->getRandomRF() + 1.0f) * 32768.0f;
+            } else {
+                rotateSpeed = -dc.pesp->getRotateSpeed() * (dc.pesp->getRotateRandomSpeed() * dc.pbe->getRandomRF() + 1.0f) * 32768.0f;
+            }
+            ptcl->mRotateSpeed = rotateSpeed;
+        } else {
+            ptcl->mRotateAngle = 0;
+            ptcl->mRotateSpeed = 0;
+        }
+
+        if (dc.pesp->isEnableScale()) {
+            ptcl->mScaleX = ptcl->mScaleY = ptcl->mScaleOut = (dc.pbe->getRandomRF() * dc.pesp->getRandomScale() + 1.0f) * mScaleOut;
+        } else {
+            ptcl->mScaleX = ptcl->mScaleY = ptcl->mScaleOut = mScaleOut;
+        }
+
+        if (dc.pesp->isEnableAlpha()) {
+            ptcl->mAlphaWaveRandom = (dc.pbe->getRandomRF() * dc.pesp->getAlphaWaveRandom() + 1.0f);
+        } else {
+            ptcl->mAlphaWaveRandom = 1.0f;
+        }
+    } else {
+        ptcl->mRotateAngle = 0;
+        ptcl->mRotateSpeed = 0;
+        ptcl->mScaleOut = ptcl->mScaleX = ptcl->mScaleY = mScaleOut;
+        ptcl->mAlphaWaveRandom = 1.0f;
+    }
 }
 
 /* 80268F28-802692A4       .text initChild__7JPADrawFP15JPABaseParticleP15JPABaseParticle */
-void JPADraw::initChild(JPABaseParticle*, JPABaseParticle*) {
-    /* Nonmatching */
+void JPADraw::initChild(JPABaseParticle* ptcl, JPABaseParticle* chld) {
+    chld->mAxis.set(ptcl->mAxis);
+    chld->mAlphaOut = 1.0f;
+    if (dc.pssp->isInheritedRGB()) {
+        f32 ratio = dc.pssp->getInheritRGB();
+        chld->mPrmColor.r = ptcl->mPrmColor.r * ratio;
+        chld->mPrmColor.g = ptcl->mPrmColor.g * ratio;
+        chld->mPrmColor.b = ptcl->mPrmColor.b * ratio;
+        chld->mEnvColor.r = ptcl->mEnvColor.r * ratio;
+        chld->mEnvColor.g = ptcl->mEnvColor.g * ratio;
+        chld->mEnvColor.b = ptcl->mEnvColor.b * ratio;
+    } else {
+        chld->mPrmColor = dc.pssp->getPrm();
+        chld->mEnvColor = dc.pssp->getEnv();
+    }
+
+    if (dc.pssp->isInheritedAlpha()) {
+        f32 ratio = dc.pssp->getInheritAlpha() * ptcl->mAlphaOut;
+        chld->mPrmColor.a = ptcl->mPrmColor.a * ratio;
+        chld->mEnvColor.a = ptcl->mEnvColor.a * ratio;
+    } else {
+        chld->mPrmColor.a = dc.pssp->getPrmAlpha();
+        chld->mEnvColor.a = dc.pssp->getEnvAlpha();
+    }
+
+    if (dc.pssp->isInheritedScale()) {
+        f32 ratio = dc.pssp->getInheritScale();
+        chld->mScaleX = chld->mScaleOut = ratio * ptcl->mScaleX;
+        chld->mScaleY = chld->mAlphaWaveRandom = ratio * ptcl->mScaleY;
+    } else {
+        chld->mAlphaWaveRandom = 1.0f;
+        chld->mScaleY = 1.0f;
+        chld->mScaleOut = 1.0f;
+        chld->mScaleX = 1.0f;
+    }
+
+    chld->mRotateAngle = ptcl->mRotateAngle;
+    if (dc.pssp->isEnableRotate()) {
+        chld->mRotateSpeed = dc.pssp->getRotateSpeed() * 32768.0f;
+    } else {
+        chld->mRotateSpeed = 0;
+    }
 }
 
 /* 802692A4-80269358       .text loadTexture__7JPADrawFUc11_GXTexMapID */
 bool JPADraw::loadTexture(u8 tex_no, GXTexMapID texMap) {
     JUT_ASSERT(0x17e, dc.pbe->getEmitterDataBlockInfoPtr()->getTextureNum() > tex_no);
-    JPATexture * tex = dc.mpTextureResource->pTexResArray[dc.pTexIdx[tex_no]];
-    tex->load(texMap);
-    return TRUE;
+    dc.mpTextureResource->load(dc.pTexIdx[tex_no], texMap);
+    return true;
 }
 
 /* 80269358-80269C08       .text setDrawExecVisitorsBeforeCB__7JPADrawFRCQ27JPADraw22JPADrawVisitorDefFlags */
-void JPADraw::setDrawExecVisitorsBeforeCB(const JPADraw::JPADrawVisitorDefFlags&) {
-    /* Nonmatching */
+void JPADraw::setDrawExecVisitorsBeforeCB(const JPADrawVisitorDefFlags& flags) {
+    if (dc.petx) {
+        mpExecEmtrVis[execEmtrVisNum++] = &vc.mLoadExTexture;
+    }
+    if (flags.mbIsPointOrLine) {
+        mpExecEmtrPVis[execEmtrPVisNum++] = &vc.mGenIdtMtx;
+    } else if (dc.pbsp->isEnableProjection()) {
+        if (dc.pbsp->isEnableTexScrollAnm()) {
+            mpExecEmtrPVis[execEmtrPVisNum++] = &vc.mGenPrjTexMtx;
+        } else {
+            mpExecEmtrPVis[execEmtrPVisNum++] = &vc.mGenPrjMtx;
+        }
+    } else if (dc.pbsp->isEnableTexScrollAnm()) {
+        if (flags.mbIsStripe) {
+            mpExecEmtrPVis[execEmtrPVisNum++] = &vc.mSetTexMtx;
+        } else {
+            mpExecEmtrPVis[execEmtrPVisNum++] = &vc.mGenTexMtx0;
+        }
+    } else {
+        mpExecEmtrPVis[execEmtrPVisNum++] = &vc.mGenIdtMtx;
+    }
+
+    if (dc.pbsp->isEnableGlobalColAnm()) {
+        if (flags.mbIsStripe || flags.mbIsEnableAlpha == 0) {
+            mpExecEmtrPVis[execEmtrPVisNum++] = &vc.mRegisterColorPrmEnv;
+        } else if (flags.mbIsEnableAlpha) {
+            mpExecEmtrPVis[execEmtrPVisNum++] = &vc.mRegisterColorEnv;
+        }
+    } else if ((!dc.pbsp->isEnablePrm() || !dc.pbsp->isEnablePrmAnm()) && flags.mbIsEnableAlpha == 0) {
+        if (!dc.pbsp->isEnableEnv() || !dc.pbsp->isEnableEnvAnm()) {
+            mpExecEmtrPVis[execEmtrPVisNum++] = &vc.mRegisterColorPrmEnv;
+        } else {
+            mpExecEmtrPVis[execEmtrPVisNum++] = &vc.mRegisterColorPrm;
+        }
+    } else if (!dc.pbsp->isEnableEnv() || !dc.pbsp->isEnableEnvAnm()) {
+        mpExecEmtrPVis[execEmtrPVisNum++] = &vc.mRegisterColorEnv;
+    }
+    if (!dc.pbsp->textureIsEmpty() && (!dc.pbsp->isEnableTextureAnm() || dc.pbsp->isEnableGlobalTexAnm())) {
+        mpExecEmtrPVis[execEmtrPVisNum++] = &vc.mLoadTexture;
+    } else if (dc.pbsp->textureIsEmpty()) {
+        mpExecEmtrPVis[execEmtrPVisNum++] = &vc.mLoadDefaultTexture;
+    }
+    if (dc.pssp && !dc.pssp->isEnableAlphaOut() && !dc.pssp->isInheritedAlpha() && !dc.pssp->isInheritedRGB()) {
+        mpExecEmtrCVis[execEmtrCVisNum++] = &vc.mRegisterColorChildPrmEnv;
+    }
+    if (!dc.pbsp->isEnableGlobalColAnm()) {
+        if (flags.mbHasPrmAnm) {
+            if (flags.mbHasEnvAnm) {
+                mpExecPtclVis[execPtclVisNum++] = &vc.mRegisterPrmColor;
+            } else {
+                mpExecPtclVis[execPtclVisNum++] = &vc.mRegisterPrmColorAnm;
+            }
+        } else if (flags.mbIsEnableAlpha) {
+            if (flags.mbHasEnvAnm) {
+                mpExecPtclVis[execPtclVisNum++] = &vc.mRegisterPrmAlpha;
+            } else {
+                mpExecPtclVis[execPtclVisNum++] = &vc.mRegisterPrmAlphaAnm;
+            }
+        } else if (flags.mbHasEnvAnm) {
+            mpExecPtclVis[execPtclVisNum++] = &vc.mRegisterEnvColorAnm;
+        }
+
+    } else if (flags.mbIsEnableAlpha && !flags.mbIsStripe) {
+        mpExecPtclVis[execPtclVisNum++] = &vc.mRegisterPrmAlphaAnm;
+    }
+    if (!dc.pbsp->textureIsEmpty() && dc.pbsp->isEnableTextureAnm() && !dc.pbsp->isEnableGlobalTexAnm()) {
+        mpExecPtclVis[execPtclVisNum++] = &vc.mLoadTexture;
+    }
+    switch (dc.pbsp->getType()) {
+    case JPABaseShape::JPAType_Point:
+        if (dc.pesp && dc.pesp->isEnableScale()) {
+            mpExecPtclVis[execPtclVisNum++] = &vc.mSetPointSize;
+        }
+        break;
+    case JPABaseShape::JPAType_Line:
+        if (dc.pesp && dc.pesp->isEnableScale()) {
+            mpExecPtclVis[execPtclVisNum++] = &vc.mSetLineWidth;
+        }
+        break;
+    case JPABaseShape::JPAType_Stripe:
+    case JPABaseShape::JPAType_StripeCross:
+        break;
+    case JPABaseShape::JPAType_Billboard:
+    case JPABaseShape::JPAType_Direction:
+    case JPABaseShape::JPAType_DirectionCross:
+    case JPABaseShape::JPAType_Rotation:
+    case JPABaseShape::JPAType_RotationCross:
+    case JPABaseShape::JPAType_DirBillboard:
+    case JPABaseShape::JPAType_YBillboard:
+        if (dc.pbsp->isEnableTexScrollAnm() && !dc.pbsp->isEnableProjection()) {
+            mpExecPtclVis[execPtclVisNum++] = &vc.mSetTexMtx;
+        }
+        break;
+    }
+    if (dc.pssp) {
+        if (dc.pssp->isEnableAlphaOut() || dc.pssp->isInheritedAlpha() || dc.pssp->isInheritedRGB()) {
+            mpExecChldVis[execChldVisNum++] = &vc.mRegisterPrmColor;
+        }
+        switch (dc.pssp->getType()) {
+        case JPABaseShape::JPAType_Point:
+            mpExecChldVis[execChldVisNum++] = &vc.mSetPointSize;
+            break;
+        case JPABaseShape::JPAType_Line:
+            mpExecChldVis[execChldVisNum++] = &vc.mSetLineWidth;
+            break;
+        }
+    }
 }
 
 /* 80269C08-8026A2EC       .text setDrawExecVisitorsAfterCB__7JPADrawFRCQ27JPADraw22JPADrawVisitorDefFlags */
-void JPADraw::setDrawExecVisitorsAfterCB(const JPADraw::JPADrawVisitorDefFlags&) {
-    /* Nonmatching */
+void JPADraw::setDrawExecVisitorsAfterCB(const JPADrawVisitorDefFlags& flags) {
+    if (flags.mbIsEnableDrawParent) {
+        switch (dc.pbsp->getType()) {
+        case JPABaseShape::JPAType_Point:
+            mpExecPtclVis[execPtclVisNum++] = &vc.mExecPoint;
+            break;
+        case JPABaseShape::JPAType_Line:
+            mpExecPtclVis[execPtclVisNum++] = &vc.mExecLine;
+            break;
+        case JPABaseShape::JPAType_Billboard:
+            if (dc.pesp && dc.pesp->isEnableRotate()) {
+                mpExecPtclVis[execPtclVisNum++] = &vc.mExecRotBillBoard;
+            } else {
+                mpExecPtclVis[execPtclVisNum++] = &vc.mExecBillBoard;
+            }
+            break;
+        case JPABaseShape::JPAType_Direction:
+            if (dc.pesp && dc.pesp->isEnableRotate()) {
+                mpExecPtclVis[execPtclVisNum++] = &vc.mExecRotDirectional;
+            } else {
+                mpExecPtclVis[execPtclVisNum++] = &vc.mExecDirectional;
+            }
+            break;
+        case JPABaseShape::JPAType_DirectionCross:
+            if (dc.pesp && dc.pesp->isEnableRotate()) {
+                mpExecPtclVis[execPtclVisNum++] = &vc.mExecRotDirectionalCross;
+            } else {
+                mpExecPtclVis[execPtclVisNum++] = &vc.mExecDirectionalCross;
+            }
+            break;
+        case JPABaseShape::JPAType_YBillboard:
+            if (dc.pesp && dc.pesp->isEnableRotate()) {
+                mpExecPtclVis[execPtclVisNum++] = &vc.mExecRotYBillBoard;
+            } else {
+                mpExecPtclVis[execPtclVisNum++] = &vc.mExecYBillBoard;
+            }
+            break;
+        case JPABaseShape::JPAType_Rotation:
+            mpExecPtclVis[execPtclVisNum++] = &vc.mExecRotation;
+            break;
+        case JPABaseShape::JPAType_RotationCross:
+            mpExecPtclVis[execPtclVisNum++] = &vc.mExecRotationCross;
+            break;
+        case JPABaseShape::JPAType_DirBillboard:
+            mpExecPtclVis[execPtclVisNum++] = &vc.mExecDirBillBoard;
+            break;
+        case JPABaseShape::JPAType_Stripe:
+            mpExecEmtrPVis[execEmtrPVisNum++] = &vc.mExecStripe;
+            break;
+        case JPABaseShape::JPAType_StripeCross:
+            mpExecEmtrPVis[execEmtrPVisNum++] = &vc.mExecStripeCross;
+            break;
+        }
+    }
+    if (dc.pssp) {
+        switch (dc.pssp->getType()) {
+        case JPABaseShape::JPAType_Point:
+            mpExecChldVis[execChldVisNum++] = &vc.mExecPoint;
+            break;
+        case JPABaseShape::JPAType_Line:
+            mpExecChldVis[execChldVisNum++] = &vc.mExecLine;
+            break;
+        case JPABaseShape::JPAType_Billboard:
+            if ((dc.pesp && dc.pesp->isEnableRotate()) || dc.pssp->isEnableRotate()) {
+                mpExecChldVis[execChldVisNum++] = &vc.mExecRotBillBoard;
+            } else {
+                mpExecChldVis[execChldVisNum++] = &vc.mExecBillBoard;
+            }
+            break;
+        case JPABaseShape::JPAType_Direction:
+            if ((dc.pesp && dc.pesp->isEnableRotate()) || dc.pssp->isEnableRotate()) {
+                mpExecChldVis[execChldVisNum++] = &vc.mExecRotDirectional;
+            } else {
+                mpExecChldVis[execChldVisNum++] = &vc.mExecDirectional;
+            }
+            break;
+        case JPABaseShape::JPAType_DirectionCross:
+            if ((dc.pesp && dc.pesp->isEnableRotate()) || dc.pssp->isEnableRotate()) {
+                mpExecChldVis[execChldVisNum++] = &vc.mExecRotDirectionalCross;
+            } else {
+                mpExecChldVis[execChldVisNum++] = &vc.mExecDirectionalCross;
+            }
+            break;
+        case JPABaseShape::JPAType_YBillboard:
+            if ((dc.pesp && dc.pesp->isEnableRotate()) || dc.pssp->isEnableRotate()) {
+                mpExecChldVis[execChldVisNum++] = &vc.mExecRotYBillBoard;
+            } else {
+                mpExecChldVis[execChldVisNum++] = &vc.mExecYBillBoard;
+            }
+            break;
+        case JPABaseShape::JPAType_Rotation:
+            mpExecChldVis[execChldVisNum++] = &vc.mExecRotation;
+            break;
+        case JPABaseShape::JPAType_RotationCross:
+            mpExecChldVis[execChldVisNum++] = &vc.mExecRotationCross;
+            break;
+        case JPABaseShape::JPAType_DirBillboard:
+            mpExecChldVis[execChldVisNum++] = &vc.mExecDirBillBoard;
+            break;
+        case JPABaseShape::JPAType_Stripe:
+            mpExecEmtrCVis[execEmtrCVisNum++] = &vc.mExecStripe;
+            break;
+        case JPABaseShape::JPAType_StripeCross:
+            mpExecEmtrCVis[execEmtrCVisNum++] = &vc.mExecStripeCross;
+            break;
+        }
+    }
 }
 
+enum {
+    JPACalcType_Normal,
+    JPACalcType_Repeat,
+    JPACalcType_Reverse,
+    JPACalcType_Merge,
+    JPACalcType_Random,
+};
+
+enum {
+    JPAAlphaWaveType_Nrm,
+    JPAAlphaWaveType_Add,
+    JPAAlphaWaveType_Mult,
+};
+
 /* 8026A2EC-8026ADB0       .text setDrawCalcVisitors__7JPADrawFRCQ27JPADraw22JPADrawVisitorDefFlags */
-void JPADraw::setDrawCalcVisitors(const JPADraw::JPADrawVisitorDefFlags&) {
-    /* Nonmatching */
+void JPADraw::setDrawCalcVisitors(const JPADraw::JPADrawVisitorDefFlags& flags) {
+    if (dc.pbsp->isEnableGlobalColAnm() && (flags.mbHasPrmAnm || flags.mbHasEnvAnm)) {
+        switch (dc.pbsp->getColorRegAnmType()) {
+        case JPACalcType_Normal:
+            mpCalcEmtrVis[calcEmtrVisNum++] = &vc.mCalcColorAnmFrameNormal;
+            break;
+        case JPACalcType_Repeat:
+            mpCalcEmtrVis[calcEmtrVisNum++] = &vc.mCalcColorAnmFrameRepeat;
+            break;
+        case JPACalcType_Reverse:
+            mpCalcEmtrVis[calcEmtrVisNum++] = &vc.mCalcColorAnmFrameReverse;
+            break;
+        case JPACalcType_Merge:
+            mpCalcEmtrVis[calcEmtrVisNum++] = &vc.mCalcColorAnmFrameMerge;
+            break;
+        case JPACalcType_Random:
+            mpCalcEmtrVis[calcEmtrVisNum++] = &vc.mCalcColorAnmFrameRandom;
+            break;
+        }
+        if (flags.mbHasPrmAnm) {
+            mpCalcEmtrVis[calcEmtrVisNum++] = &vc.mCalcColorPrm;
+        }
+        if (flags.mbHasEnvAnm) {
+            mpCalcEmtrVis[calcEmtrVisNum++] = &vc.mCalcColorEnv;
+        }
+    }
+    if (!dc.pbsp->textureIsEmpty() && dc.pbsp->isEnableTextureAnm() && dc.pbsp->isEnableGlobalTexAnm()) {
+        switch (dc.pbsp->getTextureAnmType()) {
+        case JPACalcType_Normal:
+            mpCalcEmtrVis[calcEmtrVisNum++] = &vc.mCalcTextureAnmIndexNormal;
+            break;
+        case JPACalcType_Repeat:
+            mpCalcEmtrVis[calcEmtrVisNum++] = &vc.mCalcTextureAnmIndexRepeat;
+            break;
+        case JPACalcType_Reverse:
+            mpCalcEmtrVis[calcEmtrVisNum++] = &vc.mCalcTextureAnmIndexReverse;
+            break;
+        case JPACalcType_Merge:
+            mpCalcEmtrVis[calcEmtrVisNum++] = &vc.mCalcTextureAnmIndexMerge;
+            break;
+        case JPACalcType_Random:
+            mpCalcEmtrVis[calcEmtrVisNum++] = &vc.mCalcTextureAnmIndexRandom;
+            break;
+        }
+    }
+    if (dc.pesp && dc.pesp->isEnableScale()) {
+        if (dc.pesp->isEnableScaleAnmX()) {
+            if (dc.pesp->getAnmTypeX()) {
+                mpCalcPtclVis[calcPtclVisNum++] = &vc.mCalcScaleAnmTimingReverseX;
+            } else {
+                mpCalcPtclVis[calcPtclVisNum++] = &vc.mCalcScaleAnmTimingRepeatX;
+            }
+        } else {
+            mpCalcPtclVis[calcPtclVisNum++] = &vc.mCalcScaleAnmTimingNormal;
+        }
+        if (dc.pesp->isEnableScaleBySpeedX() && dc.pbsp->getType() != JPABaseShape::JPAType_Line) {
+            mpCalcPtclVis[calcPtclVisNum++] = &vc.mCalcScaleXBySpeed;
+        } else {
+            mpCalcPtclVis[calcPtclVisNum++] = &vc.mCalcScaleX;
+        }
+        if (dc.pbsp->getType() != JPABaseShape::JPAType_Point) {
+            if (!dc.pesp->isDiffXY()) {
+                mpCalcPtclVis[calcPtclVisNum++] = &vc.mCalcScaleCopyX2Y;
+            } else {
+                if (dc.pesp->isEnableScaleAnmY()) {
+                    if (dc.pesp->getAnmTypeY()) {
+                        mpCalcPtclVis[calcPtclVisNum++] = &vc.mCalcScaleAnmTimingReverseY;
+                    } else {
+                        mpCalcPtclVis[calcPtclVisNum++] = &vc.mCalcScaleAnmTimingRepeatY;
+                    }
+                } else if (dc.pesp->isEnableScaleAnmX()) {
+                    mpCalcPtclVis[calcPtclVisNum++] = &vc.mCalcScaleAnmTimingNormal;
+                }
+                if (dc.pesp->isEnableScaleBySpeedY()) {
+                    mpCalcPtclVis[calcPtclVisNum++] = &vc.mCalcScaleYBySpeed;
+                } else {
+                    mpCalcPtclVis[calcPtclVisNum++] = &vc.mCalcScaleY;
+                }
+            }
+        }
+    }
+    if (!dc.pbsp->isEnableGlobalColAnm()) {
+        if (flags.mbHasPrmAnm || flags.mbHasEnvAnm) {
+            switch (dc.pbsp->getColorRegAnmType()) {
+            case JPACalcType_Normal:
+                mpCalcPtclVis[calcPtclVisNum++] = &vc.mCalcColorAnmFrameNormal;
+                break;
+            case JPACalcType_Repeat:
+                mpCalcPtclVis[calcPtclVisNum++] = &vc.mCalcColorAnmFrameRepeat;
+                break;
+            case JPACalcType_Reverse:
+                mpCalcPtclVis[calcPtclVisNum++] = &vc.mCalcColorAnmFrameReverse;
+                break;
+            case JPACalcType_Merge:
+                mpCalcPtclVis[calcPtclVisNum++] = &vc.mCalcColorAnmFrameMerge;
+                break;
+            case JPACalcType_Random:
+                mpCalcPtclVis[calcPtclVisNum++] = &vc.mCalcColorAnmFrameRandom;
+                break;
+            }
+            if (flags.mbHasPrmAnm) {
+                mpCalcPtclVis[calcPtclVisNum++] = &vc.mCalcColorPrm;
+            }
+            if (flags.mbHasEnvAnm) {
+                mpCalcPtclVis[calcPtclVisNum++] = &vc.mCalcColorEnv;
+            }
+        }
+    } else {
+        mpCalcPtclVis[calcPtclVisNum++] = &vc.mCalcColorCopyFromEmitter;
+    }
+    if (flags.mbIsEnableAlpha && !flags.mbIsStripe) {
+        mpCalcPtclVis[calcPtclVisNum++] = &vc.mCalcAlpha;
+        if (dc.pesp->isEnableSinWave()) {
+            switch (dc.pesp->getAlphaWaveType()) {
+            case JPAAlphaWaveType_Nrm:
+                mpCalcPtclVis[calcPtclVisNum++] = &vc.mCalcAlphaFlickNrmSin;
+                break;
+            case JPAAlphaWaveType_Add:
+                mpCalcPtclVis[calcPtclVisNum++] = &vc.mCalcAlphaFlickAddSin;
+                break;
+            case JPAAlphaWaveType_Mult:
+                mpCalcPtclVis[calcPtclVisNum++] = &vc.mCalcAlphaFlickMultSin;
+                break;
+            }
+        }
+    }
+    if (!dc.pbsp->textureIsEmpty() && dc.pbsp->isEnableTextureAnm() && !dc.pbsp->isEnableGlobalTexAnm()) {
+        switch (dc.pbsp->getTextureAnmType()) {
+        case JPACalcType_Normal:
+            mpCalcPtclVis[calcPtclVisNum++] = &vc.mCalcTextureAnmIndexNormal;
+            break;
+        case JPACalcType_Repeat:
+            mpCalcPtclVis[calcPtclVisNum++] = &vc.mCalcTextureAnmIndexRepeat;
+            break;
+        case JPACalcType_Reverse:
+            mpCalcPtclVis[calcPtclVisNum++] = &vc.mCalcTextureAnmIndexReverse;
+            break;
+        case JPACalcType_Merge:
+            mpCalcPtclVis[calcPtclVisNum++] = &vc.mCalcTextureAnmIndexMerge;
+            break;
+        case JPACalcType_Random:
+            mpCalcPtclVis[calcPtclVisNum++] = &vc.mCalcTextureAnmIndexRandom;
+            break;
+        }
+    }
+    if (dc.pssp) {
+        if (dc.pssp->isEnableAlphaOut()) {
+            mpCalcChldVis[calcChldVisNum++] = &vc.mCalcChildAlphaOut;
+        }
+        if (dc.pssp->isEnableScaleOut()) {
+            mpCalcChldVis[calcChldVisNum++] = &vc.mCalcChildScaleOut;
+        }
+    }
 }
 
 /* 8026ADB0-8026B3DC       .text setParticleClipBoard__7JPADrawFv */
 void JPADraw::setParticleClipBoard() {
-    /* Nonmatching */
+    /* Nonmatching - top switch */
+
+    switch (dc.pbsp->getType()) {
+    case JPABaseShape::JPAType_Billboard:
+        break;
+    case JPABaseShape::JPAType_DirBillboard:
+        PSMTXIdentity(cb.mDrawMtx);
+        break;
+    case JPABaseShape::JPAType_YBillboard:
+        loadYBBMtx(cb.mDrawMtxPtr);
+        break;
+    case JPABaseShape::JPAType_Point:
+    case JPABaseShape::JPAType_Line:
+    case JPABaseShape::JPAType_Direction:
+    case JPABaseShape::JPAType_DirectionCross:
+    case JPABaseShape::JPAType_Stripe:
+    case JPABaseShape::JPAType_StripeCross:
+    case JPABaseShape::JPAType_Rotation:
+    case JPABaseShape::JPAType_RotationCross:
+        MTXCopy(cb.mDrawMtxPtr, cb.mDrawMtx);
+        break;
+    }
+
+    GXLoadPosMtxImm(cb.mDrawMtx, GX_PNMTX0);
+
+    JPABaseEmitter* emtr = dc.pbe;
+    f32 scaleX = emtr->mGlobalParticleScale.x;
+    f32 scaleY = emtr->mGlobalParticleScale.y;
+
+    cb.mGlobalScaleX = 25.0f * dc.pbsp->getBaseSizeX() * scaleX;
+    cb.mGlobalScaleY = 25.0f * dc.pbsp->getBaseSizeY() * scaleY;
+
+    if (dc.pbsp->getType() == JPABaseShape::JPAType_Point) {
+        cb.mGlobalScaleX *= 1.02f;
+        cb.mGlobalScaleY *= 1.02f;
+    } else if (dc.pbsp->getType() == JPABaseShape::JPAType_Line) {
+        cb.mGlobalScaleX *= 1.02f;
+        cb.mGlobalScaleY *= 0.4f;
+    }
+
+    if (dc.pesp != NULL && dc.pesp->isEnableScale()) {
+        cb.mPivotX = cb.mGlobalScaleX * (dc.pesp->getPivotX() - 1.0f);
+        cb.mPivotY = cb.mGlobalScaleY * (dc.pesp->getPivotY() - 1.0f);
+    } else {
+        cb.mPivotX = cb.mPivotY = 0.0f;
+    }
+
+    f32 tilingX = dc.pbsp->getTilingX();
+    f32 tilingY = dc.pbsp->getTilingY();
+
+    cb.field_0x14[0].x = 0.0f;
+    cb.field_0x14[0].y = 0.0f;
+    cb.field_0x14[1].x = tilingX;
+    cb.field_0x14[1].y = 0.0f;
+    cb.field_0x14[2].x = tilingX;
+    cb.field_0x14[2].y = tilingY;
+    cb.field_0x14[3].x = 0.0f;
+    cb.field_0x14[3].y = tilingY;
+
+    if (!dc.pbsp->textureIsEmpty() && !dc.pbsp->isEnableTextureAnm())
+        mTexIdx = dc.pTexIdx[dc.pbsp->getTextureIndex()], GX_TEXMAP0;
+
+    cb.mDirTypeFunc = NULL;
+    cb.mRotTypeFunc = NULL;
+    cb.mBasePlaneTypeFunc = NULL;
+
+    if (dc.pbsp->getType() == JPABaseShape::JPAType_Direction || dc.pbsp->getType() == JPABaseShape::JPAType_DirectionCross || dc.pbsp->getType() == JPABaseShape::JPAType_DirBillboard || dc.pbsp->getType() == JPABaseShape::JPAType_Stripe || dc.pbsp->getType() == JPABaseShape::JPAType_StripeCross) {
+        switch (dc.pbsp->getDirType()) {
+        case 0: cb.mDirTypeFunc = dirTypeVel; break;
+        case 1: cb.mDirTypeFunc = dirTypePos; break;
+        case 2: cb.mDirTypeFunc = dirTypePosInv; break;
+        case 3: cb.mDirTypeFunc = dirTypeEmtrDir; break;
+        case 4: cb.mDirTypeFunc = dirTypePrevPtcl; break;
+        }
+    }
+
+    if (dc.pbsp->getType() == JPABaseShape::JPAType_Direction || dc.pbsp->getType() == JPABaseShape::JPAType_DirectionCross || dc.pbsp->getType() == JPABaseShape::JPAType_Rotation || dc.pbsp->getType() == JPABaseShape::JPAType_RotationCross) {
+        switch (dc.pbsp->getRotType()) {
+        case 0: cb.mRotTypeFunc = rotTypeY; break;
+        case 1: cb.mRotTypeFunc = rotTypeX; break;
+        case 2: cb.mRotTypeFunc = rotTypeZ; break;
+        case 3: cb.mRotTypeFunc = rotTypeXYZ; break;
+        case 4: cb.mRotTypeFunc = rotTypeYJiggle; break;
+        }
+    }
+
+    if (dc.pbsp->getType() == JPABaseShape::JPAType_Direction || dc.pbsp->getType() == JPABaseShape::JPAType_Rotation) {
+        switch (dc.pbsp->getBasePlaneType()) {
+        case 0: cb.mBasePlaneTypeFunc = basePlaneTypeXY; break;
+        case 1: cb.mBasePlaneTypeFunc = basePlaneTypeXZ; break;
+        }
+    }
 }
 
 /* 8026B3DC-8026B938       .text setChildClipBoard__7JPADrawFv */
 void JPADraw::setChildClipBoard() {
-    /* Nonmatching */
+    /* Nonmatching - top switch */
+
+    switch (dc.pssp->getType()) {
+    case JPABaseShape::JPAType_Billboard:
+        break;
+    case JPABaseShape::JPAType_DirBillboard:
+        PSMTXIdentity(cb.mDrawMtx);
+        break;
+    case JPABaseShape::JPAType_YBillboard:
+        loadYBBMtx(cb.mDrawMtxPtr);
+        break;
+    case JPABaseShape::JPAType_Point:
+    case JPABaseShape::JPAType_Line:
+    case JPABaseShape::JPAType_Direction:
+    case JPABaseShape::JPAType_DirectionCross:
+    case JPABaseShape::JPAType_Stripe:
+    case JPABaseShape::JPAType_StripeCross:
+    case JPABaseShape::JPAType_Rotation:
+    case JPABaseShape::JPAType_RotationCross:
+        MTXCopy(cb.mDrawMtxPtr, cb.mDrawMtx);
+        break;
+    }
+
+    GXLoadPosMtxImm(cb.mDrawMtx, GX_PNMTX0);
+
+    JPABaseEmitter* emtr = dc.pbe;
+    f32 scaleX = emtr->mGlobalParticleScale.x;
+    f32 scaleY = emtr->mGlobalParticleScale.y;
+
+    if (!dc.pssp->isInheritedScale()) {
+        cb.mGlobalScaleX = 25.0f * dc.pssp->getScaleX() * scaleX;
+        cb.mGlobalScaleY = 25.0f * dc.pssp->getScaleY() * scaleY;
+    } else {
+        cb.mGlobalScaleX = 25.0f * dc.pbsp->getBaseSizeX() * scaleX;
+        cb.mGlobalScaleY = 25.0f * dc.pbsp->getBaseSizeY() * scaleY;
+    }
+
+    if (dc.pssp->getType() == JPABaseShape::JPAType_Point) {
+        cb.mGlobalScaleX *= 1.02f;
+        cb.mGlobalScaleY *= 1.02f;
+    } else if (dc.pssp->getType() == JPABaseShape::JPAType_Line) {
+        cb.mGlobalScaleX *= 1.02f;
+        cb.mGlobalScaleY *= 0.4f;
+    }
+
+    cb.mPivotX = cb.mPivotY = 0.0f;
+
+    cb.field_0x14[1].y = 0.0f;
+    cb.field_0x14[0].y = 0.0f;
+    cb.field_0x14[3].x = 0.0f;
+    cb.field_0x14[0].x = 0.0f;
+    cb.field_0x14[3].y = 1.0f;
+    cb.field_0x14[2].y = 1.0f;
+    cb.field_0x14[2].x = 1.0f;
+    cb.field_0x14[1].x = 1.0f;
+
+    cb.mDirTypeFunc = NULL;
+    cb.mRotTypeFunc = NULL;
+    cb.mBasePlaneTypeFunc = NULL;
+
+    if (dc.pssp->getType() == JPABaseShape::JPAType_Direction || dc.pssp->getType() == JPABaseShape::JPAType_DirectionCross || dc.pssp->getType() == JPABaseShape::JPAType_DirBillboard || dc.pssp->getType() == JPABaseShape::JPAType_Stripe || dc.pssp->getType() == JPABaseShape::JPAType_StripeCross) {
+        switch (dc.pssp->getDirType()) {
+        case 0: cb.mDirTypeFunc = dirTypeVel; break;
+        case 1: cb.mDirTypeFunc = dirTypePos; break;
+        case 2: cb.mDirTypeFunc = dirTypePosInv; break;
+        case 3: cb.mDirTypeFunc = dirTypeEmtrDir; break;
+        case 4: cb.mDirTypeFunc = dirTypePrevPtcl; break;
+        }
+    }
+
+    if (dc.pssp->getType() == JPABaseShape::JPAType_Direction || dc.pssp->getType() == JPABaseShape::JPAType_DirectionCross || dc.pssp->getType() == JPABaseShape::JPAType_Rotation || dc.pssp->getType() == JPABaseShape::JPAType_RotationCross) {
+        switch (dc.pssp->getRotType()) {
+        case 0: cb.mRotTypeFunc = rotTypeY; break;
+        case 1: cb.mRotTypeFunc = rotTypeX; break;
+        case 2: cb.mRotTypeFunc = rotTypeZ; break;
+        case 3: cb.mRotTypeFunc = rotTypeXYZ; break;
+        case 4: cb.mRotTypeFunc = rotTypeYJiggle; break;
+        }
+    }
+
+    if (dc.pssp->getType() == JPABaseShape::JPAType_Direction || dc.pssp->getType() == JPABaseShape::JPAType_Rotation) {
+        switch (dc.pssp->getBasePlaneType()) {
+        case 0: cb.mBasePlaneTypeFunc = basePlaneTypeXY; break;
+        case 1: cb.mBasePlaneTypeFunc = basePlaneTypeXZ; break;
+        }
+    }
 }
 
 /* 8026B938-8026BC2C       .text drawParticle__7JPADrawFv */
 void JPADraw::drawParticle() {
-    /* Nonmatching */
+    /* Nonmatching - regalloc */
+    field_0xc2 &= ~0x02;
+    setParticleClipBoard();
+    dc.mpActiveParticles = &dc.pbe->mActiveParticles;
+    GXSetPointSize(cb.mGlobalScaleX, GX_TO_ONE);
+    GXSetLineWidth(cb.mGlobalScaleX, GX_TO_ONE);
+    GXSetZMode(dc.pbsp->isEnableZCmp(), dc.pbsp->getZCmpFunction(), dc.pbsp->isEnableZCmpUpdate());
+    GXSetZCompLoc(dc.pbsp->getZCompLoc());
+    GXSetAlphaCompare(dc.pbsp->getAlphaCmpComp0(), dc.pbsp->getAlphaCmpRef0(), dc.pbsp->getAlphaCmpOp(), dc.pbsp->getAlphaCmpComp1(), dc.pbsp->getAlphaCmpRef1());
+    GXSetAlphaUpdate(dc.pbsp->isEnableAlphaUpdate());
+    GXSetColorUpdate(GX_TRUE);
+    GXSetCullMode(GX_CULL_NONE);
+    if (dc.pbsp->isClipOn()) {
+        GXSetClipMode(GX_CLIP_ENABLE);
+        GXSetMisc(1, 8);
+    } else {
+        GXSetClipMode(GX_CLIP_DISABLE);
+    }
+
+    for (s32 i = 0; i < execEmtrPVisNum; i++)
+        mpExecEmtrPVis[i]->exec(&dc);
+
+    JPABaseEmitter * emtr = dc.pbe;
+    if (dc.pbsp->getListOrder() == 0) {
+        for (JSULink<JPABaseParticle> * link = emtr->mActiveParticles.getFirst(); link != NULL; link = link->getNext()) {
+            JPABaseParticle * ptcl = link->getObject();
+            for (s32 i = 0; i < execPtclVisNum; i++)
+                mpExecPtclVis[i]->exec(&dc, ptcl);
+        }
+    } else {
+        for (JSULink<JPABaseParticle> * link = emtr->mActiveParticles.getLast(); link != NULL; link = link->getPrev()) {
+            JPABaseParticle * ptcl = link->getObject();
+            for (s32 i = 0; i < execPtclVisNum; i++)
+                mpExecPtclVis[i]->exec(&dc, ptcl);
+        }
+    }
+
+    GXSetMisc(1, 0);
 }
 
 /* 8026BC2C-8026BF88       .text drawChild__7JPADrawFv */
 void JPADraw::drawChild() {
-    /* Nonmatching */
+    /* Nonmatching - regalloc */
+    field_0xc2 |= 0x02;
+    setChildClipBoard();
+    dc.mpActiveParticles = &dc.pbe->mChildParticles;
+    GXSetTexCoordGen2(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY, GX_FALSE, GX_PTIDENTITY);
+    GXEnableTexOffsets(GX_TEXCOORD0, GX_TRUE, GX_TRUE);
+
+    if (dc.pbsp->textureIsEmpty()) {
+        dc.mpTextureResource->loadDefaultTexture(GX_TEXMAP0);
+    } else {
+        dc.mpTextureResource->load(dc.pTexIdx[dc.pssp->getTextureIndex()], GX_TEXMAP0);
+    }
+
+    GXSetZMode(dc.pbsp->isEnableZCmp(), dc.pbsp->getZCmpFunction(), dc.pbsp->isEnableZCmpUpdate());
+    GXSetZCompLoc(dc.pbsp->getZCompLoc());
+    GXSetAlphaCompare(dc.pbsp->getAlphaCmpComp0(), dc.pbsp->getAlphaCmpRef0(), dc.pbsp->getAlphaCmpOp(), dc.pbsp->getAlphaCmpComp1(), dc.pbsp->getAlphaCmpRef1());
+    GXSetAlphaUpdate(dc.pbsp->isEnableAlphaUpdate());
+    GXSetColorUpdate(GX_TRUE);
+    GXSetCullMode(GX_CULL_NONE);
+
+    if (dc.pssp->isClipOn()) {
+        GXSetClipMode(GX_CLIP_ENABLE);
+        GXSetMisc(1, 8);
+    } else {
+        GXSetClipMode(GX_CLIP_DISABLE);
+    }
+
+    for (s32 i = 0; i < execEmtrCVisNum; i++)
+        mpExecEmtrCVis[i]->exec(&dc);
+
+    JPABaseEmitter * emtr = dc.pbe;
+    if (dc.pbsp->getListOrder() == 0) {
+        for (JSULink<JPABaseParticle> * link = emtr->mChildParticles.getFirst(); link != NULL; link = link->getNext()) {
+            JPABaseParticle * ptcl = link->getObject();
+            for (s32 i = 0; i < execChldVisNum; i++)
+                mpExecChldVis[i]->exec(&dc, ptcl);
+        }
+    } else {
+        for (JSULink<JPABaseParticle> * link = emtr->mChildParticles.getLast(); link != NULL; link = link->getPrev()) {
+            JPABaseParticle * ptcl = link->getObject();
+            for (s32 i = 0; i < execChldVisNum; i++)
+                mpExecChldVis[i]->exec(&dc, ptcl);
+        }
+    }
+
+    GXSetMisc(1, 0);
 }
 
 /* 8026BF88-8026C024       .text zDraw__7JPADrawFv */
 void JPADraw::zDraw() {
-    /* Nonmatching */
     field_0xc2 |= 0x01;
     if (dc.pbsp->getChildOrder() && dc.pssp != NULL)
         zDrawChild();
@@ -197,30 +931,117 @@ void JPADraw::zDraw() {
 
 /* 8026C024-8026C24C       .text zDrawParticle__7JPADrawFv */
 void JPADraw::zDrawParticle() {
-    /* Nonmatching */
+    /* Nonmatching - regalloc */
+    field_0xc2 &= ~0x02;
+    setParticleClipBoard();
+    dc.mpActiveParticles = &dc.pbe->mActiveParticles;
+    GXSetPointSize(cb.mGlobalScaleX, GX_TO_ONE);
+    GXSetLineWidth(cb.mGlobalScaleX, GX_TO_ONE);
+    GXSetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
+    GXSetZCompLoc(GX_FALSE);
+    GXSetAlphaCompare(GX_GEQUAL, dc.pbe->mGlobalPrmColor.a, GX_AOP_OR, GX_GEQUAL, dc.pbe->mGlobalPrmColor.a);
+    GXSetAlphaUpdate(GX_FALSE);
+    GXSetColorUpdate(GX_FALSE);
+    GXSetCullMode(GX_CULL_NONE);
+    if (dc.pbsp->isClipOn()) {
+        GXSetClipMode(GX_CLIP_ENABLE);
+        GXSetMisc(1, 8);
+    } else {
+        GXSetClipMode(GX_CLIP_DISABLE);
+    }
+
+    for (s32 i = 0; i < execEmtrPVisNum; i++)
+        mpExecEmtrPVis[i]->exec(&dc);
+
+    JPABaseEmitter * emtr = dc.pbe;
+    if (dc.pbsp->getListOrder() == 0) {
+        for (JSULink<JPABaseParticle> * link = emtr->mActiveParticles.getFirst(); link != NULL; link = link->getNext()) {
+            JPABaseParticle * ptcl = link->getObject();
+            for (s32 i = 0; i < execPtclVisNum; i++)
+                mpExecPtclVis[i]->exec(&dc, ptcl);
+        }
+    } else {
+        for (JSULink<JPABaseParticle> * link = emtr->mActiveParticles.getLast(); link != NULL; link = link->getPrev()) {
+            JPABaseParticle * ptcl = link->getObject();
+            for (s32 i = 0; i < execPtclVisNum; i++)
+                mpExecPtclVis[i]->exec(&dc, ptcl);
+        }
+    }
+
+    GXSetMisc(1, 0);
 }
 
 /* 8026C24C-8026C4DC       .text zDrawChild__7JPADrawFv */
 void JPADraw::zDrawChild() {
-    /* Nonmatching */
+    /* Nonmatching - regalloc */
+    field_0xc2 |= 0x02;
+    setChildClipBoard();
+    dc.mpActiveParticles = &dc.pbe->mChildParticles;
+    GXSetTexCoordGen2(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY, GX_FALSE, GX_PTIDENTITY);
+    GXEnableTexOffsets(GX_TEXCOORD0, GX_TRUE, GX_TRUE);
+
+    if (dc.pbsp->textureIsEmpty()) {
+        dc.mpTextureResource->loadDefaultTexture(GX_TEXMAP0);
+    } else {
+        dc.mpTextureResource->load(dc.pTexIdx[dc.pssp->getTextureIndex()], GX_TEXMAP0);
+    }
+
+    GXSetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
+    GXSetZCompLoc(GX_FALSE);
+    GXSetAlphaCompare(GX_GEQUAL, dc.pbe->mGlobalPrmColor.a, GX_AOP_OR, GX_GEQUAL, dc.pbe->mGlobalPrmColor.a);
+    GXSetAlphaUpdate(GX_FALSE);
+    GXSetColorUpdate(GX_FALSE);
+    GXSetCullMode(GX_CULL_NONE);
+
+    if (dc.pssp->isClipOn()) {
+        GXSetClipMode(GX_CLIP_ENABLE);
+        GXSetMisc(1, 8);
+    } else {
+        GXSetClipMode(GX_CLIP_DISABLE);
+    }
+
+    for (s32 i = 0; i < execEmtrCVisNum; i++)
+        mpExecEmtrCVis[i]->exec(&dc);
+
+    JPABaseEmitter * emtr = dc.pbe;
+    if (dc.pbsp->getListOrder() == 0) {
+        for (JSULink<JPABaseParticle> * link = emtr->mChildParticles.getFirst(); link != NULL; link = link->getNext()) {
+            JPABaseParticle * ptcl = link->getObject();
+            for (s32 i = 0; i < execChldVisNum; i++)
+                mpExecChldVis[i]->exec(&dc, ptcl);
+        }
+    } else {
+        for (JSULink<JPABaseParticle> * link = emtr->mChildParticles.getLast(); link != NULL; link = link->getPrev()) {
+            JPABaseParticle * ptcl = link->getObject();
+            for (s32 i = 0; i < execChldVisNum; i++)
+                mpExecChldVis[i]->exec(&dc, ptcl);
+        }
+    }
+
+    GXSetMisc(1, 0);
 }
 
 /* 8026C4DC-8026C640       .text loadYBBMtx__7JPADrawFPA4_f */
-void JPADraw::loadYBBMtx(float(*)[4]) {
+void JPADraw::loadYBBMtx(MtxP mtx) {
     /* Nonmatching */
-}
+    JGeometry::TVec3<f32> v(0.0f, mtx[1][1], mtx[2][1]);
+    JUT_ASSERT(0x596, !v.isZero());
+    v.normalize();
 
-/* 8026C6C0-8026C6FC       .text __dt__16JPADrawClipBoardFv */
-JPADrawClipBoard::~JPADrawClipBoard() {
-    /* Nonmatching */
-}
+    cb.mDrawYBBMtx[0][0] = 1.0f;
+    cb.mDrawYBBMtx[0][1] = 0.0f;
+    cb.mDrawYBBMtx[0][2] = 0.0f;
+    cb.mDrawYBBMtx[0][3] = mtx[0][3];
 
-/* 8026C700-8026D2E0       .text __dt__23JPADrawVisitorContainerFv */
-JPADrawVisitorContainer::~JPADrawVisitorContainer() {
-    /* Nonmatching */
-}
+    cb.mDrawYBBMtx[1][0] = 0.0f;
+    cb.mDrawYBBMtx[1][1] = v.y;
+    cb.mDrawYBBMtx[1][2] = -v.z;
+    cb.mDrawYBBMtx[1][3] = mtx[1][3];
 
-/* 8026D2E0-8026D7B8       .text __ct__23JPADrawVisitorContainerFv */
-JPADrawVisitorContainer::JPADrawVisitorContainer() {
-    /* Nonmatching */
+    cb.mDrawYBBMtx[2][0] = 1.0f;
+    cb.mDrawYBBMtx[2][1] = v.z;
+    cb.mDrawYBBMtx[2][2] = v.y;
+    cb.mDrawYBBMtx[2][3] = mtx[2][3];
+
+    MTXIdentity(cb.mDrawMtx);
 }

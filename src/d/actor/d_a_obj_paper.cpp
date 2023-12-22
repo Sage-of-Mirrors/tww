@@ -4,7 +4,6 @@
 //
 
 #include "d/actor/d_a_obj_paper.h"
-#include "JSystem/JKernel/JKRHeap.h"
 #include "JSystem/JUtility/JUTAssert.h"
 #include "f_op/f_op_actor.h"
 #include "f_op/f_op_actor_mng.h"
@@ -58,23 +57,23 @@ namespace daObjPaper {
         // dCcD_SrcGObjInf
         {
             /* Flags             */ 0,
-            /* SrcObjAt Type     */ 0,
-            /* SrcObjAt Atp      */ 0,
-            /* SrcObjAt SPrm     */ 0,
-            /* SrcObjTg Type     */ ~(AT_TYPE_WATER | AT_TYPE_UNK20000 | AT_TYPE_LEAF_WIND | AT_TYPE_UNK400000 | AT_TYPE_LIGHT),
-            /* SrcObjTg SPrm     */ 0x0F,
-            /* SrcObjCo SPrm     */ 0x79,
+            /* SrcObjAt  Type    */ 0,
+            /* SrcObjAt  Atp     */ 0,
+            /* SrcObjAt  SPrm    */ 0,
+            /* SrcObjTg  Type    */ ~(AT_TYPE_WATER | AT_TYPE_UNK20000 | AT_TYPE_LEAF_WIND | AT_TYPE_UNK400000 | AT_TYPE_LIGHT),
+            /* SrcObjTg  SPrm    */ TG_SPRM_SET | TG_SPRM_GRP,
+            /* SrcObjCo  SPrm    */ CO_SPRM_SET | CO_SPRM_UNK8 | CO_SPRM_VSGRP,
             /* SrcGObjAt Se      */ 0,
             /* SrcGObjAt HitMark */ 0,
             /* SrcGObjAt Spl     */ 0,
             /* SrcGObjAt Mtrl    */ 0,
-            /* SrcGObjAt GFlag   */ 0,
+            /* SrcGObjAt SPrm    */ 0,
             /* SrcGObjTg Se      */ 0,
             /* SrcGObjTg HitMark */ 0,
             /* SrcGObjTg Spl     */ 0,
             /* SrcGObjTg Mtrl    */ 0,
-            /* SrcGObjTg GFlag   */ 0x03,
-            /* SrcGObjCo GFlag   */ 0,
+            /* SrcGObjTg SPrm    */ G_TG_SPRM_SHIELD | G_TG_SPRM_NO_CON_HIT,
+            /* SrcGObjCo SPrm    */ 0,
         },
         // cM3dGCylS
         {
@@ -124,8 +123,8 @@ namespace daObjPaper {
 
                 mMsgId = fpcM_ERROR_PROCESS_ID_e;
 
-                if (mType == 2) {
-                    mStatus = mStatus & 0xFFFFFFC0 | 0x38;
+                if (mType == Piwa_e) {
+                    fopAcM_SetStatusMap(this, 0x18);
                 }
 
                 if (attr(mType).mColCylinderRadius != 0) {
@@ -163,7 +162,7 @@ namespace daObjPaper {
 
     /* 00000730-00000748       .text mode_wait_init__Q210daObjPaper5Act_cFv */
     void daObjPaper::Act_c::mode_wait_init() {
-        mStatus |= fopAcStts_NOCULLEXEC_e;
+        fopAcM_OnStatus(this, fopAcStts_NOCULLEXEC_e);
         mMode = ActMode_WAIT_e;
     }
 
@@ -179,7 +178,7 @@ namespace daObjPaper {
 
     /* 00000784-000007A4       .text mode_talk0_init__Q210daObjPaper5Act_cFv */
     void daObjPaper::Act_c::mode_talk0_init() {
-        mStatus &= ~fopAcStts_NOCULLEXEC_e;
+        fopAcM_OffStatus(this, fopAcStts_NOCULLEXEC_e);
         mMsgId = fpcM_ERROR_PROCESS_ID_e;
         mMode = ActMode_TALKBEGIN_e;
     }
@@ -272,7 +271,7 @@ namespace daObjPaper {
         set_mtx();
         if (mbHasCc) {
             mCylinderCol.SetC(current.pos);
-            g_dComIfG_gameInfo.play.mCcS.Set(&mCylinderCol);
+            dComIfG_Ccsp()->Set(&mCylinderCol);
         }
 
         return true;

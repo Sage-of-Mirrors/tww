@@ -4,7 +4,6 @@
 //
 
 #include "d/actor/d_a_andsw0.h"
-#include "JSystem/JKernel/JKRHeap.h"
 #include "f_op/f_op_actor_mng.h"
 #include "d/d_com_inf_game.h"
 #include "d/d_procname.h"
@@ -270,7 +269,7 @@ static void event_start_check(andsw0_class* i_this) {
             if (actor->mEvtInfo.checkCommandDemoAccrpt()) {
                 i_this->mEventState++;
             } else {
-                fopAcM_orderOtherEventId(actor, i_this->mEventIdx, i_this->mEventNo, 0xFFFF, 0, 1);
+                fopAcM_orderOtherEventId(actor, i_this->mEventIdx, i_this->mEventNo);
             }
         }
 

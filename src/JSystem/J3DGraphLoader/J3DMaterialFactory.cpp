@@ -4,7 +4,7 @@
 //
 
 #include "JSystem/J3DGraphLoader/J3DMaterialFactory.h"
-#include "dolphin/types.h"
+#include "JSystem/J3DGraphBase/J3DMatBlock.h"
 
 /* 802F68F0-802F6B38       .text __ct__18J3DMaterialFactoryFRC16J3DMaterialBlock */
 J3DMaterialFactory::J3DMaterialFactory(const J3DMaterialBlock&) {
@@ -17,7 +17,7 @@ J3DMaterialFactory::J3DMaterialFactory(const J3DMaterialDLBlock&) {
 }
 
 /* 802F6BC0-802F6C08       .text countUniqueMaterials__18J3DMaterialFactoryFv */
-void J3DMaterialFactory::countUniqueMaterials() {
+u16 J3DMaterialFactory::countUniqueMaterials() {
     /* Nonmatching */
 }
 
@@ -32,7 +32,7 @@ void J3DMaterialFactory::countStages(int) const {
 }
 
 /* 802F6CC8-802F6D44       .text create__18J3DMaterialFactoryCFP11J3DMaterialQ218J3DMaterialFactory12MaterialTypeiUl */
-void J3DMaterialFactory::create(J3DMaterial*, J3DMaterialFactory::MaterialType, int, unsigned long) const {
+J3DMaterial* J3DMaterialFactory::create(J3DMaterial*, J3DMaterialFactory::MaterialType, int, unsigned long) const {
     /* Nonmatching */
 }
 
@@ -57,22 +57,22 @@ void J3DMaterialFactory::createLockedMaterial(J3DMaterial*, int, unsigned long) 
 }
 
 /* 802F83A0-802F8420       .text calcSize__18J3DMaterialFactoryCFP11J3DMaterialQ218J3DMaterialFactory12MaterialTypeiUl */
-void J3DMaterialFactory::calcSize(J3DMaterial*, J3DMaterialFactory::MaterialType, int, unsigned long) const {
+u32 J3DMaterialFactory::calcSize(J3DMaterial*, J3DMaterialFactory::MaterialType, int, unsigned long) const {
     /* Nonmatching */
 }
 
 /* 802F8420-802F8554       .text calcSizeNormalMaterial__18J3DMaterialFactoryCFP11J3DMaterialiUl */
-void J3DMaterialFactory::calcSizeNormalMaterial(J3DMaterial*, int, unsigned long) const {
+u32 J3DMaterialFactory::calcSizeNormalMaterial(J3DMaterial*, int, unsigned long) const {
     /* Nonmatching */
 }
 
 /* 802F8554-802F8624       .text calcSizePatchedMaterial__18J3DMaterialFactoryCFP11J3DMaterialiUl */
-void J3DMaterialFactory::calcSizePatchedMaterial(J3DMaterial*, int, unsigned long) const {
+u32 J3DMaterialFactory::calcSizePatchedMaterial(J3DMaterial*, int, unsigned long) const {
     /* Nonmatching */
 }
 
 /* 802F8624-802F863C       .text calcSizeLockedMaterial__18J3DMaterialFactoryCFP11J3DMaterialiUl */
-void J3DMaterialFactory::calcSizeLockedMaterial(J3DMaterial*, int, unsigned long) const {
+u32 J3DMaterialFactory::calcSizeLockedMaterial(J3DMaterial*, int, unsigned long) const {
     /* Nonmatching */
 }
 
@@ -208,225 +208,5 @@ void J3DMaterialFactory::newDither(int) const {
 
 /* 802F9514-802F95B8       .text newNBTScale__18J3DMaterialFactoryCFi */
 void J3DMaterialFactory::newNBTScale(int) const {
-    /* Nonmatching */
-}
-
-/* 802F95B8-802F95BC       .text load__14J3DPEBlockNullFv */
-void J3DPEBlockNull::load() {
-    /* Nonmatching */
-}
-
-/* 802F95BC-802F95C8       .text getType__14J3DPEBlockNullFv */
-void J3DPEBlockNull::getType() {
-    /* Nonmatching */
-}
-
-/* 802F95C8-802F9624       .text __dt__14J3DPEBlockNullFv */
-J3DPEBlockNull::~J3DPEBlockNull() {
-    /* Nonmatching */
-}
-
-/* 802F9624-802F9628       .text reset__15J3DTevBlockNullFP11J3DTevBlock */
-void J3DTevBlockNull::reset(J3DTevBlock*) {
-    /* Nonmatching */
-}
-
-/* 802F9628-802F962C       .text ptrToIndex__15J3DTevBlockNullFv */
-void J3DTevBlockNull::ptrToIndex() {
-    /* Nonmatching */
-}
-
-/* 802F962C-802F9650       .text indexToPtr__15J3DTevBlockNullFv */
-void J3DTevBlockNull::indexToPtr() {
-    /* Nonmatching */
-}
-
-/* 802F9650-802F965C       .text getType__15J3DTevBlockNullFv */
-void J3DTevBlockNull::getType() {
-    /* Nonmatching */
-}
-
-/* 802F965C-802F96B8       .text __dt__15J3DTevBlockNullFv */
-J3DTevBlockNull::~J3DTevBlockNull() {
-    /* Nonmatching */
-}
-
-/* 802F96B8-802F96BC       .text calc__18J3DTexGenBlockNullFPA4_Cf */
-void J3DTexGenBlockNull::calc(const float(*)[4]) {
-    /* Nonmatching */
-}
-
-/* 802F96BC-802F96C0       .text load__18J3DTexGenBlockNullFv */
-void J3DTexGenBlockNull::load() {
-    /* Nonmatching */
-}
-
-/* 802F96C0-802F96C4       .text patch__18J3DTexGenBlockNullFv */
-void J3DTexGenBlockNull::patch() {
-    /* Nonmatching */
-}
-
-/* 802F96C4-802F96C8       .text diff__18J3DTexGenBlockNullFUl */
-void J3DTexGenBlockNull::diff(unsigned long) {
-    /* Nonmatching */
-}
-
-/* 802F96C8-802F96CC       .text diffTexMtx__18J3DTexGenBlockNullFv */
-void J3DTexGenBlockNull::diffTexMtx() {
-    /* Nonmatching */
-}
-
-/* 802F96CC-802F96D0       .text diffTexGen__18J3DTexGenBlockNullFv */
-void J3DTexGenBlockNull::diffTexGen() {
-    /* Nonmatching */
-}
-
-/* 802F96D0-802F96DC       .text getType__18J3DTexGenBlockNullFv */
-void J3DTexGenBlockNull::getType() {
-    /* Nonmatching */
-}
-
-/* 802F96DC-802F9738       .text __dt__18J3DTexGenBlockNullFv */
-J3DTexGenBlockNull::~J3DTexGenBlockNull() {
-    /* Nonmatching */
-}
-
-/* 802F9738-802F9744       .text getType__17J3DColorBlockNullFv */
-void J3DColorBlockNull::getType() {
-    /* Nonmatching */
-}
-
-/* 802F9744-802F97A0       .text __dt__17J3DColorBlockNullFv */
-J3DColorBlockNull::~J3DColorBlockNull() {
-    /* Nonmatching */
-}
-
-/* 802F97A0-802F9800       .text __ct__11J3DTevStageFRC15J3DTevStageInfo */
-J3DTevStage::J3DTevStage(const J3DTevStageInfo&) {
-    /* Nonmatching */
-}
-
-/* 802F9800-802F9848       .text __dt__11J3DMaterialFv */
-J3DMaterial::~J3DMaterial() {
-    /* Nonmatching */
-}
-
-/* 802F9848-802F9860       .text JSUConvertOffsetToPtr<17J3DCurrentMtxInfo>__FPCvPCv */
-void JSUConvertOffsetToPtr<J3DCurrentMtxInfo>(const void*, const void*) {
-    /* Nonmatching */
-}
-
-/* 802F9860-802F9878       .text JSUConvertOffsetToPtr<15J3DPatchingInfo>__FPCvPCv */
-void JSUConvertOffsetToPtr<J3DPatchingInfo>(const void*, const void*) {
-    /* Nonmatching */
-}
-
-/* 802F9878-802F9890       .text JSUConvertOffsetToPtr<18J3DDisplayListInit>__FPCvPCv */
-void JSUConvertOffsetToPtr<J3DDisplayListInit>(const void*, const void*) {
-    /* Nonmatching */
-}
-
-/* 802F9890-802F98A8       .text JSUConvertOffsetToPtr<15J3DNBTScaleInfo>__FPCvPCv */
-void JSUConvertOffsetToPtr<J3DNBTScaleInfo>(const void*, const void*) {
-    /* Nonmatching */
-}
-
-/* 802F98A8-802F98C0       .text JSUConvertOffsetToPtr<12J3DZModeInfo>__FPCvPCv */
-void JSUConvertOffsetToPtr<J3DZModeInfo>(const void*, const void*) {
-    /* Nonmatching */
-}
-
-/* 802F98C0-802F98D8       .text JSUConvertOffsetToPtr<12J3DBlendInfo>__FPCvPCv */
-void JSUConvertOffsetToPtr<J3DBlendInfo>(const void*, const void*) {
-    /* Nonmatching */
-}
-
-/* 802F98D8-802F98F0       .text JSUConvertOffsetToPtr<16J3DAlphaCompInfo>__FPCvPCv */
-void JSUConvertOffsetToPtr<J3DAlphaCompInfo>(const void*, const void*) {
-    /* Nonmatching */
-}
-
-/* 802F98F0-802F9908       .text JSUConvertOffsetToPtr<10J3DFogInfo>__FPCvPCv */
-void JSUConvertOffsetToPtr<J3DFogInfo>(const void*, const void*) {
-    /* Nonmatching */
-}
-
-/* 802F9908-802F9920       .text JSUConvertOffsetToPtr<23J3DTevSwapModeTableInfo>__FPCvPCv */
-void JSUConvertOffsetToPtr<J3DTevSwapModeTableInfo>(const void*, const void*) {
-    /* Nonmatching */
-}
-
-/* 802F9920-802F9938       .text JSUConvertOffsetToPtr<18J3DTevSwapModeInfo>__FPCvPCv */
-void JSUConvertOffsetToPtr<J3DTevSwapModeInfo>(const void*, const void*) {
-    /* Nonmatching */
-}
-
-/* 802F9938-802F9950       .text JSUConvertOffsetToPtr<15J3DTevStageInfo>__FPCvPCv */
-void JSUConvertOffsetToPtr<J3DTevStageInfo>(const void*, const void*) {
-    /* Nonmatching */
-}
-
-/* 802F9950-802F9968       .text JSUConvertOffsetToPtr<11_GXColorS10>__FPCvPCv */
-void JSUConvertOffsetToPtr<_GXColorS10>(const void*, const void*) {
-    /* Nonmatching */
-}
-
-/* 802F9968-802F9980       .text JSUConvertOffsetToPtr<15J3DTevOrderInfo>__FPCvPCv */
-void JSUConvertOffsetToPtr<J3DTevOrderInfo>(const void*, const void*) {
-    /* Nonmatching */
-}
-
-/* 802F9980-802F9998       .text JSUConvertOffsetToPtr<13J3DTexMtxInfo>__FPCvPCv */
-void JSUConvertOffsetToPtr<J3DTexMtxInfo>(const void*, const void*) {
-    /* Nonmatching */
-}
-
-/* 802F9998-802F99B0       .text JSUConvertOffsetToPtr<16J3DTexCoord2Info>__FPCvPCv */
-void JSUConvertOffsetToPtr<J3DTexCoord2Info>(const void*, const void*) {
-    /* Nonmatching */
-}
-
-/* 802F99B0-802F99C8       .text JSUConvertOffsetToPtr<15J3DTexCoordInfo>__FPCvPCv */
-void JSUConvertOffsetToPtr<J3DTexCoordInfo>(const void*, const void*) {
-    /* Nonmatching */
-}
-
-/* 802F99C8-802F99E0       .text JSUConvertOffsetToPtr<12J3DLightInfo>__FPCvPCv */
-void JSUConvertOffsetToPtr<J3DLightInfo>(const void*, const void*) {
-    /* Nonmatching */
-}
-
-/* 802F99E0-802F99F8       .text JSUConvertOffsetToPtr<16J3DColorChanInfo>__FPCvPCv */
-void JSUConvertOffsetToPtr<J3DColorChanInfo>(const void*, const void*) {
-    /* Nonmatching */
-}
-
-/* 802F99F8-802F9A10       .text JSUConvertOffsetToPtr<Uc>__FPCvPCv */
-void JSUConvertOffsetToPtr<unsigned char>(const void*, const void*) {
-    /* Nonmatching */
-}
-
-/* 802F9A10-802F9A28       .text JSUConvertOffsetToPtr<8_GXColor>__FPCvPCv */
-void JSUConvertOffsetToPtr<_GXColor>(const void*, const void*) {
-    /* Nonmatching */
-}
-
-/* 802F9A28-802F9A40       .text JSUConvertOffsetToPtr<11_GXCullMode>__FPCvPCv */
-void JSUConvertOffsetToPtr<_GXCullMode>(const void*, const void*) {
-    /* Nonmatching */
-}
-
-/* 802F9A40-802F9A58       .text JSUConvertOffsetToPtr<14J3DIndInitData>__FPCvPCv */
-void JSUConvertOffsetToPtr<J3DIndInitData>(const void*, const void*) {
-    /* Nonmatching */
-}
-
-/* 802F9A58-802F9A70       .text JSUConvertOffsetToPtr<Us>__FPCvPCv */
-void JSUConvertOffsetToPtr<unsigned short>(const void*, const void*) {
-    /* Nonmatching */
-}
-
-/* 802F9A70-802F9A88       .text JSUConvertOffsetToPtr<19J3DMaterialInitData>__FPCvPCv */
-void JSUConvertOffsetToPtr<J3DMaterialInitData>(const void*, const void*) {
     /* Nonmatching */
 }

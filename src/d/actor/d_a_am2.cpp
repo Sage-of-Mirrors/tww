@@ -5,7 +5,6 @@
 
 #include "d/actor/d_a_am2.h"
 #include "f_op/f_op_actor_mng.h"
-#include "JSystem/JKernel/JKRHeap.h"
 #include "d/d_procname.h"
 #include "d/d_bg_s_lin_chk.h"
 #include "d/d_s_play.h"
@@ -987,7 +986,7 @@ static void action_itai(am2_class* i_this) {
         dComIfGp_particle_set(0x81AF, &i_this->current.pos, &i_this->shape_angle);
         dComIfGp_particle_set(0x81B0, &i_this->current.pos, &i_this->shape_angle);
         mDoAud_seStart(JA_SE_CM_AM2_EXPLODE, &i_this->mEyePos, 0, dComIfGp_getReverb(fopAcM_GetRoomNo(i_this)));
-        fopAcM_createDisappear(i_this, &centerPos, 5, 0, 0xFF);
+        fopAcM_createDisappear(i_this, &centerPos, 5);
         fopAcM_onActor(i_this);
         fopAcM_delete(i_this);
         break;
@@ -1342,15 +1341,14 @@ static s32 daAM2_Create(fopAc_ac_c* i_actor) {
         i_this->mItemStealLeft = 3;
         i_this->model = i_this->mpMorf->getModel();
         
-        i_this->mCullMtx = i_this->mpMorf->mpModel->getBaseTRMtx();
+        fopAcM_SetMtx(i_this, i_this->mpMorf->mpModel->getBaseTRMtx());
         fopAcM_setCullSizeBox(i_this, -50.0f, 0.0f, -20.0f, 60.0f, 180.0f, 60.0f);
 
         i_this->mAttentionInfo.mFlags = 0;
 
         i_this->mAcch.Set(
             &fopAcM_GetPosition_p(i_this), &fopAcM_GetOldPosition_p(i_this),
-            i_this, 1, &i_this->mAcchCir, &fopAcM_GetSpeed_p(i_this),
-            NULL, NULL
+            i_this, 1, &i_this->mAcchCir, &fopAcM_GetSpeed_p(i_this)
         );
         i_this->mStts.Init(0xFE, 1, i_this);
 
@@ -1367,23 +1365,23 @@ static s32 daAM2_Create(fopAc_ac_c* i_actor) {
             // dCcD_SrcGObjInf
             {
                 /* Flags             */ 0,
-                /* SrcObjAt Type     */ AT_TYPE_UNK1000,
-                /* SrcObjAt Atp      */ 0,
-                /* SrcObjAt SPrm     */ 0,
-                /* SrcObjTg Type     */ AT_TYPE_NORMAL_ARROW | AT_TYPE_FIRE_ARROW | AT_TYPE_ICE_ARROW | AT_TYPE_LIGHT_ARROW | AT_TYPE_GRAPPLING_HOOK,
-                /* SrcObjTg SPrm     */ 0x03,
-                /* SrcObjCo SPrm     */ 0,
+                /* SrcObjAt  Type    */ AT_TYPE_UNK1000,
+                /* SrcObjAt  Atp     */ 0,
+                /* SrcObjAt  SPrm    */ 0,
+                /* SrcObjTg  Type    */ AT_TYPE_NORMAL_ARROW | AT_TYPE_FIRE_ARROW | AT_TYPE_ICE_ARROW | AT_TYPE_LIGHT_ARROW | AT_TYPE_GRAPPLING_HOOK,
+                /* SrcObjTg  SPrm    */ TG_SPRM_SET | TG_SPRM_UNK2,
+                /* SrcObjCo  SPrm    */ 0,
                 /* SrcGObjAt Se      */ 0,
                 /* SrcGObjAt HitMark */ 0,
                 /* SrcGObjAt Spl     */ 0,
                 /* SrcGObjAt Mtrl    */ 0,
-                /* SrcGObjAt GFlag   */ 0,
+                /* SrcGObjAt SPrm    */ 0,
                 /* SrcGObjTg Se      */ 0,
                 /* SrcGObjTg HitMark */ 0,
                 /* SrcGObjTg Spl     */ 0,
                 /* SrcGObjTg Mtrl    */ 0,
-                /* SrcGObjTg GFlag   */ 0x06,
-                /* SrcGObjCo GFlag   */ 0,
+                /* SrcGObjTg SPrm    */ G_TG_SPRM_NO_CON_HIT | G_TG_SPRM_NO_HIT_MARK,
+                /* SrcGObjCo SPrm    */ 0,
             },
             // cM3dGSphS
             {
@@ -1399,23 +1397,23 @@ static s32 daAM2_Create(fopAc_ac_c* i_actor) {
             // dCcD_SrcGObjInf
             {
                 /* Flags             */ 0,
-                /* SrcObjAt Type     */ AT_TYPE_UNK1000,
-                /* SrcObjAt Atp      */ 0,
-                /* SrcObjAt SPrm     */ 0,
-                /* SrcObjTg Type     */ ~(AT_TYPE_WATER | AT_TYPE_UNK20000 | AT_TYPE_LEAF_WIND | AT_TYPE_UNK400000 | AT_TYPE_LIGHT),
-                /* SrcObjTg SPrm     */ 0x03,
-                /* SrcObjCo SPrm     */ 0,
+                /* SrcObjAt  Type    */ AT_TYPE_UNK1000,
+                /* SrcObjAt  Atp     */ 0,
+                /* SrcObjAt  SPrm    */ 0,
+                /* SrcObjTg  Type    */ ~(AT_TYPE_WATER | AT_TYPE_UNK20000 | AT_TYPE_LEAF_WIND | AT_TYPE_UNK400000 | AT_TYPE_LIGHT),
+                /* SrcObjTg  SPrm    */ TG_SPRM_SET | TG_SPRM_UNK2,
+                /* SrcObjCo  SPrm    */ 0,
                 /* SrcGObjAt Se      */ 0,
                 /* SrcGObjAt HitMark */ 0,
                 /* SrcGObjAt Spl     */ 0,
                 /* SrcGObjAt Mtrl    */ 0,
-                /* SrcGObjAt GFlag   */ 0,
+                /* SrcGObjAt SPrm    */ 0,
                 /* SrcGObjTg Se      */ 0,
                 /* SrcGObjTg HitMark */ 0,
                 /* SrcGObjTg Spl     */ 0,
                 /* SrcGObjTg Mtrl    */ 0,
-                /* SrcGObjTg GFlag   */ 0x06,
-                /* SrcGObjCo GFlag   */ 0,
+                /* SrcGObjTg SPrm    */ G_TG_SPRM_NO_CON_HIT | G_TG_SPRM_NO_HIT_MARK,
+                /* SrcGObjCo SPrm    */ 0,
             },
             // cM3dGSphS
             {
@@ -1431,23 +1429,23 @@ static s32 daAM2_Create(fopAc_ac_c* i_actor) {
             // dCcD_SrcGObjInf
             {
                 /* Flags             */ 0,
-                /* SrcObjAt Type     */ AT_TYPE_UNK1000,
-                /* SrcObjAt Atp      */ 0,
-                /* SrcObjAt SPrm     */ 0,
-                /* SrcObjTg Type     */ ~(AT_TYPE_WATER | AT_TYPE_UNK20000 | AT_TYPE_LEAF_WIND | AT_TYPE_UNK400000 | AT_TYPE_LIGHT),
-                /* SrcObjTg SPrm     */ 0x03,
-                /* SrcObjCo SPrm     */ 0x75,
+                /* SrcObjAt  Type    */ AT_TYPE_UNK1000,
+                /* SrcObjAt  Atp     */ 0,
+                /* SrcObjAt  SPrm    */ 0,
+                /* SrcObjTg  Type    */ ~(AT_TYPE_WATER | AT_TYPE_UNK20000 | AT_TYPE_LEAF_WIND | AT_TYPE_UNK400000 | AT_TYPE_LIGHT),
+                /* SrcObjTg  SPrm    */ TG_SPRM_SET | TG_SPRM_UNK2,
+                /* SrcObjCo  SPrm    */ CO_SPRM_SET | CO_SPRM_UNK4 | CO_SPRM_VSGRP,
                 /* SrcGObjAt Se      */ 0,
                 /* SrcGObjAt HitMark */ 0,
                 /* SrcGObjAt Spl     */ 0,
                 /* SrcGObjAt Mtrl    */ 0,
-                /* SrcGObjAt GFlag   */ 0,
+                /* SrcGObjAt SPrm    */ 0,
                 /* SrcGObjTg Se      */ 0,
                 /* SrcGObjTg HitMark */ 0x0C,
                 /* SrcGObjTg Spl     */ 0,
                 /* SrcGObjTg Mtrl    */ 0,
-                /* SrcGObjTg GFlag   */ 0x03,
-                /* SrcGObjCo GFlag   */ 0,
+                /* SrcGObjTg SPrm    */ G_TG_SPRM_SHIELD | G_TG_SPRM_NO_CON_HIT,
+                /* SrcGObjCo SPrm    */ 0,
             },
             // cM3dGCylS
             {
@@ -1463,23 +1461,23 @@ static s32 daAM2_Create(fopAc_ac_c* i_actor) {
             // dCcD_SrcGObjInf
             {
                 /* Flags             */ 0,
-                /* SrcObjAt Type     */ AT_TYPE_UNK1000,
-                /* SrcObjAt Atp      */ 1,
-                /* SrcObjAt SPrm     */ 0x05,
-                /* SrcObjTg Type     */ 0,
-                /* SrcObjTg SPrm     */ 0,
-                /* SrcObjCo SPrm     */ 0x61,
+                /* SrcObjAt  Type    */ AT_TYPE_UNK1000,
+                /* SrcObjAt  Atp     */ 1,
+                /* SrcObjAt  SPrm    */ AT_SPRM_SET | AT_SPRM_UNK4,
+                /* SrcObjTg  Type    */ 0,
+                /* SrcObjTg  SPrm    */ 0,
+                /* SrcObjCo  SPrm    */ CO_SPRM_SET | CO_SPRM_UNK20 | CO_SPRM_UNK40,
                 /* SrcGObjAt Se      */ 0,
                 /* SrcGObjAt HitMark */ 0,
                 /* SrcGObjAt Spl     */ 0x06,
                 /* SrcGObjAt Mtrl    */ 0,
-                /* SrcGObjAt GFlag   */ 0,
+                /* SrcGObjAt SPrm    */ 0,
                 /* SrcGObjTg Se      */ 0,
                 /* SrcGObjTg HitMark */ 0x0C,
                 /* SrcGObjTg Spl     */ 0,
                 /* SrcGObjTg Mtrl    */ 0,
-                /* SrcGObjTg GFlag   */ 0x03,
-                /* SrcGObjCo GFlag   */ 0,
+                /* SrcGObjTg SPrm    */ G_TG_SPRM_SHIELD | G_TG_SPRM_NO_CON_HIT,
+                /* SrcGObjCo SPrm    */ 0,
             },
             // cM3dGCylS
             {

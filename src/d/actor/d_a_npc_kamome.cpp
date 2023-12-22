@@ -10,12 +10,10 @@
 #include "d/d_item_data.h"
 #include "d/actor/d_a_player_main.h"
 #include "m_Do/m_Do_mtx.h"
-#include "JSystem/JKernel/JKRHeap.h"
 #include "m_Do/m_Do_controller_pad.h"
 #include "d/d_npc.h"
 #include "d/d_snap.h"
-
-s16 dCam_getControledAngleY(camera_class*);
+#include "d/d_camera.h"
 
 // Needed for the .data section to match.
 static f32 dummy1[3] = {1.0f, 1.0f, 1.0f};
@@ -294,7 +292,7 @@ s32 daNpc_kam_c::create() {
             return cPhs_ERROR_e;
         }
         
-        mCullMtx = mpMorf->getModel()->getBaseTRMtx();
+        fopAcM_SetMtx(this, mpMorf->getModel()->getBaseTRMtx());
         
         if (l_HIO.mChildID < 0) {
             l_HIO.mChildID = mDoHIO_root.mDoHIO_createChild("かもめ", &l_HIO);
@@ -313,23 +311,23 @@ static dCcD_SrcSph l_sph_src = {
     // dCcD_SrcGObjInf
     {
         /* Flags             */ 0,
-        /* SrcObjAt Type     */ AT_TYPE_SWORD,
-        /* SrcObjAt Atp      */ 0,
-        /* SrcObjAt SPrm     */ 0x09,
-        /* SrcObjTg Type     */ AT_TYPE_ALL,
-        /* SrcObjTg SPrm     */ 0,
-        /* SrcObjCo SPrm     */ 0x79,
+        /* SrcObjAt  Type    */ AT_TYPE_SWORD,
+        /* SrcObjAt  Atp     */ 0,
+        /* SrcObjAt  SPrm    */ AT_SPRM_SET | AT_SPRM_UNK8,
+        /* SrcObjTg  Type    */ AT_TYPE_ALL,
+        /* SrcObjTg  SPrm    */ 0,
+        /* SrcObjCo  SPrm    */ CO_SPRM_SET | CO_SPRM_UNK8 | CO_SPRM_VSGRP,
         /* SrcGObjAt Se      */ 0,
         /* SrcGObjAt HitMark */ 0,
         /* SrcGObjAt Spl     */ 0,
         /* SrcGObjAt Mtrl    */ 0,
-        /* SrcGObjAt GFlag   */ 0,
+        /* SrcGObjAt SPrm    */ 0,
         /* SrcGObjTg Se      */ 0,
         /* SrcGObjTg HitMark */ 0,
         /* SrcGObjTg Spl     */ 0,
         /* SrcGObjTg Mtrl    */ 0,
-        /* SrcGObjTg GFlag   */ 0,
-        /* SrcGObjCo GFlag   */ 0,
+        /* SrcGObjTg SPrm    */ 0,
+        /* SrcGObjCo SPrm    */ 0,
     },
     // cM3dGSphS
     {
@@ -342,23 +340,23 @@ static dCcD_SrcSph l_tg_sph_src = {
     // dCcD_SrcGObjInf
     {
         /* Flags             */ 0,
-        /* SrcObjAt Type     */ 0,
-        /* SrcObjAt Atp      */ 0,
-        /* SrcObjAt SPrm     */ 0,
-        /* SrcObjTg Type     */ AT_TYPE_ALL,
-        /* SrcObjTg SPrm     */ 0x05,
-        /* SrcObjCo SPrm     */ 0,
+        /* SrcObjAt  Type    */ 0,
+        /* SrcObjAt  Atp     */ 0,
+        /* SrcObjAt  SPrm    */ 0,
+        /* SrcObjTg  Type    */ AT_TYPE_ALL,
+        /* SrcObjTg  SPrm    */ TG_SPRM_SET | TG_SPRM_UNK4,
+        /* SrcObjCo  SPrm    */ 0,
         /* SrcGObjAt Se      */ 0,
         /* SrcGObjAt HitMark */ 0,
         /* SrcGObjAt Spl     */ 0,
         /* SrcGObjAt Mtrl    */ 0,
-        /* SrcGObjAt GFlag   */ 0,
+        /* SrcGObjAt SPrm    */ 0,
         /* SrcGObjTg Se      */ 0,
         /* SrcGObjTg HitMark */ 0,
         /* SrcGObjTg Spl     */ 0,
         /* SrcGObjTg Mtrl    */ 0,
-        /* SrcGObjTg GFlag   */ 0,
-        /* SrcGObjCo GFlag   */ 0,
+        /* SrcGObjTg SPrm    */ 0,
+        /* SrcGObjCo SPrm    */ 0,
     },
     // cM3dGSphS
     {
@@ -371,23 +369,23 @@ static dCcD_SrcCps l_kam_at_cps_src = {
     // dCcD_SrcGObjInf
     {
         /* Flags             */ 0,
-        /* SrcObjAt Type     */ AT_TYPE_SWORD,
-        /* SrcObjAt Atp      */ 0,
-        /* SrcObjAt SPrm     */ 0x09,
-        /* SrcObjTg Type     */ 0,
-        /* SrcObjTg SPrm     */ 0,
-        /* SrcObjCo SPrm     */ 0,
+        /* SrcObjAt  Type    */ AT_TYPE_SWORD,
+        /* SrcObjAt  Atp     */ 0,
+        /* SrcObjAt  SPrm    */ AT_SPRM_SET | AT_SPRM_UNK8,
+        /* SrcObjTg  Type    */ 0,
+        /* SrcObjTg  SPrm    */ 0,
+        /* SrcObjCo  SPrm    */ 0,
         /* SrcGObjAt Se      */ 0,
         /* SrcGObjAt HitMark */ 0,
         /* SrcGObjAt Spl     */ 0,
         /* SrcGObjAt Mtrl    */ 0,
-        /* SrcGObjAt GFlag   */ 0x02,
+        /* SrcGObjAt SPrm    */ G_AT_SPRM_NO_HIT_MARK,
         /* SrcGObjTg Se      */ 0,
         /* SrcGObjTg HitMark */ 0,
         /* SrcGObjTg Spl     */ 0,
         /* SrcGObjTg Mtrl    */ 0,
-        /* SrcGObjTg GFlag   */ 0,
-        /* SrcGObjCo GFlag   */ 0,
+        /* SrcGObjTg SPrm    */ 0,
+        /* SrcGObjCo SPrm    */ 0,
     },
     // cM3dGCpsS
     {
@@ -423,7 +421,7 @@ BOOL daNpc_kam_c::init() {
     
     mAcchCirs[0].SetWall(20.0f, 50.0f);
     mAcchCirs[1].SetWall(-20.0f, 50.0f);
-    mAcch.Set(&current.pos, &next.pos, this, ARRAY_SIZE(mAcchCirs), mAcchCirs, &speed, NULL, NULL);
+    mAcch.Set(&current.pos, &next.pos, this, ARRAY_SIZE(mAcchCirs), mAcchCirs, &speed);
     mAcch.ClrRoofNone();
     mAcch.SetRoofCrrHeight(20.0f);
     mAcch.OnLineCheck();
@@ -881,7 +879,7 @@ void daNpc_kam_c::eventOrder() {
         }
     } else if (mEventState != -1 && mEventState < 3) {
         mCurrEventIdxIdx = mEventState;
-        fopAcM_orderOtherEventId(this, mEventIdxs[mCurrEventIdxIdx], -1, -1, 0, 1);
+        fopAcM_orderOtherEventId(this, mEventIdxs[mCurrEventIdxIdx]);
     }
 }
 
@@ -945,7 +943,7 @@ BOOL daNpc_kam_c::eventProc() {
             if (mEventState == 0) {
                 if (dComIfGp_evmng_startCheck("OPTION_CHAR_END") || dComIfGp_evmng_endCheck("OPTION_CHAR_END")) {
                     dComIfGp_event_setTalkPartner(dComIfGp_getLinkPlayer());
-                    mDoAud_seStart(JA_SE_CTRL_NPC_TO_LINK, NULL, 0, 0);
+                    mDoAud_seStart(JA_SE_CTRL_NPC_TO_LINK);
                 } else {
                     offReturnLink();
                     mEventState = -1;
@@ -958,7 +956,7 @@ BOOL daNpc_kam_c::eventProc() {
         }
     }
     
-    int staffId = dComIfGp_evmng_getMyStaffId(l_staff_name, NULL, 0);
+    int staffId = dComIfGp_evmng_getMyStaffId(l_staff_name);
     // The dComIfGp_event_runCheck inline breaks the codegen here.
     // if (dComIfGp_event_runCheck() && !checkCommandTalk()) {
     if (g_dComIfG_gameInfo.play.getEvent().runCheck() && !checkCommandTalk()) {
@@ -1051,7 +1049,7 @@ void daNpc_kam_c::initialDescendEvent(int evtStaffId) {
 }
 
 // Needed for the .rodata section to match.
-const f32 dummy5[] = {40.0f};
+static const f32 dummy5[] = {40.0f};
 
 /* 00003730-00003864       .text actionDescendEvent__11daNpc_kam_cFi */
 BOOL daNpc_kam_c::actionDescendEvent(int evtStaffId) {

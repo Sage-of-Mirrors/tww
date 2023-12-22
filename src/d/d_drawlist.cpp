@@ -6,6 +6,10 @@
 #include "d/d_drawlist.h"
 #include "d/d_com_inf_game.h"
 #include "d/d_kankyo_rain.h"
+#include "dolphin/gf/GFGeometry.h"
+#include "dolphin/gf/GFLight.h"
+#include "dolphin/gf/GFPixel.h"
+#include "dolphin/gf/GFTransform.h"
 #include "f_op/f_op_camera_mng.h"
 #include "m_Do/m_Do_lib.h"
 #include "m_Do/m_Do_mtx.h"
@@ -14,6 +18,7 @@
 #include "JSystem/J2DGraph/J2DOrthoGraph.h"
 #include "SSystem/SComponent/c_rnd.h"
 #include "SSystem/SComponent/c_bg_s_shdw_draw.h"
+#include "global.h"
 
 GXTexObj dDlst_shadowControl_c::mSimpleTexObj;
 
@@ -412,7 +417,7 @@ void dDlst_2Dm_c::draw() {
     GXSetAlphaCompare(GX_GREATER, 0, GX_AOP_OR, GX_GREATER, 0);
     GXSetBlendMode(GX_BM_BLEND, GX_BL_SRC_ALPHA, GX_BL_INV_SRC_ALPHA, GX_LO_SET);
     GXLoadPosMtxImm(mDoMtx_getIdentity(), GX_PNMTX0);
-    GXSetCurrentMtx(GX_PNMTX0);                                     
+    GXSetCurrentMtx(GX_PNMTX0);
 
     GXBegin(GX_QUADS, GX_VTXFMT0, 4);
     GXPosition3f32(mX0, mY0, 0.0f);
@@ -471,29 +476,21 @@ void dDlst_alphaModelData_c::set(u8 type, Mtx mtx, u8 alpha) {
     mAlpha = alpha;
 }
 
-extern void GFLoadPosMtxImm(MtxP, GXPosNrmMtx);
-extern void GFSetCurrentMtx(u32, u32, u32, u32, u32, u32, u32, u32, u32);
-extern void GFSetChanMatColor(GXChannelID, GXColor);
-extern void GFSetVtxDescv(GXVtxDescList*);
-extern void GFSetVtxAttrFmtv(GXVtxFmt, GXVtxAttrFmtList*);
-extern void GFSetBlendModeEtc(GXBlendMode, GXBlendFactor, GXBlendFactor, GXLogicOp, u8, u8, u8);
-extern void GFSetArray(GXAttr, void*, u8);
-
-char l_backRevZMat[0x41] __attribute__((aligned(32))) = {};
-char l_frontZMat[0x3c] __attribute__((aligned(32))) = {};
-char l_frontNoZSubMat[0x2a] __attribute__((aligned(32))) = {};
+char l_backRevZMat[0x41] ALIGN_DECL(32) = {};
+char l_frontZMat[0x3c] ALIGN_DECL(32) = {};
+char l_frontNoZSubMat[0x2a] ALIGN_DECL(32) = {};
 
 Vec l_bonboriPos[0x2a] = {};
-char l_bonboriDL[0xa7] __attribute__((aligned(32))) = {};
+char l_bonboriDL[0xa7] ALIGN_DECL(32) = {};
 
 Vec l_s_beam_checkPos[0x28] = {};
-char l_s_beam_checkDL[0xf8] __attribute__((aligned(32))) = {};
+char l_s_beam_checkDL[0xf8] ALIGN_DECL(32) = {};
 
 Vec l_cubePos[0x08] = {};
-char l_cubeDL[0x4a] __attribute__((aligned(32))) = {};
+char l_cubeDL[0x4a] ALIGN_DECL(32) = {};
 
 Vec l_bonbori2Pos[0x56] = {};
-char l_bonbori2DL[0x2a8] __attribute__((aligned(32))) = {};
+char l_bonbori2DL[0x2a8] ALIGN_DECL(32) = {};
 
 /* 80082838-80082E44       .text draw__22dDlst_alphaModelData_cFPA4_f */
 void dDlst_alphaModelData_c::draw(Mtx viewMtx) {
@@ -649,7 +646,7 @@ BOOL dDlst_alphaModel_c::draw(Mtx mtx) {
     if (mNum == 0)
         return FALSE;
 
-    static char l_matDL[0x64] __attribute__((aligned(32))) = {};
+    static char l_matDL[0x64] ALIGN_DECL(32) = {};
 
     static GXVtxDescList l_vtxDescList[2] = {
     };
@@ -1242,8 +1239,6 @@ void dDlst_list_c::calcWipe() {
         dComIfGd_set2DXlu(&mWipeDlst);
     }
 }
-
-camera_class * dCam_getCamera();
 
 /* 80086790-8008696C       .text dDlst_texSpecmapST__FPC4cXyzPC12dKy_tevstr_cP12J3DModelDataf */
 void dDlst_texSpecmapST(const cXyz* pos, const dKy_tevstr_c* tevStr, J3DModelData* modelData, f32 scale) {

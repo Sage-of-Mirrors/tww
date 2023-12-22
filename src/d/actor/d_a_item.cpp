@@ -9,7 +9,6 @@
 #include "d/actor/d_a_player_main.h"
 #include "d/actor/d_a_sea.h"
 #include "d/d_com_inf_game.h"
-#include "JSystem/JKernel/JKRHeap.h"
 #include "d/d_procname.h"
 #include "m_Do/m_Do_mtx.h"
 #include "f_op/f_op_camera_mng.h"
@@ -135,11 +134,10 @@ void itemGetCallBack(fopAc_ac_c* item_actor, dCcD_GObjInf*, fopAc_ac_c* collided
 /* 800F5044-800F53EC       .text CreateInit__8daItem_cFv */
 void daItem_c::CreateInit() {
     mAcchCir.SetWall(30.0f, 30.0f);
-    cXyz* speedPtr;
-    mAcch.Set(&current.pos, &next.pos, this, 1, &mAcchCir, speedPtr = &speed, NULL, NULL);
+    mAcch.Set(&current.pos, &next.pos, this, 1, &mAcchCir, &fopAcM_GetSpeed_p(this));
     mAcch.m_flags &= ~0x400;
     mAcch.m_flags &= ~0x8;
-    mCullMtx = mpModel->mBaseTransformMtx;
+    fopAcM_SetMtx(this, mpModel->getBaseTRMtx());
     mStts.Init(0, 0xFF, this);
     mCyl.Set(m_cyl_src);
     mCyl.SetStts(&mStts);
@@ -159,7 +157,7 @@ void daItem_c::CreateInit() {
     
     mDisappearTimer = getData()->mDuration;
     field_0x65a = getData()->field_0x18;
-    field_0x650 = speedPtr->y;
+    field_0x650 = fopAcM_GetSpeed_p(this).y;
     mItemStatus = 0;
     
     mType = daItem_prm::getType(this);
@@ -227,10 +225,10 @@ s32 daItem_c::_daItem_create() {
         return cPhs_ERROR_e;
     }
     
-    mPickupFlag = daItem_prm::getItemBitNo(this);
-    if (m_itemNo != BLUE_JELLY) { // Blue Chu Jelly uses mPickupFlag as if it was a switch.
-        mPickupFlag &= 0x7F;
-        if (fopAcM_isItem(this, mPickupFlag) && mPickupFlag != 0x7F) {
+    mItemBitNo = daItem_prm::getItemBitNo(this);
+    if (m_itemNo != BLUE_JELLY) { // Blue Chu Jelly uses mItemBitNo as if it was a switch.
+        mItemBitNo &= 0x7F;
+        if (fopAcM_isItem(this, mItemBitNo) && mItemBitNo != 0x7F) {
             // Already picked up, don't create the item again.
             setLoadError();
             return cPhs_ERROR_e;
@@ -308,9 +306,9 @@ BOOL daItem_c::_daItem_execute() {
 /* 800F5834-800F59CC       .text mode_proc_call__8daItem_cFv */
 void daItem_c::mode_proc_call() {
     static ModeFunc mode_proc[] = {
-        &mode_wait,
-        &mode_wait,
-        &mode_water,
+        &daItem_c::mode_wait,
+        &daItem_c::mode_wait,
+        &daItem_c::mode_water,
     };
     
     if (mType == 1) {
@@ -403,7 +401,7 @@ void daItem_c::execInitGetDemoDirection() {
     if (player == link) {
         fopAcM_orderItemEvent(this);
         mEvtInfo.onCondition(dEvtCnd_CANGETITEM_e);
-        mDemoItemBsPcId = fopAcM_createItemForTrBoxDemo(&current.pos, m_itemNo, -1, current.roomNo, NULL, NULL);
+        mDemoItemBsPcId = fopAcM_createItemForTrBoxDemo(&current.pos, m_itemNo, -1, current.roomNo);
         mItemStatus = STATUS_WAIT_GET_DEMO;
     }
 }
@@ -585,51 +583,51 @@ void daItem_c::itemGetExecute() {
     
     switch (m_itemNo) {
     case HEART:
-        mDoAud_seStart(JA_SE_HEART_PIECE, NULL, 0, 0);
+        mDoAud_seStart(JA_SE_HEART_PIECE);
         execItemGet(m_itemNo);
         break;
     case GREEN_RUPEE:
-        mDoAud_seStart(JA_SE_LUPY_GET, NULL, 0, 0);
+        mDoAud_seStart(JA_SE_LUPY_GET);
         execItemGet(m_itemNo);
         break;
     case BLUE_RUPEE:
-        mDoAud_seStart(JA_SE_BLUE_LUPY_GET, NULL, 0, 0);
+        mDoAud_seStart(JA_SE_BLUE_LUPY_GET);
         execItemGet(m_itemNo);
         break;
     case YELLOW_RUPEE:
-        mDoAud_seStart(JA_SE_BLUE_LUPY_GET, NULL, 0, 0);
+        mDoAud_seStart(JA_SE_BLUE_LUPY_GET);
         execItemGet(m_itemNo);
         break;
     case RED_RUPEE:
-        mDoAud_seStart(JA_SE_RED_LUPY_GET, NULL, 0, 0);
+        mDoAud_seStart(JA_SE_RED_LUPY_GET);
         execItemGet(m_itemNo);
         break;
     case PURPLE_RUPEE:
-        mDoAud_seStart(JA_SE_RED_LUPY_GET, NULL, 0, 0);
+        mDoAud_seStart(JA_SE_RED_LUPY_GET);
         execItemGet(m_itemNo);
         break;
     case ORANGE_RUPEE:
-        mDoAud_seStart(JA_SE_RED_LUPY_GET, NULL, 0, 0);
+        mDoAud_seStart(JA_SE_RED_LUPY_GET);
         execItemGet(m_itemNo);
         break;
     case SILVER_RUPEE:
-        mDoAud_seStart(JA_SE_RED_LUPY_GET, NULL, 0, 0);
+        mDoAud_seStart(JA_SE_RED_LUPY_GET);
         execItemGet(m_itemNo);
         break;
     case KAKERA_HEART:
-        mDoAud_seStart(JA_SE_HEART_PIECE, NULL, 0, 0);
+        mDoAud_seStart(JA_SE_HEART_PIECE);
         mItemStatus = STATUS_INIT_GET_DEMO;
         break;
     case UTUWA_HEART:
-        mDoAud_seStart(JA_SE_HEART_PIECE, NULL, 0, 0);
+        mDoAud_seStart(JA_SE_HEART_PIECE);
         mItemStatus = STATUS_INIT_GET_DEMO;
         break;
     case S_MAGIC:
-        mDoAud_seStart(JA_SE_MAGIC_POT_GET_S, NULL, 0, 0);
+        mDoAud_seStart(JA_SE_MAGIC_POT_GET_S);
         execItemGet(m_itemNo);
         break;
     case L_MAGIC:
-        mDoAud_seStart(JA_SE_MAGIC_POT_GET_L, NULL, 0, 0);
+        mDoAud_seStart(JA_SE_MAGIC_POT_GET_L);
         execItemGet(m_itemNo);
         break;
     case BOMB_5:
@@ -639,18 +637,18 @@ void daItem_c::itemGetExecute() {
     case ARROW_10:
     case ARROW_20:
     case ARROW_30:
-        mDoAud_seStart(JA_SE_CONSUMP_ITEM_GET, NULL, 0, 0);
+        mDoAud_seStart(JA_SE_CONSUMP_ITEM_GET);
         execItemGet(m_itemNo);
         break;
     case SMALL_KEY:
         mItemStatus = STATUS_INIT_GET_DEMO;
         break;
     case TRIPLE_HEART:
-        mDoAud_seStart(JA_SE_HEART_PIECE, NULL, 0, 0);
+        mDoAud_seStart(JA_SE_HEART_PIECE);
         execItemGet(m_itemNo);
         break;
     case PENDANT:
-        mDoAud_seStart(JA_SE_SPOILS_GET, NULL, 0, 0);
+        mDoAud_seStart(JA_SE_SPOILS_GET);
         if (!dComIfGs_isGetItemBeast(7)) {
             mItemStatus = STATUS_INIT_GET_DEMO;
             dComIfGs_onGetItemBeast(7);
@@ -679,7 +677,7 @@ void daItem_c::itemGetExecute() {
         mItemStatus = STATUS_INIT_GET_DEMO;
         break;
     case SKULL_NECKLACE:
-        mDoAud_seStart(JA_SE_SPOILS_GET, NULL, 0, 0);
+        mDoAud_seStart(JA_SE_SPOILS_GET);
         if (!dComIfGs_isGetItemBeast(0)) {
             mItemStatus = STATUS_INIT_GET_DEMO;
             dComIfGs_onGetItemBeast(0);
@@ -688,7 +686,7 @@ void daItem_c::itemGetExecute() {
         }
         break;
     case BOKOBABA_SEED:
-        mDoAud_seStart(JA_SE_SPOILS_GET, NULL, 0, 0);
+        mDoAud_seStart(JA_SE_SPOILS_GET);
         if (!dComIfGs_isGetItemBeast(1)) {
             mItemStatus = STATUS_INIT_GET_DEMO;
             dComIfGs_onGetItemBeast(1);
@@ -697,7 +695,7 @@ void daItem_c::itemGetExecute() {
         }
         break;
     case GOLDEN_FEATHER:
-        mDoAud_seStart(JA_SE_SPOILS_GET, NULL, 0, 0);
+        mDoAud_seStart(JA_SE_SPOILS_GET);
         if (!dComIfGs_isGetItemBeast(2)) {
             mItemStatus = STATUS_INIT_GET_DEMO;
             dComIfGs_onGetItemBeast(2);
@@ -706,7 +704,7 @@ void daItem_c::itemGetExecute() {
         }
         break;
     case BOKO_BELT:
-        mDoAud_seStart(JA_SE_SPOILS_GET, NULL, 0, 0);
+        mDoAud_seStart(JA_SE_SPOILS_GET);
         if (!dComIfGs_isGetItemBeast(3)) {
             mItemStatus = STATUS_INIT_GET_DEMO;
             dComIfGs_onGetItemBeast(3);
@@ -715,7 +713,7 @@ void daItem_c::itemGetExecute() {
         }
         break;
     case RED_JELLY:
-        mDoAud_seStart(JA_SE_SPOILS_GET, NULL, 0, 0);
+        mDoAud_seStart(JA_SE_SPOILS_GET);
         if (!dComIfGs_isGetItemBeast(4)) {
             mItemStatus = STATUS_INIT_GET_DEMO;
             dComIfGs_onGetItemBeast(4);
@@ -724,7 +722,7 @@ void daItem_c::itemGetExecute() {
         }
         break;
     case GREEN_JELLY:
-        mDoAud_seStart(JA_SE_SPOILS_GET, NULL, 0, 0);
+        mDoAud_seStart(JA_SE_SPOILS_GET);
         if (!dComIfGs_isGetItemBeast(5)) {
             mItemStatus = STATUS_INIT_GET_DEMO;
             dComIfGs_onGetItemBeast(5);
@@ -733,7 +731,7 @@ void daItem_c::itemGetExecute() {
         }
         break;
     case BLUE_JELLY:
-        mDoAud_seStart(JA_SE_SPOILS_GET, NULL, 0, 0);
+        mDoAud_seStart(JA_SE_SPOILS_GET);
         if (!dComIfGs_isGetItemBeast(6)) {
             mItemStatus = STATUS_INIT_GET_DEMO;
             dComIfGs_onGetItemBeast(6);
@@ -742,7 +740,7 @@ void daItem_c::itemGetExecute() {
         }
         break;
     case BIRD_ESA_5:
-        mDoAud_seStart(JA_SE_ESA_GET, NULL, 0, 0);
+        mDoAud_seStart(JA_SE_ESA_GET);
         if (!dComIfGs_isGetItemBait(0)) {
             mItemStatus = STATUS_INIT_GET_DEMO;
             dComIfGs_onGetItemBait(0);
@@ -751,7 +749,7 @@ void daItem_c::itemGetExecute() {
         }
         break;
     case ANIMAL_ESA:
-        mDoAud_seStart(JA_SE_ESA_GET, NULL, 0, 0);
+        mDoAud_seStart(JA_SE_ESA_GET);
         if (!dComIfGs_isGetItemBait(1)) {
             mItemStatus = STATUS_INIT_GET_DEMO;
             dComIfGs_onGetItemBait(1);
@@ -761,15 +759,7 @@ void daItem_c::itemGetExecute() {
         break;
     }
     
-    u8 roomNo = current.roomNo;
-    s32 flag = mPickupFlag;
-    if (m_itemNo == BLUE_JELLY) {
-        // Blue Chu Jelly uses mPickupFlag as if it was a switch.
-        // Specifically a switch in stageNo 0xE, which is not used for anything else.
-        dComIfGs_onSaveSwitch(0xE, flag);
-    } else {
-        dComIfGs_onItem(flag, (s8)roomNo);
-    }
+    fopAcM_onItemForIb(mItemBitNo, m_itemNo, current.roomNo);
     
     clrFlag(0x04);
     
@@ -802,7 +792,7 @@ BOOL daItem_c::checkItemDisappear() {
     if (dItem_data::chkFlag(m_itemNo, 0x01)) {
         disappearing = FALSE;
     }
-    if (g_dComIfG_gameInfo.play.mEvtCtrl.mMode != 0) {
+    if (dComIfGp_event_runCheck()) {
         disappearing = FALSE;
     }
     if (mItemStatus == 4) {
@@ -1484,23 +1474,23 @@ dCcD_SrcCyl daItem_c::m_cyl_src = {
     // dCcD_SrcGObjInf
     {
         /* Flags             */ 0,
-        /* SrcObjAt Type     */ 0,
-        /* SrcObjAt Atp      */ 0,
-        /* SrcObjAt SPrm     */ 0,
-        /* SrcObjTg Type     */ AT_TYPE_ALL,
-        /* SrcObjTg SPrm     */ 0x09,
-        /* SrcObjCo SPrm     */ 0x59,
+        /* SrcObjAt  Type    */ 0,
+        /* SrcObjAt  Atp     */ 0,
+        /* SrcObjAt  SPrm    */ 0,
+        /* SrcObjTg  Type    */ AT_TYPE_ALL,
+        /* SrcObjTg  SPrm    */ TG_SPRM_SET | TG_SPRM_UNK8,
+        /* SrcObjCo  SPrm    */ CO_SPRM_SET | CO_SPRM_UNK8 | CO_SPRM_UNK10 | CO_SPRM_UNK40,
         /* SrcGObjAt Se      */ 0,
         /* SrcGObjAt HitMark */ 0,
         /* SrcGObjAt Spl     */ 0,
         /* SrcGObjAt Mtrl    */ 0,
-        /* SrcGObjAt GFlag   */ 0,
+        /* SrcGObjAt SPrm    */ 0,
         /* SrcGObjTg Se      */ 0,
         /* SrcGObjTg HitMark */ 0,
         /* SrcGObjTg Spl     */ 0,
         /* SrcGObjTg Mtrl    */ 0,
-        /* SrcGObjTg GFlag   */ 0x04,
-        /* SrcGObjCo GFlag   */ 0,
+        /* SrcGObjTg SPrm    */ G_TG_SPRM_NO_HIT_MARK,
+        /* SrcGObjCo SPrm    */ 0,
     },
     // cM3dGCylS
     {

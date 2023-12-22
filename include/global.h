@@ -22,15 +22,19 @@
 #define _SDA_BASE_(dummy) 0
 #define _SDA2_BASE_(dummy) 0
 
-#ifndef IN_VSCODE_EDITOR
+#ifndef __INTELLISENSE__
 #ifndef offsetof
 #define offsetof(type, member) ((size_t) & (((type*)0)->member))
 #endif
 #define GLUE(a, b) a##b
 #define GLUE2(a, b) GLUE(a, b)
 #define STATIC_ASSERT(cond) typedef char GLUE2(static_assertion_failed, __LINE__)[(cond) ? 1 : -1]
+#define ALIGN_DECL(ALIGNMENT) __attribute__((aligned(ALIGNMENT)))
+#define SECTION_DATA __declspec(section ".data")
 #else
 #define STATIC_ASSERT(...)
+#define ALIGN_DECL(...)
+#define SECTION_DATA
 #endif
 
 // hack to make functions that return comparisons as int match

@@ -4,13 +4,24 @@
 //
 
 #include "d/actor/d_a_ghostship.h"
-#include "JSystem/JKernel/JKRHeap.h"
 #include "SSystem/SComponent/c_math.h"
 #include "m_Do/m_Do_mtx.h"
 #include "d/d_procname.h"
 #include "d/d_com_inf_game.h"
 #include "d/d_s_play.h"
 #include "d/d_kankyo_wether.h"
+
+enum AYUSH_RES_FILE_ID { // IDs and indexes are synced
+    /* BDLM */
+    AYUSH_BDL_AYUSH=0x5,
+    
+    /* BTK */
+    AYUSH_BTK_AYUSH=0x8,
+    
+    /* TEX */
+    AYUSH_BTI_B_GSHIP_HATA=0xB,
+    AYUSH_BTI_B_GSHIP_HO=0xC,
+};
 
 // Needed for .data to match.
 static f32 dummy1[3] = {1.0f, 1.0f, 1.0f};
@@ -36,7 +47,7 @@ static BOOL createHeap_CB(fopAc_ac_c* i_this) {
 
 /* 00000118-0000032C .text _createHeap__13daGhostship_cFv */
 BOOL daGhostship_c::_createHeap() {
-    J3DModelData* modelData = static_cast<J3DModelData*>(dComIfG_getObjectRes(m_arc_name, 5));
+    J3DModelData* modelData = static_cast<J3DModelData*>(dComIfG_getObjectRes(m_arc_name, AYUSH_BDL_AYUSH));
     JUT_ASSERT(88, modelData != 0);
 
     mpModel = mDoExt_J3DModel__create(modelData, 0, 0x11020203);
@@ -44,16 +55,16 @@ BOOL daGhostship_c::_createHeap() {
         return false;
     }
 
-    J3DAnmTextureSRTKey* btk = static_cast<J3DAnmTextureSRTKey*>(dComIfG_getObjectRes(m_arc_name, 8));
+    J3DAnmTextureSRTKey* btk = static_cast<J3DAnmTextureSRTKey*>(dComIfG_getObjectRes(m_arc_name, AYUSH_BTK_AYUSH));
     JUT_ASSERT(95, btk != 0);
 
     if(!mBtk.init(modelData, btk, true, J3DFrameCtrl::LOOP_REPEAT_e, 1.0f, 0, -1, false, 0)) {
         return false;
     }
 
-    ResTIMG* res1 = static_cast<ResTIMG*>(dComIfG_getObjectRes(m_arc_name, 0xB));
-    ResTIMG* res2 = static_cast<ResTIMG*>(dComIfG_getObjectRes(m_arc_name, 0xC));
-    ResTIMG* res3 = static_cast<ResTIMG*>(dComIfG_getObjectRes(m_cloth_arc_name, 0x3));
+    ResTIMG* res1 = static_cast<ResTIMG*>(dComIfG_getObjectRes(m_arc_name, AYUSH_BTI_B_GSHIP_HATA));
+    ResTIMG* res2 = static_cast<ResTIMG*>(dComIfG_getObjectRes(m_arc_name, AYUSH_BTI_B_GSHIP_HO));
+    ResTIMG* res3 = static_cast<ResTIMG*>(dComIfG_getObjectRes(m_cloth_arc_name, CLOTH_BTI_CLOTHTOON));
 
     mpCloth = dCloth_packetXlu_create(res1, res3, 5, 5, 700.0f, 350.0f, &mTevStr, 0);
     mpCloth2 = dCloth_packetXlu_create(res2, res3, 6, 6, 1800.0f, 1000.0f, &mTevStr, 0);
@@ -157,7 +168,7 @@ void daGhostship_c::modeProcCall() {
 }
 
 // probably unused/debug colors or something
-const u32 dummy[] = {
+static const u32 dummy[] = {
     0x0000FF80,
     0xFF000080,
     0xFF000080,
@@ -167,7 +178,7 @@ const u32 dummy[] = {
     0x0000FF80,
     0x0000FF80,
 };
-u32 dummyFunc() {
+static u32 dummyFunc() {
     return dummy[0];
 }
 
@@ -206,7 +217,7 @@ void daGhostship_c::createInit() {
     }
 
     mCir.SetWall(30.0f, 30.0f);
-    mAcch.Set(&fopAcM_GetPosition_p(this), &fopAcM_GetOldPosition_p(this), this, true, &mCir, &fopAcM_GetSpeed_p(this), 0, 0);
+    mAcch.Set(&fopAcM_GetPosition_p(this), &fopAcM_GetOldPosition_p(this), this, 1, &mCir, &fopAcM_GetSpeed_p(this));
     mAcch.SetWallNone();
     mAcch.SetRoofNone();
     dLib_waveRot(&current.pos, 0.0f, &mWave);
@@ -353,14 +364,14 @@ bool daGhostship_c::_execute() {
     }
 
     if(mAlpha == l_HIO.shipAlpha && dist < l_HIO.shipEnterDist && dComIfGs_getEventReg(0x8803) < 3 && !mbEnteredShip) {
-        mDoAud_seStart(JA_SE_LK_WARP_TO_G_SHIP, 0, 0, 0);
+        mDoAud_seStart(JA_SE_LK_WARP_TO_G_SHIP);
         stage_scls_info_class* scls_data = dComIfGd_getMeshSceneList(current.pos);
         JUT_ASSERT(463, scls_data != 0)
 
         u8 startCode = scls_data->mStart;
         dComIfGs_setEventReg(0xC3FF, scls_data->mRoom);
         dComIfGs_setEventReg(0x85FF, startCode);
-        dComIfGp_setNextStage("PShip", 0, 2, 0xFF, 0.0f, 0, 1, 0);
+        dComIfGp_setNextStage("PShip", 0, 2);
         mbEnteredShip = true;
     }
 

@@ -5,6 +5,7 @@
 #include "d/d_attention.h"
 #include "d/d_bg_s_acch.h"
 #include "d/d_bg_s_lin_chk.h"
+#include "d/d_com_inf_game.h"
 #include "d/d_drawlist.h"
 #include "d/d_bg_w.h"
 #include "d/actor/d_a_player.h"
@@ -1219,10 +1220,13 @@ public:
     };
 
     enum daPy_UNDER {
-        
+        UNDER_UNK0 = 0,
+        UNDER_UNK1 = 1,
     };
 
     enum daPy_UPPER {
+        UPPER_UNK0 = 0,
+        UPPER_UNK1 = 1,
         UPPER_UNK2 = 2,
     };
 
@@ -1242,14 +1246,14 @@ public:
     void seStartSwordCut(u32);
     BOOL itemButton() const;
     BOOL itemTrigger() const;
-    void getReadyItem();
+    u8 getReadyItem();
     BOOL checkGroupItem(int, int);
     BOOL checkSetItemTrigger(int, int);
-    void auraJointCB0(int);
+    BOOL auraJointCB0(int);
     BOOL jointBeforeCB(int, J3DTransformInfo*, Quaternion*);
     BOOL jointAfterCB(int, J3DTransformInfo*, Quaternion*);
-    void jointCB0(int);
-    void jointCB1();
+    BOOL jointCB0(int);
+    BOOL jointCB1();
     JKRHeap* setAnimeHeap(JKRSolidHeap*);
     JKRHeap* setItemHeap();
     void setBlurPosResource(u16);
@@ -1370,7 +1374,7 @@ public:
     BOOL checkSubjectEnd(int);
     BOOL checkGuardAccept();
     void cancelNoDamageMode();
-    BOOL commonProcInit(daPy_lk_c::daPy_PROC procID);
+    BOOL commonProcInit(daPy_lk_c::daPy_PROC proc);
     BOOL procScope_init(int);
     BOOL procScope();
     BOOL procSubjectivity_init(int);
@@ -2101,6 +2105,9 @@ public:
     
     request_of_phase_process_class* getPhase() { return &mPhsLoad; }
     
+    J3DAnmTransform* getNowAnmPackUnder(daPy_UNDER idx) { return mAnmRatioUnder[idx].getAnmTransform(); }
+    J3DAnmTransform* getNowAnmPackUpper(daPy_UPPER idx) { return mAnmRatioUpper[idx].getAnmTransform(); }
+    
     void allTrigger() const {}
     void cancelTrigger() const {}
     void checkAttentionLock() {}
@@ -2134,8 +2141,6 @@ public:
     void getAnmSpeedStickRate(f32, f32) {}
     void getBombWaterPillarBrk() {}
     void getBombWaterPillarBtk() {}
-    void getNowAnmPackUnder(daPy_UNDER) {}
-    void getNowAnmPackUpper(daPy_UPPER) {}
     void getStartModeFromParam(u32) {}
     void getTactLeftHandPos() const {}
     void itemButtonX() const {}
@@ -2167,35 +2172,35 @@ public:
     virtual BOOL checkPlayerGuard() const;
     virtual fopAc_ac_c* getGrabMissActor();
     virtual u32 checkPlayerFly() const { return checkModeFlg(0x10452822); } // TODO add enum
-    virtual BOOL checkFrontRoll() const { return mCurProcID == PROC_FRONT_ROLL_e; }
-    virtual BOOL checkBottleSwing() const { return mCurProcID == PROC_BOTTLE_SWING_e; }
-    virtual BOOL checkCutCharge() const { return mCurProcID == PROC_CUT_TURN_MOVE_e; }
+    virtual BOOL checkFrontRoll() const { return mCurProc == PROC_FRONT_ROLL_e; }
+    virtual BOOL checkBottleSwing() const { return mCurProc == PROC_BOTTLE_SWING_e; }
+    virtual BOOL checkCutCharge() const { return mCurProc == PROC_CUT_TURN_MOVE_e; }
     virtual BOOL getBokoFlamePos(cXyz*);
-    virtual BOOL checkTactWait() const { return mCurProcID == PROC_TACT_WAIT_e; }
+    virtual BOOL checkTactWait() const { return mCurProc == PROC_TACT_WAIT_e; }
     virtual void setTactZev(unsigned int, int, char*);
     virtual void onDekuSpReturnFlg(u8 i_point);
-    virtual bool checkComboCutTurn() const;
+    virtual BOOL checkComboCutTurn() const { return mCurProc == 0x55 && m3570 != 0; }
     virtual f32 getBaseAnimeFrameRate() { return mFrameCtrlUnder[0].getRate(); }
     virtual f32 getBaseAnimeFrame() { return mFrameCtrlUnder[0].getFrame(); }
     virtual u32 getItemID() const { return mActorKeepEquip.getID(); }
     virtual u32 getThrowBoomerangID() const { return mActorKeepThrow.getID(); }
     virtual u32 getGrabActorID() const { return mActorKeepGrab.getID(); }
     virtual BOOL checkGrabBarrel() { return checkGrabBarrelSearch(1); }
-    virtual BOOL checkPlayerNoDraw();
+    virtual BOOL checkPlayerNoDraw() { return dComIfGp_checkCameraAttentionStatus(mCameraInfoIdx, 2) || checkNoResetFlg0(daPyFlg0_NO_DRAW); }
     virtual BOOL checkRopeTag() { return mActorKeepEquip.getActor() == NULL; }
-    virtual BOOL checkRopeReadyAnime() const;
+    virtual BOOL checkRopeReadyAnime() const { return m_anm_heap_upper[2].mIdx == LKANM_BCK_ROPETHROWWAIT; }
     virtual void voiceStart(u32);
     virtual void setOutPower(f32, s16, int);
-    virtual void onFrollCrashFlg(u32);
+    virtual void onFrollCrashFlg(u32 param_1) { m3620 = param_1; onNoResetFlg0(daPyFlg0_UNK8); }
     virtual MtxP getModelJointMtx(u16 idx) { return mpCLModel->getAnmMtx(idx); }
-    virtual f32 getOldSpeedY();
+    virtual f32 getOldSpeedY() { return mOldSpeed.y; }
     virtual BOOL setHookshotCarryOffset(unsigned int, const cXyz*);
     virtual void setPlayerPosAndAngle(cXyz*, s16);
     virtual void setPlayerPosAndAngle(cXyz*, csXyz*);
     virtual void setPlayerPosAndAngle(MtxP);
     virtual BOOL setThrowDamage(cXyz*, s16, f32, f32, int);
     virtual void changeTextureAnime(u16, u16, int);
-    virtual void cancelChangeTextureAnime();
+    virtual void cancelChangeTextureAnime() { resetDemoTextureAnime(); }
 
     /* 0x0320 */ request_of_phase_process_class mPhsLoad;
     /* 0x0328 */ J3DModelData* mpCLModelData;
@@ -2242,8 +2247,7 @@ public:
     /* 0x09A0 */ dDlst_mirrorPacket mMirrorPacket;
     /* 0x2E7C */ J3DModel* mpYmsls00Model;
     /* 0x2E80 */ J3DAnmTextureSRTKey* mpYmsls00Btk;
-    /* 0x2E84 */ J3DModel* mpHbootsModelRightFoot;
-    /* 0x2E88 */ J3DModel* mpHbootsModelLeftFoot;
+    /* 0x2E84 */ J3DModel* mpHbootsModels[2];
     /* 0x2E8C */ J3DModel* mpPringModel;
     /* 0x2E90 */ JKRSolidHeap* mpItemHeaps[2];
     /* 0x2E98 */ J3DModel* mpHeldItemModel;
@@ -2316,7 +2320,7 @@ public:
     /* 0x31CE */ u16 m31CE;
     /* 0x31D0 */ void* mpTextureScrollResData;
     /* 0x31D4 */ JKRSolidHeap* mpTextureScrollResHeap;
-    /* 0x31D8 */ int mCurProcID;
+    /* 0x31D8 */ int mCurProc;
     /* 0x31DC */ ProcFunc mCurProcFunc;
     /* 0x31E8 */ daPy_footEffect_c m31E8[2];
     /* 0x3280 */ dPa_rippleEcallBack m3280;
@@ -2352,7 +2356,7 @@ public:
     /* 0x34BA */ u8 m34BA;
     /* 0x34BB */ u8 mCurrItemHeapIdx;
     /* 0x34BC */ u8 m34BC;
-    /* 0x34BD */ u8 mLastUsedEquipItem;
+    /* 0x34BD */ u8 mLastUsedItemButtonIdx;
     /* 0x34BE */ u8 m34BE;
     /* 0x34BF */ s8 mReverb;
     /* 0x34C0 */ u8 mLeftHandIdx;
@@ -2532,9 +2536,9 @@ public:
     /* 0x4284 */ dCcD_Cyl mAtCyl;
     /* 0x43B4 */ dCcD_Cyl mLightCyl;
     /* 0x44E4 */ dCcD_Cps mAtCps[3];
-    /* 0x488C */ dCcD_Cps mFanWindCps1;
+    /* 0x488C */ dCcD_Cps mFanWindCps;
     /* 0x49C4 */ dCcD_Sph mFanWindSph;
-    /* 0x4AF0 */ dCcD_Cps mFanWindCps2;
+    /* 0x4AF0 */ dCcD_Cps mFanLightCps;
     
     struct ProcInitTableEntry {
         /* 0x00 */ ProcFunc mProcFunc;

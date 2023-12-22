@@ -4,18 +4,18 @@
 //
 
 #include "d/actor/d_a_hookshot.h"
-#include "JSystem/JKernel/JKRHeap.h"
 #include "d/d_com_inf_game.h"
 #include "m_Do/m_Do_mtx.h"
 #include "SSystem/SComponent/c_counter.h"
 #include "d/actor/d_a_player_main.h"
 #include "d/d_procname.h"
+#include "global.h"
 
 // Needed for the .data section to match.
 static Vec dummy_2100 = {1.0f, 1.0f, 1.0f};
 static Vec dummy_2080 = {1.0f, 1.0f, 1.0f};
 
-static u8 l_chainS3TCTEX[] __attribute__((aligned(32))) = {
+static u8 l_chainS3TCTEX[] ALIGN_DECL(32) = {
     0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0xDE, 0xDB, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xDE, 0xDB, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -82,7 +82,7 @@ static cXy l_texCoord[0xC] = {
     {0.961538, 0.983522},
 };
 
-static u8 l_chainDL[] __attribute__((aligned(32))) = {
+static u8 l_chainDL[] ALIGN_DECL(32) = {
     0x98, 0x00, 0x06, 0x01, 0x0A, 0x07, 0x0B, 0x09, 0x08, 0x0B, 0x09, 0x02, 0x08, 0x08, 0x09,
     0x98, 0x00, 0x06, 0x0B, 0x07, 0x07, 0x06, 0x0A, 0x04, 0x04, 0x05, 0x09, 0x07, 0x01, 0x06,
     0x98, 0x00, 0x06, 0x08, 0x03, 0x0B, 0x02, 0x05, 0x00, 0x0A, 0x01, 0x02, 0x03, 0x09, 0x02,
@@ -96,7 +96,7 @@ static u8 l_chainDL[] __attribute__((aligned(32))) = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 };
 
-static u8 l_matDL[] __attribute__((aligned(32))) = {
+static u8 l_matDL[] ALIGN_DECL(32) = {
     0x61, 0x80, 0x00, 0x01, 0x3A,
     0x61, 0x84, 0x00, 0x00, 0x00,
     0x61, 0x88, 0xE0, 0x7C, 0x1F,
@@ -203,7 +203,7 @@ void daHookshot_rockLineCallback(fopAc_ac_c* hookshot_actor, dCcD_GObjInf* objIn
 BOOL daHookshot_c::procWait_init(int param_1) {
     daPy_lk_c* link = daPy_getPlayerLinkActorClass();
     fopAcM_SetParam(this, 0);
-    mCurrProcFunc = &procWait;
+    mCurrProcFunc = &daHookshot_c::procWait;
     mChainCnt = 0;
     current.pos = link->getHookshotRootPos();
     m518 = -1;
@@ -275,23 +275,23 @@ static dCcD_SrcCps l_at_cps_src = {
     // dCcD_SrcGObjInf
     {
         /* Flags             */ 0,
-        /* SrcObjAt Type     */ AT_TYPE_HOOKSHOT,
-        /* SrcObjAt Atp      */ 0x01,
-        /* SrcObjAt SPrm     */ 0x0B,
-        /* SrcObjTg Type     */ 0,
-        /* SrcObjTg SPrm     */ 0,
-        /* SrcObjCo SPrm     */ 0,
+        /* SrcObjAt  Type    */ AT_TYPE_HOOKSHOT,
+        /* SrcObjAt  Atp     */ 0x01,
+        /* SrcObjAt  SPrm    */ AT_SPRM_SET | AT_SPRM_UNK2 | AT_SPRM_UNK8,
+        /* SrcObjTg  Type    */ 0,
+        /* SrcObjTg  SPrm    */ 0,
+        /* SrcObjCo  SPrm    */ 0,
         /* SrcGObjAt Se      */ 0x08,
         /* SrcGObjAt HitMark */ 0,
         /* SrcGObjAt Spl     */ 0,
         /* SrcGObjAt Mtrl    */ 0,
-        /* SrcGObjAt GFlag   */ 0,
+        /* SrcGObjAt SPrm    */ 0,
         /* SrcGObjTg Se      */ 0,
         /* SrcGObjTg HitMark */ 0,
         /* SrcGObjTg Spl     */ 0,
         /* SrcGObjTg Mtrl    */ 0,
-        /* SrcGObjTg GFlag   */ 0,
-        /* SrcGObjCo GFlag   */ 0,
+        /* SrcGObjTg SPrm    */ 0,
+        /* SrcGObjCo SPrm    */ 0,
     },
     // cM3dGCpsS
     {

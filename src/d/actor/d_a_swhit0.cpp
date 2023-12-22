@@ -7,7 +7,6 @@
 #include "d/d_com_inf_game.h"
 #include "d/d_procname.h"
 #include "f_op/f_op_actor_mng.h"
-#include "JSystem/JKernel/JKRHeap.h"
 #include "JSystem/JUtility/JUTAssert.h"
 #include "m_Do/m_Do_mtx.h"
 
@@ -15,23 +14,23 @@ static dCcD_SrcSph l_sph_src = {
     // dCcD_SrcGObjInf
     {
         /* Flags             */ 0,
-        /* SrcObjAt Type     */ 0,
-        /* SrcObjAt Atp      */ 0,
-        /* SrcObjAt SPrm     */ 0,
-        /* SrcObjTg Type     */ ~(AT_TYPE_LIGHT | AT_TYPE_UNK400000 | AT_TYPE_LEAF_WIND | AT_TYPE_UNK20000 | AT_TYPE_WATER), // 0xFF1DFEFF
-        /* SrcObjTg SPrm     */ 9,
-        /* SrcObjCo SPrm     */ 0,
+        /* SrcObjAt  Type    */ 0,
+        /* SrcObjAt  Atp     */ 0,
+        /* SrcObjAt  SPrm    */ 0,
+        /* SrcObjTg  Type    */ ~(AT_TYPE_LIGHT | AT_TYPE_UNK400000 | AT_TYPE_LEAF_WIND | AT_TYPE_UNK20000 | AT_TYPE_WATER), // 0xFF1DFEFF
+        /* SrcObjTg  SPrm    */ TG_SPRM_SET | TG_SPRM_UNK8,
+        /* SrcObjCo  SPrm    */ 0,
         /* SrcGObjAt Se      */ 0,
         /* SrcGObjAt HitMark */ 0,
         /* SrcGObjAt Spl     */ 0,
         /* SrcGObjAt Mtrl    */ 0,
-        /* SrcGObjAt GFlag   */ 0,
+        /* SrcGObjAt SPrm    */ 0,
         /* SrcGObjTg Se      */ 0,
         /* SrcGObjTg HitMark */ 0,
         /* SrcGObjTg Spl     */ 0,
         /* SrcGObjTg Mtrl    */ 0,
-        /* SrcGObjTg GFlag   */ 0,
-        /* SrcGObjCo GFlag   */ 0,
+        /* SrcGObjTg SPrm    */ 0,
+        /* SrcGObjCo SPrm    */ 0,
     },
     // cM3dGSphS
     {
@@ -44,23 +43,23 @@ static dCcD_SrcCyl l_cyl_src = {
     // dCcD_SrcGObjInf
     {
         /* Flags             */ 0,
-        /* SrcObjAt Type     */ 0,
-        /* SrcObjAt Atp      */ 0,
-        /* SrcObjAt SPrm     */ 0,
-        /* SrcObjTg Type     */ 0,
-        /* SrcObjTg SPrm     */ 0,
-        /* SrcObjCo SPrm     */ 0x75,
+        /* SrcObjAt  Type    */ 0,
+        /* SrcObjAt  Atp     */ 0,
+        /* SrcObjAt  SPrm    */ 0,
+        /* SrcObjTg  Type    */ 0,
+        /* SrcObjTg  SPrm    */ 0,
+        /* SrcObjCo  SPrm    */ CO_SPRM_SET | CO_SPRM_UNK4 | CO_SPRM_VSGRP,
         /* SrcGObjAt Se      */ 0,
         /* SrcGObjAt HitMark */ 0,
         /* SrcGObjAt Spl     */ 0,
         /* SrcGObjAt Mtrl    */ 0,
-        /* SrcGObjAt GFlag   */ 0,
+        /* SrcGObjAt SPrm    */ 0,
         /* SrcGObjTg Se      */ 0,
         /* SrcGObjTg HitMark */ 0,
         /* SrcGObjTg Spl     */ 0,
         /* SrcGObjTg Mtrl    */ 0,
-        /* SrcGObjTg GFlag   */ 0x00,
-        /* SrcGObjCo GFlag   */ 0,
+        /* SrcGObjTg SPrm    */ 0,
+        /* SrcGObjCo SPrm    */ 0,
     },
     // cM3dGCylS
     {
@@ -93,7 +92,7 @@ s32 daSwhit0_c::getTimer() {
     if (param == 0xFF) {
         timer = 0;
     }
-    return timer; 
+    return timer;
 }
 
 /* 000000B8-000000C4       .text getSwNo2__10daSwhit0_cFv */
@@ -249,7 +248,7 @@ s32 daSwhit0_c::actionOffWait() {
             case 3:
                 mState = 2;
                 
-                fopAcM_orderOtherEventId(this, mEventIdx, getEvNo(), 0xFFFF, 0, 1);
+                fopAcM_orderOtherEventId(this, mEventIdx, getEvNo());
                 mEvtInfo.onCondition(0x02);
 
                 break;
@@ -279,7 +278,7 @@ s32 daSwhit0_c::actionToOnReady() {
     else {
         mState = 2;
 
-        fopAcM_orderOtherEventId(this, mEventIdx, getEvNo(), 0xFFFF, 0, 1);
+        fopAcM_orderOtherEventId(this, mEventIdx, getEvNo());
         mEvtInfo.onCondition(0x02);
     }
 
@@ -290,12 +289,12 @@ s32 daSwhit0_c::actionToOnReady() {
 s32 daSwhit0_c::actionToOnOrder() {
     if (mEvtInfo.checkCommandDemoAccrpt()) {
         mState = 3;
-        mStaffId = dComIfGp_evmng_getMyStaffId("SWITCH", NULL, 0);
+        mStaffId = dComIfGp_evmng_getMyStaffId("SWITCH");
         
         DemoProc();
     }
     else {
-        fopAcM_orderOtherEventId(this, mEventIdx, getEvNo(), 0xFFFF, 0, 1);
+        fopAcM_orderOtherEventId(this, mEventIdx, getEvNo());
         mEvtInfo.onCondition(0x02);
     }
 
@@ -443,10 +442,10 @@ static s32 daSwhit0_Execute(daSwhit0_c* i_swhit) {
     }
 
     if (i_swhit->checkFlag(0x02)) {
-        g_dComIfG_gameInfo.play.mCcS.Set(&i_swhit->mColCyl);
+        dComIfG_Ccsp()->Set(&i_swhit->mColCyl);
     }
 
-    g_dComIfG_gameInfo.play.mCcS.Set(&i_swhit->mColSph);
+    dComIfG_Ccsp()->Set(&i_swhit->mColSph);
     return TRUE;
 }
 

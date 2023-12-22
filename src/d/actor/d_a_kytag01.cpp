@@ -7,7 +7,6 @@
 #include "d/d_com_inf_game.h"
 #include "d/d_procname.h"
 #include "f_op/f_op_actor_mng.h"
-#include "JSystem/JKernel/JKRHeap.h"
 
 /* 00000078-0000007C       .text wether_tag_move__FP13kytag01_class */
 void wether_tag_move(kytag01_class* i_this) {
@@ -41,7 +40,7 @@ static BOOL daKytag01_Delete(kytag01_class* i_this) {
 }
 
 /* 00000100-00000224       .text wave_make__Fv */
-void wave_make() { 
+void wave_make() {
     dScnKy_env_light_c& env_light = dKy_getEnvlight();
     if (env_light.mWaveChan.mWaveCount == 0) {
         env_light.mWaveChan.mWaveSpawnDist = 20000.0f;

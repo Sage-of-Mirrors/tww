@@ -1,50 +1,51 @@
 #ifndef JPADRAW_H
 #define JPADRAW_H
 
-#include "dolphin/types.h"
+#include "JSystem/JGeometry.h"
+#include "JSystem/JParticle/JPADrawVisitor.h"
+#include "JSystem/JParticle/JPADrawSetupTev.h"
 #include "dolphin/gx/GXStruct.h"
 #include "dolphin/gx/GXEnum.h"
 #include "dolphin/mtx/mtx.h"
+#include "global.h"
 
-class JPABaseShape;
-class JPAExtraShape;
-class JPASweepShape;
-class JPAExTexShape;
-class JPATextureResource;
-class JPABaseEmitter;
-class JPABaseParticle;
-struct JSUPtrList;
-
-class JPADraw;
-class JPADrawExecEmitterVisitor;
-class JPADrawExecParticleVisitor;
-class JPADrawClipBoard;
-class JPADrawVisitorContainer;
-
-class JPADrawContext {
+class JPADrawClipBoard {
 public:
-    /* 0x00 */ JPABaseEmitter* pbe;
-    /* 0x04 */ JPABaseShape* pbsp;
-    /* 0x08 */ JPAExtraShape* pesp;
-    /* 0x0C */ JPASweepShape* pssp;
-    /* 0x10 */ JPAExTexShape* petx;
-    /* 0x14 */ JPADraw* mpDraw;
-    /* 0x18 */ JSUPtrList* mpActiveParticles;
-    /* 0x1C */ JPATextureResource* mpTextureResource;
-    /* 0x20 */ u16* pTexIdx;
+    JPADrawClipBoard() {}
+    ~JPADrawClipBoard() {}
 
-    static JPADrawClipBoard* pcb;
+    typedef void(*DirTypeFunc)(JPABaseParticle*, JPABaseEmitter*, JGeometry::TVec3<f32>&);
+    typedef void(*RotTypeFunc)(f32, f32, Mtx&);
+    typedef void(*BasePlaneTypeFunc)(f32, f32, f32, f32, JGeometry::TVec3<f32>*);
+
+    /* 0x00 */ JPADrawSetupTev mSetupTev;
+    /* 0x04 */ f32 mGlobalScaleX;
+    /* 0x08 */ f32 mGlobalScaleY;
+    /* 0x0C */ f32 mPivotX;
+    /* 0x10 */ f32 mPivotY;
+    /* 0x14 */ JGeometry::TVec2<f32> field_0x14[4];
+    /* 0x34 */ MtxP mDrawMtxPtr;
+    /* 0x34 */ Mtx mDrawYBBMtx;
+    /* 0x68 */ Mtx mDrawMtx;
+    /* 0x98 */ GXColor mPrmColor;
+    /* 0x9C */ GXColor mEnvColor;
+    /* 0xA0 */ DirTypeFunc mDirTypeFunc;
+    /* 0xA4 */ RotTypeFunc mRotTypeFunc;
+    /* 0xA8 */ BasePlaneTypeFunc mBasePlaneTypeFunc;
+    /* 0xAC */ u32 field_0xa4;
+    /* 0xB0 */ s16 mColorAnmFrame;
+    /* 0xB2 */ s16 field_0xb2;
 };
 
 class JPADraw {
 public:
     struct JPADrawVisitorDefFlags {
-        /* 0x00 */ u32 mbIsEnableDrawParent;
-        /* 0x04 */ u32 mbHasPrmAnm;
-        /* 0x08 */ u32 mbHasEnvAnm;
-        /* 0x0C */ u32 mbIsStripe;
-        /* 0x10 */ u32 mbIsPointOrLine;
-        /* 0x04 */ u32 mbIsEnableAlpha;
+        /* 0x00 */ BOOL mbIsEnableDrawParent;
+        /* 0x04 */ BOOL mbHasPrmAnm;
+        /* 0x08 */ BOOL mbHasEnvAnm;
+        /* 0x0C */ BOOL mbIsStripe;
+        /* 0x10 */ BOOL mbIsPointOrLine;
+        /* 0x14 */ BOOL mbIsEnableAlpha;
     };
 
     bool initialize(JPABaseEmitter*, JPATextureResource*);
@@ -73,11 +74,11 @@ public:
     /* 0x00 */ JPADrawExecEmitterVisitor* mpExecEmtrVis[1];
     /* 0x04 */ JPADrawExecEmitterVisitor* mpExecEmtrPVis[5];
     /* 0x18 */ JPADrawExecEmitterVisitor* mpExecEmtrCVis[3];
-    /* 0x24 */ JPADrawExecParticleVisitor* mpCalcEmtrVis[4];
+    /* 0x24 */ JPADrawCalcEmitterVisitor* mpCalcEmtrVis[4];
     /* 0x34 */ JPADrawExecParticleVisitor* mpExecPtclVis[5];
-    /* 0x48 */ JPADrawExecParticleVisitor* mpCalcPtclVis[10];
+    /* 0x48 */ JPADrawCalcParticleVisitor* mpCalcPtclVis[10];
     /* 0x70 */ JPADrawExecParticleVisitor* mpExecChldVis[4];
-    /* 0x80 */ JPADrawExecParticleVisitor* mpCalcChldVis[2];
+    /* 0x80 */ JPADrawCalcParticleVisitor* mpCalcChldVis[2];
     /* 0x88 */ u8 execEmtrVisNum;
     /* 0x89 */ u8 execEmtrPVisNum;
     /* 0x8A */ u8 execEmtrCVisNum;
@@ -90,7 +91,7 @@ public:
     /* 0xB4 */ f32 mScaleOut;
     /* 0xB8 */ GXColor mPrmColor;
     /* 0xBC */ GXColor mEnvColor;
-    /* 0xC0 */ s16 mTexIdx;
+    /* 0xC0 */ u16 mTexIdx;
     /* 0xC2 */ u8 field_0xc2;
     /* 0xC3 */ u8 field_0xc3;
 };

@@ -611,8 +611,7 @@ void item_func_l_magic() {
 /* 800C3008-800C3060       .text item_func_bomb_5__Fv */
 void item_func_bomb_5() {
     dComIfGs_onGetItem(0xD, 0);
-    g_dComIfG_gameInfo.play.field_0x493d = 0xD;
-    g_dComIfG_gameInfo.play.field_0x493e = 0xB;
+    dComIfGp_setItem(0xD, 0xB);
     dComIfGp_setItemBombNumCount(5);
 }
 
@@ -2622,9 +2621,9 @@ int getRotenItemNumInBag() {
 /* 800C7B50-800C7B7C       .text isDaizaItem__FUc */
 BOOL isDaizaItem(u8 itemNo) {
     BOOL isDaiza = FALSE;
-    if (itemNo == FLOWER_1 || itemNo == FLOWER_2 || itemNo == FLOWER_3 || 
-        itemNo == HEROS_FLAG || itemNo == TAIRYO_FLAG || itemNo == SALES_FLAG || 
-        itemNo == WIND_FLAG || itemNo == RED_FLAG || itemNo == FOSSIL_HEAD || 
+    if (itemNo == FLOWER_1 || itemNo == FLOWER_2 || itemNo == FLOWER_3 ||
+        itemNo == HEROS_FLAG || itemNo == TAIRYO_FLAG || itemNo == SALES_FLAG ||
+        itemNo == WIND_FLAG || itemNo == RED_FLAG || itemNo == FOSSIL_HEAD ||
         itemNo == WATER_STATUE || itemNo == POSTMAN_STATUE || itemNo == PRESIDENT_STATUE)
     {
         isDaiza = TRUE;
@@ -2781,7 +2780,7 @@ u8 check_itemno(int itemNo) {
 }
 
 /* 800C7ED0-800C8214       .text getEmonoItemFromLifeBallTable__FUs */
-int getEmonoItemFromLifeBallTable(u16 itemTableIdx) {
+u8 getEmonoItemFromLifeBallTable(u16 itemTableIdx) {
     u8 items[16];
     
     items[0] = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_ITEM0, itemTableIdx);
@@ -2799,16 +2798,16 @@ int getEmonoItemFromLifeBallTable(u16 itemTableIdx) {
         }
     }
     
-    items[0] = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM0, itemTableIdx);
-    items[1] = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM1, itemTableIdx);
-    items[2] = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM2, itemTableIdx);
-    items[3] = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM3, itemTableIdx);
-    items[4] = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM4, itemTableIdx);
-    items[5] = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM5, itemTableIdx);
-    items[6] = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM6, itemTableIdx);
-    items[7] = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM7, itemTableIdx);
-    items[8] = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM8, itemTableIdx);
-    items[9] = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM9, itemTableIdx);
+    items[0]  = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM0,  itemTableIdx);
+    items[1]  = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM1,  itemTableIdx);
+    items[2]  = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM2,  itemTableIdx);
+    items[3]  = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM3,  itemTableIdx);
+    items[4]  = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM4,  itemTableIdx);
+    items[5]  = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM5,  itemTableIdx);
+    items[6]  = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM6,  itemTableIdx);
+    items[7]  = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM7,  itemTableIdx);
+    items[8]  = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM8,  itemTableIdx);
+    items[9]  = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM9,  itemTableIdx);
     items[10] = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM10, itemTableIdx);
     items[11] = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM11, itemTableIdx);
     items[12] = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM12, itemTableIdx);
@@ -2826,19 +2825,19 @@ int getEmonoItemFromLifeBallTable(u16 itemTableIdx) {
 }
 
 /* 800C8214-800C8498       .text getItemFromLifeBallTableWithoutEmono__FUs */
-int getItemFromLifeBallTableWithoutEmono(u16 itemTableIdx) {
+u8 getItemFromLifeBallTableWithoutEmono(u16 itemTableIdx) {
     u8 items[16];
     
-    items[0] = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM0, itemTableIdx);
-    items[1] = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM1, itemTableIdx);
-    items[2] = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM2, itemTableIdx);
-    items[3] = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM3, itemTableIdx);
-    items[4] = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM4, itemTableIdx);
-    items[5] = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM5, itemTableIdx);
-    items[6] = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM6, itemTableIdx);
-    items[7] = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM7, itemTableIdx);
-    items[8] = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM8, itemTableIdx);
-    items[9] = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM9, itemTableIdx);
+    items[0]  = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM0,  itemTableIdx);
+    items[1]  = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM1,  itemTableIdx);
+    items[2]  = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM2,  itemTableIdx);
+    items[3]  = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM3,  itemTableIdx);
+    items[4]  = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM4,  itemTableIdx);
+    items[5]  = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM5,  itemTableIdx);
+    items[6]  = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM6,  itemTableIdx);
+    items[7]  = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM7,  itemTableIdx);
+    items[8]  = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM8,  itemTableIdx);
+    items[9]  = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM9,  itemTableIdx);
     items[10] = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM10, itemTableIdx);
     items[11] = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM11, itemTableIdx);
     items[12] = dComIfGp_CharTbl()->GetInf(dComIfGp_CharTbl()->mIndex_N_ITEM12, itemTableIdx);

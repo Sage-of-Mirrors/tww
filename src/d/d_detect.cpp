@@ -3,33 +3,30 @@
 // Translation Unit: d_detect.cpp
 //
 
-#include "d_detect.h"
+#include "d/d_detect.h"
 #include "dolphin/types.h"
 
 /* 8009BFD4-8009BFFC       .text __ct__14dDetectPlace_cFv */
 dDetectPlace_c::dDetectPlace_c() {
-    /* Nonmatching */
+    mPos = cXyz::Zero;
+    mEnable = 0;
 }
 
 /* 8009BFFC-8009C038       .text __dt__14dDetectPlace_cFv */
-dDetectPlace_c::~dDetectPlace_c() {
-    /* Nonmatching */
-}
+dDetectPlace_c::~dDetectPlace_c() {}
 
 /* 8009C038-8009C048       .text chk_enable__14dDetectPlace_cCFv */
-void dDetectPlace_c::chk_enable() const {
-    /* Nonmatching */
+bool dDetectPlace_c::chk_enable() const {
+    return mEnable != 0;
 }
 
 /* 8009C048-8009C098       .text __ct__9dDetect_cFv */
 dDetect_c::dDetect_c() {
-    /* Nonmatching */
+    mTimer = 0;
 }
 
 /* 8009C098-8009C0F8       .text __dt__9dDetect_cFv */
-dDetect_c::~dDetect_c() {
-    /* Nonmatching */
-}
+dDetect_c::~dDetect_c() {}
 
 /* 8009C0F8-8009C14C       .text proc__9dDetect_cFv */
 void dDetect_c::proc() {
@@ -37,7 +34,7 @@ void dDetect_c::proc() {
 }
 
 /* 8009C14C-8009C1E0       .text chk_quake__9dDetect_cCFPC4cXyz */
-void dDetect_c::chk_quake(const cXyz*) const {
+bool dDetect_c::chk_quake(const cXyz*) const {
     /* Nonmatching */
 }
 
@@ -47,7 +44,7 @@ void dDetect_c::set_quake(const cXyz*) {
 }
 
 /* 8009C254-8009C32C       .text chk_quake_area__9dDetect_cCFPC4cXyz */
-void dDetect_c::chk_quake_area(const cXyz*) const {
+bool dDetect_c::chk_quake_area(const cXyz*) const {
     /* Nonmatching */
 }
 
@@ -57,12 +54,11 @@ void dDetect_c::search_tag_light(void*, void*) {
 }
 
 /* 8009C588-8009C5B8       .text chk_light__9dDetect_cCFPC4cXyz */
-void dDetect_c::chk_light(const cXyz*) const {
+bool dDetect_c::chk_light(const cXyz*) const {
     /* Nonmatching */
 }
 
 /* 8009C5B8-8009C620       .text chk_attention__9dDetect_cCFP4cXyz */
-void dDetect_c::chk_attention(cXyz*) const {
+bool dDetect_c::chk_attention(cXyz*) const {
     /* Nonmatching */
 }
-

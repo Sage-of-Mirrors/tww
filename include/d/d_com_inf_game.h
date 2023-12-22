@@ -175,6 +175,11 @@ enum ALWAYS_RES_FILE_ID { // IDs and indexes are synced
     ALWAYS_BTI_UMIPT=0x8E,
 };
 
+enum CLOTH_RES_FILE_ID { // IDs and indexes are synced
+    /* TEX */
+    CLOTH_BTI_CLOTHTOON=0x3,
+};
+
 class __d_timer_info_c {
 public:
     __d_timer_info_c() {
@@ -362,7 +367,7 @@ public:
     void setMessageCountNumber(s16 num) { mMsgCountNumber = num; }
 
     s16 getMiniGameRupee() { return mMiniGameRupee; }
-    void plusMiniGameRupee(s16 count) { 
+    void plusMiniGameRupee(s16 count) {
         if(mMiniGameRupee + count > 0) {
             mMiniGameRupee += count;
         }
@@ -427,9 +432,9 @@ public:
     void setSelectItem(int idx, u8 itemNo) { mSelectItem[idx] = itemNo; }
     void setSelectEquip(int idx, u8 itemNo) { mSelectEquip[idx] = itemNo; }
     
-    void setItem(u8 slot, u8 i_itemNo) {
-        field_0x493d = slot;
-        field_0x493e = i_itemNo;
+    void setItem(u8 i_slot, u8 i_itemNo) {
+        mItemSlot = i_slot;
+        mItemNo = i_itemNo;
     }
 
     void setAStatus(u8 status) { mCurrButtonBAction = status; }
@@ -492,6 +497,9 @@ public:
     void setItemTable(void * pData) { mpItemTable = (ItemTableList*)pData; }
     ItemTableList* getItemTable() { return mpItemTable; }
     void setFmapData(void * pData) { mpFmapData = pData; }
+
+    inline void stopFwaterTimer() { mFwaterTimer = 0; }
+    inline u8 checkFwaterTimer() { return mFwaterTimer; }
 
     /* 0x0000 */ dBgS mBgS;
     /* 0x1404 */ dCcS mCcS;
@@ -602,8 +610,8 @@ public:
     /* 0x4937 */ u8 mSelectEquip[4];
     /* 0x493B */ u8 mMesgAnime;
     /* 0x493C */ u8 mMesgAnimeTagInfo;
-    /* 0x493D */ u8 field_0x493d;
-    /* 0x493E */ u8 field_0x493e;
+    /* 0x493D */ u8 mItemSlot;
+    /* 0x493E */ u8 mItemNo;
     /* 0x493F */ u8 field_0x493f;
     /* 0x4940 */ u8 field_0x4940;
     /* 0x4941 */ u8 field_0x4941;
@@ -622,7 +630,7 @@ public:
     /* 0x4953 */ u8 field_0x4953;
     /* 0x4954 */ u8 field_0x4954;
     /* 0x4955 */ u8 field_0x4955;
-    /* 0x4956 */ u8 field_0x4956;
+    /* 0x4956 */ u8 mFwaterTimer;
     /* 0x4957 */ u8 mPlacenameIndex;
     /* 0x4958 */ u8 mPlacenameState;
     /* 0x4959 */ u8 field_0x4959;
@@ -956,6 +964,10 @@ inline u8 dComIfGs_checkReserveItemEmpty() {
 
 inline void dComIfGs_setReserveItemEmpty() {
     g_dComIfG_gameInfo.save.getPlayer().getBagItem().setReserveItemEmpty();
+}
+
+inline void dComIfGs_setReserveBaitEmpty(u8 i_btnIdx) {
+    g_dComIfG_gameInfo.save.getPlayer().getBagItem().setBaitItemEmpty(i_btnIdx);
 }
 
 inline void dComIfGs_setEventReg(u16 i_reg, u8 i_no) {
@@ -1537,12 +1549,21 @@ stage_scls_info_class* dComIfGd_getMeshSceneList(Vec& vec);
 
 BOOL dComIfGs_checkSeaLandingEvent(s8 i_roomNo);
 
+inline void dComIfGs_stopFwaterTimer() {
+    g_dComIfG_gameInfo.play.stopFwaterTimer();
+}
+
+inline u8 dComIfGs_checkFwaterTimer() {
+    return g_dComIfG_gameInfo.play.checkFwaterTimer();
+}
+
 /**
  * === PLAY ===
  */
 
-void dComIfGp_setNextStage(const char* i_stageName, s16 i_point, s8 i_roomNo, s8 i_layer,
-                           f32 i_lastSpeed, u32 i_lastMode, int, s8 i_wipe);
+void dComIfGp_setNextStage(const char* i_stageName, s16 i_point, s8 i_roomNo, s8 i_layer = -1,
+                           f32 i_lastSpeed = 0.0f, u32 i_lastMode = 0, BOOL i_setPoint = TRUE,
+                           s8 i_wipe = 0);
 dStage_Ship_data* dComIfGp_getShip(int i_roomNo, int param_1);
 bool dComIfGp_getMapTrans(int i_roomNo, f32* o_transX, f32* o_transY, s16* o_angle);
 
@@ -2126,7 +2147,7 @@ inline s16 dComIfGp_getMiniGameRupee() {
     return g_dComIfG_gameInfo.play.getMiniGameRupee();
 }
 
-inline void dComIfGp_plusMiniGameRupee(s16 count) { 
+inline void dComIfGp_plusMiniGameRupee(s16 count) {
     g_dComIfG_gameInfo.play.plusMiniGameRupee(count);
 }
 
@@ -2213,7 +2234,7 @@ inline s32 dComIfGp_event_moveApproval(void* actor) {
     return g_dComIfG_gameInfo.play.getEvent().moveApproval(actor);
 }
 
-inline BOOL dComIfGp_event_compulsory(void* param_1, const char* param_2, u16 param_3) {
+inline BOOL dComIfGp_event_compulsory(void* param_1, const char* param_2 = NULL, u16 param_3 = -1) {
     return g_dComIfG_gameInfo.play.getEvent().compulsory(param_1, param_2, param_3);
 }
 
@@ -2272,8 +2293,8 @@ inline s16 dComIfGp_evmng_getEventIdx(const char* pName, u8 evNo) {
     return g_dComIfG_gameInfo.play.getEvtManager().getEventIdx(pName, evNo);
 }
 
-inline int dComIfGp_evmng_getMyStaffId(const char* pName, fopAc_ac_c* pActor, int param_3) {
-    return dComIfGp_getPEvtManager()->getMyStaffId(pName, pActor, param_3);
+inline int dComIfGp_evmng_getMyStaffId(const char* pName, fopAc_ac_c* pActor = NULL, int staffType = 0) {
+    return dComIfGp_getPEvtManager()->getMyStaffId(pName, pActor, staffType);
 }
 
 inline int dComIfGp_evmng_getMyActIdx(int staffIdx, char** pActions, int actionCount, int force, int param_5) {
@@ -2770,6 +2791,13 @@ inline void dComIfGp_particle_setSimple(u16 particleID, cXyz* pos, u8 alpha, GXC
                                         GXColor& envColor, int param_6) {
     dPa_control_c* pParticle = g_dComIfG_gameInfo.play.getParticle();
     pParticle->setSimple(particleID, pos, alpha, prmColor, envColor, param_6);
+}
+
+inline JPABaseEmitter* dComIfGp_particle_setBombSmoke(u16 particleID, const cXyz* pos,
+                                           const csXyz* angle = NULL, const cXyz* scale = NULL,
+                                           u8 alpha = 0xFF) {
+    dPa_control_c* pParticle = g_dComIfG_gameInfo.play.getParticle();
+    return pParticle->setBombSmoke(particleID, pos, angle, scale, alpha);
 }
 
 inline void dComIfGp_particle_calc3D() {

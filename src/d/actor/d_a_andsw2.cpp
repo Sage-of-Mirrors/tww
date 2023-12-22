@@ -5,7 +5,6 @@
 
 #include "d/actor/d_a_andsw2.h"
 #include "f_op/f_op_actor_mng.h"
-#include "JSystem/JKernel/JKRHeap.h"
 #include "d/d_com_inf_game.h"
 #include "d/d_procname.h"
 #include "dolphin/types.h"
@@ -138,7 +137,7 @@ static BOOL daAndsw2_actionOrder(daAndsw2_c* i_this) {
     } else if (i_this->getType() == TYPE_CONTINUOUS && !i_this->chkAllSw2()) {
         i_this->setActio(ACT_ON_ALL);
     } else {
-        fopAcM_orderOtherEventId(i_this, i_this->mEventIdx, i_this->getEventNo(), 0xFFFF, 0, 1);
+        fopAcM_orderOtherEventId(i_this, i_this->mEventIdx, i_this->getEventNo());
     }
     return TRUE;
 }

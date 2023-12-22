@@ -18,7 +18,6 @@
 #include "m_Do/m_Do_mtx.h"
 #include "SSystem/SComponent/c_lib.h"
 #include "JSystem/JKernel/JKRExpHeap.h"
-#include "JSystem/JKernel/JKRHeap.h"
 #include "JSystem/JKernel/JKRSolidHeap.h"
 #include "JSystem/JUtility/JUTAssert.h"
 
@@ -128,7 +127,6 @@ static BOOL checkCreateHeap(fopAc_ac_c* i_ac) {
 
 /* 800D88F8-800D8C50       .text createHeap__6daBg_cFv */
 BOOL daBg_c::createHeap() {
-    /* Nonmatching - array loads */
     static char l_modelName[4][13] = {
         "model.bmd",
         "model1.bmd",
@@ -338,12 +336,6 @@ static BOOL daBg_Delete(daBg_c* i_this) {
 static s32 daBg_Create(fopAc_ac_c* i_ac) {
     return ((daBg_c*)i_ac)->create();
 }
-
-// searchRoomMemory__Fi 	d_a_bg.o 
-// searchRoomNo__FiP10readRoom_c 	d_a_bg.o 
-// getRoomMemory__6daBg_cFi 	d_a_bg.o 
-// initRoomMemory__6daBg_cFv 	d_a_bg.o 
-// calcRoomMemory__6daBg_cFPPcPlPPcPl 	d_a_bg.o 
 
 /* 800D9094-800D9318       .text create__6daBg_cFv */
 s32 daBg_c::create() {

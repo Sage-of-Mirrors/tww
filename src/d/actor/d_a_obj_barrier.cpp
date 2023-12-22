@@ -4,7 +4,6 @@
 //
 
 #include "d/actor/d_a_obj_barrier.h"
-#include "JSystem/JKernel/JKRHeap.h"
 #include "JSystem/JUtility/JUTAssert.h"
 #include "d/actor/d_a_player_main.h"
 #include "d/d_com_inf_game.h"
@@ -21,23 +20,23 @@ static const dCcD_SrcCyl l_cyl_at_src = {
     // dCcD_SrcGObjInf
     {
         /* Flags             */ 0,
-        /* SrcObjAt Type     */ AT_TYPE_UNK800,
-        /* SrcObjAt Atp      */ 1,
-        /* SrcObjAt SPrm     */ 5,
-        /* SrcObjTg Type     */ 0,
-        /* SrcObjTg SPrm     */ 0,
-        /* SrcObjCo SPrm     */ 0,
+        /* SrcObjAt  Type    */ AT_TYPE_UNK800,
+        /* SrcObjAt  Atp     */ 1,
+        /* SrcObjAt  SPrm    */ AT_SPRM_SET | AT_SPRM_UNK4,
+        /* SrcObjTg  Type    */ 0,
+        /* SrcObjTg  SPrm    */ 0,
+        /* SrcObjCo  SPrm    */ 0,
         /* SrcGObjAt Se      */ 0,
         /* SrcGObjAt HitMark */ 0,
-        /* SrcGObjAt Spl     */ 9,
+        /* SrcGObjAt Spl     */ 0x09,
         /* SrcGObjAt Mtrl    */ 0,
-        /* SrcGObjAt GFlag   */ 3,
+        /* SrcGObjAt SPrm    */ G_AT_SPRM_NO_CON_HIT | G_AT_SPRM_NO_HIT_MARK,
         /* SrcGObjTg Se      */ 0,
         /* SrcGObjTg HitMark */ 0,
         /* SrcGObjTg Spl     */ 0,
         /* SrcGObjTg Mtrl    */ 0,
-        /* SrcGObjTg GFlag   */ 0,
-        /* SrcGObjCo GFlag   */ 0,
+        /* SrcGObjTg SPrm    */ 0,
+        /* SrcGObjCo SPrm    */ 0,
     },
     // cM3dGCylS
     {
@@ -51,23 +50,23 @@ static const dCcD_SrcCyl l_cyl_tg_src = {
     // dCcD_SrcGObjInf
     {
         /* Flags             */ 0,
-        /* SrcObjAt Type     */ 0,
-        /* SrcObjAt Atp      */ 0,
-        /* SrcObjAt SPrm     */ 0,
-        /* SrcObjTg Type     */ ~(AT_TYPE_WATER | AT_TYPE_UNK20000 | AT_TYPE_UNK400000 | AT_TYPE_LIGHT),
-        /* SrcObjTg SPrm     */ 9,
-        /* SrcObjCo SPrm     */ 0,
+        /* SrcObjAt  Type    */ 0,
+        /* SrcObjAt  Atp     */ 0,
+        /* SrcObjAt  SPrm    */ 0,
+        /* SrcObjTg  Type    */ ~(AT_TYPE_WATER | AT_TYPE_UNK20000 | AT_TYPE_UNK400000 | AT_TYPE_LIGHT),
+        /* SrcObjTg  SPrm    */ TG_SPRM_SET | TG_SPRM_UNK8,
+        /* SrcObjCo  SPrm    */ 0,
         /* SrcGObjAt Se      */ 0,
         /* SrcGObjAt HitMark */ 0,
         /* SrcGObjAt Spl     */ 0,
         /* SrcGObjAt Mtrl    */ 0,
-        /* SrcGObjAt GFlag   */ 0,
+        /* SrcGObjAt SPrm    */ 0,
         /* SrcGObjTg Se      */ 0,
         /* SrcGObjTg HitMark */ 0,
         /* SrcGObjTg Spl     */ 0,
         /* SrcGObjTg Mtrl    */ 0,
-        /* SrcGObjTg GFlag   */ 6,
-        /* SrcGObjCo GFlag   */ 0,
+        /* SrcGObjTg SPrm    */ G_TG_SPRM_NO_CON_HIT | G_TG_SPRM_NO_HIT_MARK,
+        /* SrcGObjCo SPrm    */ 0,
     },
     // cM3dGCylS
     {
@@ -258,7 +257,7 @@ void daObjBarrier_c::break_order_proc() {
     if (mEvtInfo.checkCommandDemoAccrpt()) {
         mBarrierProc = PROC_BREAK_END_WAIT;
     } else {
-        fopAcM_orderOtherEventId(this, mEventID, 0xFF, 0xFFFF, 0, 1);
+        fopAcM_orderOtherEventId(this, mEventID);
         mEvtInfo.onCondition(2);
     }
 }

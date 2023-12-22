@@ -9,7 +9,6 @@
 #include "d/d_level_se.h"
 #include "d/d_procname.h"
 #include "m_Do/m_Do_mtx.h"
-#include "JSystem/JKernel/JKRHeap.h"
 #include "JSystem/JUtility/JUTAssert.h"
 
 const char* daFan_c::m_arcname[3] = { "Hsen1", "Hsen1", "Hsen3", };
@@ -28,23 +27,23 @@ static dCcD_SrcCps l_cps_src = {
     // dCcD_SrcGObjInf
     {
         /* Flags             */ 0,
-        /* SrcObjAt Type     */ AT_TYPE_LEAF_WIND,
-        /* SrcObjAt Atp      */ 0,
-        /* SrcObjAt SPrm     */ 0x0F,
-        /* SrcObjTg Type     */ 0,
-        /* SrcObjTg SPrm     */ 0,
-        /* SrcObjCo SPrm     */ 0,
+        /* SrcObjAt  Type    */ AT_TYPE_LEAF_WIND,
+        /* SrcObjAt  Atp     */ 0,
+        /* SrcObjAt  SPrm    */ AT_SPRM_SET | AT_SPRM_GRP,
+        /* SrcObjTg  Type    */ 0,
+        /* SrcObjTg  SPrm    */ 0,
+        /* SrcObjCo  SPrm    */ 0,
         /* SrcGObjAt Se      */ 0,
         /* SrcGObjAt HitMark */ 0,
         /* SrcGObjAt Spl     */ 0,
         /* SrcGObjAt Mtrl    */ 0,
-        /* SrcGObjAt GFlag   */ 0x02,
+        /* SrcGObjAt SPrm    */ G_AT_SPRM_NO_HIT_MARK,
         /* SrcGObjTg Se      */ 0,
         /* SrcGObjTg HitMark */ 0,
         /* SrcGObjTg Spl     */ 0,
         /* SrcGObjTg Mtrl    */ 0,
-        /* SrcGObjTg GFlag   */ 0x04,
-        /* SrcGObjCo GFlag   */ 0,
+        /* SrcGObjTg SPrm    */ G_TG_SPRM_NO_HIT_MARK,
+        /* SrcGObjCo SPrm    */ 0,
     },
     // cM3dGCpsS
     {
@@ -130,7 +129,7 @@ int daFan_c::Create() {
     }
 
     mModel->calc();
-    mWindSePId = fopKyM_create(PROC_LEVEL_SE, JA_SE_OBJ_WIND_TAG, &mEyePos, NULL, NULL);
+    mWindSePId = fopKyM_create(PROC_LEVEL_SE, JA_SE_OBJ_WIND_TAG, &mEyePos);
     return TRUE;
 }
 

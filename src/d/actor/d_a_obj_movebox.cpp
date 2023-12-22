@@ -10,12 +10,11 @@ static f32 dummy1[3] = {1.0f, 1.0f, 1.0f};
 static f32 dummy2[3] = {1.0f, 1.0f, 1.0f};
 static u8 dummy3[4] = {0x02, 0x00, 0x02, 0x01};
 static f64 dummy4[2] = {3.0, 0.5};
-u8 dummy5[0x4C];
+static u8 dummy5[0x4C];
 
 #include "d/actor/d_a_obj_movebox.h"
 #include "d/d_cc_d.h"
 #include "d/d_procname.h"
-#include "JSystem/JKernel/JKRHeap.h"
 #include "JSystem/JUtility/JUTAssert.h"
 #include "d/d_com_inf_game.h"
 #include "m_Do/m_Do_mtx.h"
@@ -262,7 +261,7 @@ namespace daObjMovebox {
             M_wall_work[i].Set(&temp_44, &temp_38, (fopAc_ac_c*)movebox);
             M_wall_work[i].SetActorPid(movebox->mBase.mBsPcId);
             if (dComIfG_Bgsp()->LineCross(&M_wall_work[i])) {
-                mWallPos[i] = M_wall_work[i].i_GetCross();
+                mWallPos[i] = M_wall_work[i].GetCross();
                 f32 dist = temp_44.abs2(mWallPos[i]);
                 if (dist < mNearestWallDist) {
                     mNearestWallDist = dist;
@@ -386,23 +385,23 @@ namespace daObjMovebox {
         // dCcD_SrcGObjInf
         {
             /* Flags             */ 0,
-            /* SrcObjAt Type     */ 0,
-            /* SrcObjAt Atp      */ 0,
-            /* SrcObjAt SPrm     */ 0,
-            /* SrcObjTg Type     */ AT_TYPE_BOMB,
-            /* SrcObjTg SPrm     */ 0x09,
-            /* SrcObjCo SPrm     */ 0x79,
+            /* SrcObjAt  Type    */ 0,
+            /* SrcObjAt  Atp     */ 0,
+            /* SrcObjAt  SPrm    */ 0,
+            /* SrcObjTg  Type    */ AT_TYPE_BOMB,
+            /* SrcObjTg  SPrm    */ TG_SPRM_SET | TG_SPRM_UNK8,
+            /* SrcObjCo  SPrm    */ CO_SPRM_SET | CO_SPRM_UNK8 | CO_SPRM_VSGRP,
             /* SrcGObjAt Se      */ 0,
             /* SrcGObjAt HitMark */ 0,
             /* SrcGObjAt Spl     */ 0,
             /* SrcGObjAt Mtrl    */ 0,
-            /* SrcGObjAt GFlag   */ 0,
+            /* SrcGObjAt SPrm    */ 0,
             /* SrcGObjTg Se      */ 0,
             /* SrcGObjTg HitMark */ 0,
             /* SrcGObjTg Spl     */ 0,
             /* SrcGObjTg Mtrl    */ 0,
-            /* SrcGObjTg GFlag   */ 0,
-            /* SrcGObjCo GFlag   */ 0,
+            /* SrcGObjTg SPrm    */ 0,
+            /* SrcGObjCo SPrm    */ 0,
         },
         // cM3dGCylS
         {
@@ -1432,13 +1431,13 @@ namespace daObjMovebox {
             mChildPID = fopAcM_createChild(
                 PROC_Obj_Jump, fopAcM_GetID(this),
                 jumpParams, &current.pos,
-                fopAcM_GetRoomNo(this), &shape_angle, NULL, -1, NULL
+                fopAcM_GetRoomNo(this), &shape_angle
             );
         } else if (mType == TYPE_MIRROR) {
             mChildPID = fopAcM_createChild(
                 PROC_Obj_Mmrr, fopAcM_GetID(this),
                 0, &current.pos,
-                fopAcM_GetRoomNo(this), &shape_angle, NULL, -1, NULL
+                fopAcM_GetRoomNo(this), &shape_angle
             );
         } else if (mType == TYPE_BLACK_BOX_WITH_MKIE) {
             cXyz mkiePos(current.pos.x, current.pos.y + 150.0f, current.pos.z);
@@ -1790,7 +1789,7 @@ namespace daObjMovebox {
     void Act_c::make_item() {
         s32 itemTableNo = prm_get_itemNo();
         s32 itemBitNo = prm_get_itemSave();
-        fopAcM_createItemFromTable(&current.pos, itemTableNo, itemBitNo, fopAcM_GetHomeRoomNo(this), 0, &current.angle, 7, NULL);
+        fopAcM_createItemFromTable(&current.pos, itemTableNo, itemBitNo, fopAcM_GetHomeRoomNo(this), 0, &current.angle, 7);
     }
     
     /* 00003450-00003570       .text eff_break__Q212daObjMovebox5Act_cFv */
@@ -1806,7 +1805,7 @@ namespace daObjMovebox {
             emitter->setLifeTime(30);
             emitter->setAwayFromAxisSpeed(30.0f);
         }
-        fopAcM_create(PROC_Obj_Eff, 0x5, &particlePos, -1, NULL, NULL, 0xFF, NULL);
+        fopAcM_create(PROC_Obj_Eff, 0x5, &particlePos);
         // TODO daObjEff::Act_c::make_woodBox_smoke(cXyz*)
     }
     
@@ -1874,7 +1873,7 @@ namespace daObjMovebox {
         cXyz smokeScale;
         smokeScale.setall(i_attr()->mLandSmokeScale);
         smokeScale *= 5.0f/3.0f;
-        fopAcM_create(PROC_Obj_Eff, 0x3, &current.pos, -1, NULL, &smokeScale, 0xFF, NULL);
+        fopAcM_create(PROC_Obj_Eff, 0x3, &current.pos, -1, NULL, &smokeScale);
         // TODO daObjEff::Act_c::make_land_smoke(cXyz*, float)
     }
     

@@ -5,13 +5,13 @@
 
 #include "d/actor/d_a_ib.h"
 #include "d/d_procname.h"
-#include "JSystem/JKernel/JKRHeap.h"
 #include "JSystem/JUtility/JUTAssert.h"
 #include "d/d_com_inf_game.h"
 #include "d/d_s_play.h"
 #include "d/actor/d_a_item.h"
 #include "d/d_item.h"
 #include "d/d_item_data.h"
+#include "global.h"
 #include "m_Do/m_Do_mtx.h"
 
 // Needed for the .data section to match.
@@ -115,18 +115,6 @@ static BOOL itemParamSet_CB(void* i_actor) {
     return TRUE;
 }
 
-// This is a fake inline, not present in the demo debug map.
-// However, it's possible an inline similar to this was added to the final release.
-// The kiosk demo calls dSv_memBit_c::isVisitedRoom(int) instead of dSv_memBit_c::isSwitch(int) here,
-// so it's plausible they also added this inline while they were modifying that code.
-inline BOOL isItemBit(u8 itemNo, s8 itemBitNo, s8 roomNo) {
-    if (itemNo == BLUE_JELLY) { // Blue Chu Jelly uses itemBitNo as if it was a switch.
-        return dComIfGs_isSaveSwitch(0xE, itemBitNo);
-    } else {
-        return dComIfGs_isItem(itemBitNo, roomNo);
-    }
-}
-
 /* 800F3658-800F3994       .text createItem__9daIball_cFv */
 BOOL daIball_c::createItem() {
     // Fakematch: itemBitNo and itemTableIdx should really be separate variables as they aren't
@@ -148,7 +136,7 @@ BOOL daIball_c::createItem() {
         itemBitNo = -1;
         if (isLimitedItem(items[i])) {
             itemBitNo = daIball_prm::getItemBitNo(this);
-            if (itemBitNo == 0x1F || itemBitNo == 0xFF || itemBitNo == -1 || isItemBit(items[i], itemBitNo, current.roomNo)) {
+            if ((itemBitNo == 0x1F || itemBitNo == 0xFF || itemBitNo == -1) || fopAcM_isItemForIb(itemBitNo, items[i], current.roomNo)) {
                 itemBitNo = -1;
                 items[i] = YELLOW_RUPEE;
             }
@@ -203,8 +191,8 @@ BOOL daIball_c::dead() {
 /* 800F3A48-800F3E78       .text checkGeo__9daIball_cFv */
 void daIball_c::checkGeo() {
     static ModeFunc mode_proc[] = {
-        &mode_wait,
-        &mode_water,
+        &daIball_c::mode_wait,
+        &daIball_c::mode_water,
     };
     
     mPrevSpeedY = speed.y;
@@ -333,32 +321,29 @@ void daIball_c::set_mtx() {
 }
 
 // TODO: This is a hack. I have no idea why this one variable needs to go in .data instead of .sdata.
-#ifndef __INTELLISENSE__
-__declspec(section ".data")
-#endif
-char daIball_c::m_arcname[] = "Always";
+SECTION_DATA char daIball_c::m_arcname[] = "Always";
 
 dCcD_SrcCyl daIball_c::m_cyl_src = {
     // dCcD_SrcGObjInf
     {
         /* Flags             */ 0,
-        /* SrcObjAt Type     */ 0,
-        /* SrcObjAt Atp      */ 0,
-        /* SrcObjAt SPrm     */ 0,
-        /* SrcObjTg Type     */ ~(AT_TYPE_LIGHT),
-        /* SrcObjTg SPrm     */ 0x09,
-        /* SrcObjCo SPrm     */ 0x79,
+        /* SrcObjAt  Type    */ 0,
+        /* SrcObjAt  Atp     */ 0,
+        /* SrcObjAt  SPrm    */ 0,
+        /* SrcObjTg  Type    */ ~(AT_TYPE_LIGHT),
+        /* SrcObjTg  SPrm    */ TG_SPRM_SET | TG_SPRM_UNK8,
+        /* SrcObjCo  SPrm    */ CO_SPRM_SET | CO_SPRM_UNK8 | CO_SPRM_VSGRP,
         /* SrcGObjAt Se      */ 0,
         /* SrcGObjAt HitMark */ 0,
         /* SrcGObjAt Spl     */ 0,
         /* SrcGObjAt Mtrl    */ 0,
-        /* SrcGObjAt GFlag   */ 0x04,
+        /* SrcGObjAt SPrm    */ G_AT_SPRM_STOP_NO_CON_HIT,
         /* SrcGObjTg Se      */ 0,
         /* SrcGObjTg HitMark */ 0,
         /* SrcGObjTg Spl     */ 0,
         /* SrcGObjTg Mtrl    */ 0,
-        /* SrcGObjTg GFlag   */ 0x04,
-        /* SrcGObjCo GFlag   */ 0,
+        /* SrcGObjTg SPrm    */ G_TG_SPRM_NO_HIT_MARK,
+        /* SrcGObjCo SPrm    */ 0,
     },
     // cM3dGCylS
     {
@@ -375,7 +360,7 @@ void daIball_c::CreateInit() {
     mCyl.Set(m_cyl_src);
     mCyl.SetStts(&mStts);
     mAcchCir.SetWall(30.0f, 30.0f);
-    mAcch.Set(&current.pos, &next.pos, this, 1, &mAcchCir, &speed, NULL, NULL);
+    mAcch.Set(&current.pos, &next.pos, this, 1, &mAcchCir, &speed);
     mAcch.OnSeaCheckOn();
     mAcch.OnSeaWaterHeight();
     

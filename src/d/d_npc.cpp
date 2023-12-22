@@ -377,10 +377,10 @@ s32 dNpc_PathRun_c::absIdx(u8 startIdx, u8 lastIdx) {
     s32 diff_2 = lastIdx - startIdx;
 
     if(diff_1 < 0) {
-        diff_1 += maxPoint(); 
+        diff_1 += maxPoint();
     }
     if(diff_2 < 0) {
-        diff_2 += maxPoint(); 
+        diff_2 += maxPoint();
     }
     if(diff_1 > diff_2) {
         return diff_2;
@@ -702,12 +702,12 @@ bool dNpc_setAnm_2(mDoExt_McaMorf* pMorf, int loopMode, f32 morf, f32 speed, int
 
 /* 8021C238-8021C2E8       .text swing_vertical_init__14dNpc_HeadAnm_cFsssi */
 void dNpc_HeadAnm_c::swing_vertical_init(s16 param_1, s16 param_2, s16 param_3, int param_4) {
-    if(param_4 == 0 || mFunc != &swing_vertical) {
+    if(param_4 == 0 || mFunc != &dNpc_HeadAnm_c::swing_vertical) {
         field_0x1C = 0;
         field_0x20 = param_1;
         field_0x1E = param_2;
         field_0x14 = param_3;
-        mFunc = &swing_vertical;
+        mFunc = &dNpc_HeadAnm_c::swing_vertical;
     }
 }
 
@@ -726,12 +726,12 @@ void dNpc_HeadAnm_c::swing_vertical() {
 
 /* 8021C3C8-8021C478       .text swing_horizone_init__14dNpc_HeadAnm_cFsssi */
 void dNpc_HeadAnm_c::swing_horizone_init(s16 param_1, s16 param_2, s16 param_3, int param_4) {
-    if(param_4 == 0 || mFunc != &swing_vertical) {
+    if(param_4 == 0 || mFunc != &dNpc_HeadAnm_c::swing_vertical) {
         field_0x1C = 0;
         field_0x20 = param_1;
         field_0x1E = param_2;
         field_0x18 = param_3;
-        mFunc = &swing_horizone;
+        mFunc = &dNpc_HeadAnm_c::swing_horizone;
     }
 }
 
@@ -928,23 +928,23 @@ dCcD_SrcCyl dNpc_cyl_src = {
     // dCcD_SrcGObjInf
     {
         /* Flags             */ 0,
-        /* SrcObjAt Type     */ 0,
-        /* SrcObjAt Atp      */ 0,
-        /* SrcObjAt SPrm     */ 0,
-        /* SrcObjTg Type     */ ~(AT_TYPE_BOOMERANG),
-        /* SrcObjTg SPrm     */ 0x03,
-        /* SrcObjCo SPrm     */ 0x75,
+        /* SrcObjAt  Type    */ 0,
+        /* SrcObjAt  Atp     */ 0,
+        /* SrcObjAt  SPrm    */ 0,
+        /* SrcObjTg  Type    */ ~(AT_TYPE_BOOMERANG),
+        /* SrcObjTg  SPrm    */ TG_SPRM_SET | TG_SPRM_UNK2,
+        /* SrcObjCo  SPrm    */ CO_SPRM_SET | CO_SPRM_UNK4 | CO_SPRM_VSGRP,
         /* SrcGObjAt Se      */ 0,
         /* SrcGObjAt HitMark */ 0,
         /* SrcGObjAt Spl     */ 0,
         /* SrcGObjAt Mtrl    */ 0,
-        /* SrcGObjAt GFlag   */ 0,
+        /* SrcGObjAt SPrm    */ 0,
         /* SrcGObjTg Se      */ 0,
         /* SrcGObjTg HitMark */ 0,
         /* SrcGObjTg Spl     */ 0,
         /* SrcGObjTg Mtrl    */ 0,
-        /* SrcGObjTg GFlag   */ 0x04,
-        /* SrcGObjCo GFlag   */ 0,
+        /* SrcGObjTg SPrm    */ G_TG_SPRM_NO_HIT_MARK,
+        /* SrcGObjCo SPrm    */ 0,
     },
     // cM3dGCylS
     {

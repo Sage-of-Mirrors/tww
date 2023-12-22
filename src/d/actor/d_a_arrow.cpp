@@ -4,7 +4,6 @@
 //
 
 #include "d/actor/d_a_arrow.h"
-#include "JSystem/JKernel/JKRHeap.h"
 #include "m_Do/m_Do_mtx.h"
 #include "d/d_com_inf_game.h"
 #include "d/d_procname.h"
@@ -28,23 +27,23 @@ const dCcD_SrcCps daArrow_c::m_at_cps_src = {
     // dCcD_SrcGObjInf
     {
         /* Flags             */ 0,
-        /* SrcObjAt Type     */ AT_TYPE_NORMAL_ARROW,
-        /* SrcObjAt Atp      */ 2,
-        /* SrcObjAt SPrm     */ 0xB,
-        /* SrcObjTg Type     */ 0,
-        /* SrcObjTg SPrm     */ 0,
-        /* SrcObjCo SPrm     */ 0,
-        /* SrcGObjAt Se      */ 7,
-        /* SrcGObjAt HitMark */ 0xD,
+        /* SrcObjAt  Type    */ AT_TYPE_NORMAL_ARROW,
+        /* SrcObjAt  Atp     */ 2,
+        /* SrcObjAt  SPrm    */ AT_SPRM_SET | AT_SPRM_UNK2 | AT_SPRM_UNK8,
+        /* SrcObjTg  Type    */ 0,
+        /* SrcObjTg  SPrm    */ 0,
+        /* SrcObjCo  SPrm    */ 0,
+        /* SrcGObjAt Se      */ 0x07,
+        /* SrcGObjAt HitMark */ 0x0D,
         /* SrcGObjAt Spl     */ 0,
         /* SrcGObjAt Mtrl    */ 0,
-        /* SrcGObjAt GFlag   */ 0,
+        /* SrcGObjAt SPrm    */ 0,
         /* SrcGObjTg Se      */ 0,
         /* SrcGObjTg HitMark */ 0,
         /* SrcGObjTg Spl     */ 0,
         /* SrcGObjTg Mtrl    */ 0,
-        /* SrcGObjTg GFlag   */ 0,
-        /* SrcGObjCo GFlag   */ 0,
+        /* SrcGObjTg SPrm    */ 0,
+        /* SrcGObjCo SPrm    */ 0,
     },
     // cM3dGCpsS
     {
@@ -58,23 +57,23 @@ const dCcD_SrcSph daArrow_c::m_co_sph_src = {
     // dCcD_SrcGObjInf
     {
         /* Flags             */ 0,
-        /* SrcObjAt Type     */ 0,
-        /* SrcObjAt Atp      */ 0,
-        /* SrcObjAt SPrm     */ 0,
-        /* SrcObjTg Type     */ 0,
-        /* SrcObjTg SPrm     */ 0,
-        /* SrcObjCo SPrm     */ 0x119,
-        /* SrcGObjAt Se      */ 7,
+        /* SrcObjAt  Type    */ 0,
+        /* SrcObjAt  Atp     */ 0,
+        /* SrcObjAt  SPrm    */ 0,
+        /* SrcObjTg  Type    */ 0,
+        /* SrcObjTg  SPrm    */ 0,
+        /* SrcObjCo  SPrm    */ CO_SPRM_SET | CO_SPRM_UNK8 | CO_SPRM_UNK10 | CO_SPRM_NO_CRR,
+        /* SrcGObjAt Se      */ 0x07,
         /* SrcGObjAt HitMark */ 0,
         /* SrcGObjAt Spl     */ 0,
         /* SrcGObjAt Mtrl    */ 0,
-        /* SrcGObjAt GFlag   */ 0,
+        /* SrcGObjAt SPrm    */ 0,
         /* SrcGObjTg Se      */ 0,
         /* SrcGObjTg HitMark */ 0,
         /* SrcGObjTg Spl     */ 0,
         /* SrcGObjTg Mtrl    */ 0,
-        /* SrcGObjTg GFlag   */ 0x04,
-        /* SrcGObjCo GFlag   */ 0,
+        /* SrcGObjTg SPrm    */ G_TG_SPRM_NO_HIT_MARK,
+        /* SrcGObjCo SPrm    */ 0,
     },
     // cM3dGSphS
     {
@@ -157,7 +156,7 @@ void daArrow_c::setLightEffect() {
             mLightEffPID = fopAcM_createChild(
                 PROC_ARROW_LIGHTEFF, fopAcM_GetID(this),
                 mArrowType, &field_0x6a8,
-                current.roomNo, &shape_angle, NULL, -1, NULL
+                current.roomNo, &shape_angle
             );
             if (mLightEffPID != fpcM_ERROR_PROCESS_ID_e) {
                 mbHasLightEff = true;
@@ -390,7 +389,7 @@ bool daArrow_c::check_water_in() {
             waterHitPos = (next.pos * weight) + (current.pos * (1.0f - weight));
         }
         
-        mCurrProcFunc = &procWater;
+        mCurrProcFunc = &daArrow_c::procWater;
         fopAcM_SetParam(this, 4);
         
         if (mArrowType == TYPE_FIRE) {
@@ -403,7 +402,7 @@ bool daArrow_c::check_water_in() {
             mInWaterTimer = 10*30;
             fopAcM_createChild(
                 PROC_ARROW_ICEEFF, fopAcM_GetID(this), mArrowType,
-                &waterHitPos, current.roomNo, &current.angle, NULL, -1, NULL
+                &waterHitPos, current.roomNo, &current.angle
             );
             if (!field_0x6e4) {
                 dKy_arrowcol_chg_on(&current.pos, 1);
@@ -464,7 +463,7 @@ daArrow_c* daArrow_c::changeArrowType() {
     
     if (mArrowType != origArrowType) {
         m_keep_type = mArrowType;
-        daArrow_c* newNockedArrow = (daArrow_c*)fopAcM_fastCreate(PROC_ARROW, 0, &current.pos, current.roomNo, NULL, NULL, -1, NULL, NULL);
+        daArrow_c* newNockedArrow = (daArrow_c*)fopAcM_fastCreate(PROC_ARROW, 0, &current.pos, current.roomNo);
         if (!newNockedArrow) {
             mArrowType = origArrowType;
             m_keep_type = origArrowType;
@@ -620,7 +619,7 @@ BOOL daArrow_c::procWait() {
             checkRestMp();
         }
         
-        mCurrProcFunc = &procMove;
+        mCurrProcFunc = &daArrow_c::procMove;
         arrowShooting();
     }
     
@@ -678,7 +677,7 @@ BOOL daArrow_c::procMove() {
                                 dKy_arrowcol_chg_on(&current.pos, 2);
                             }
                             
-                            mCurrProcFunc = &procStop_BG;
+                            mCurrProcFunc = &daArrow_c::procStop_BG;
                             fopAcM_OnStatus(this, fopAcStts_UNK4000_e);
                             fopAcM_SetParam(this, 2);
                             field_0x604 = 0x28;
@@ -729,7 +728,7 @@ BOOL daArrow_c::procMove() {
         
         if (hitType == 1) { // Blocked hit
             fopAcM_SetParam(this, 3);
-            mCurrProcFunc = &procReturn;
+            mCurrProcFunc = &daArrow_c::procReturn;
             speed *= -0.1f;
             speed.y += speed.absXZ();
             current.pos = next.pos;
@@ -740,7 +739,7 @@ BOOL daArrow_c::procMove() {
             fopAcM_seStartCurrent(this, JA_SE_LK_ARROW_REBOUND, 0x20);
         } else if (hitType == 2) { // Hit a joint
             fpcM_SetParam(this, 2);
-            mCurrProcFunc = &procStop_Actor;
+            mCurrProcFunc = &daArrow_c::procStop_Actor;
             
             if (mArrowType == TYPE_FIRE) {
                 fopAcM_seStartCurrent(this, JA_SE_OBJ_FIRE_ARW_EFF, 0);
@@ -779,7 +778,7 @@ BOOL daArrow_c::procMove() {
                 dKy_arrowcol_chg_on(&current.pos, temp8);
             }
             
-            mCurrProcFunc = &procStop_BG;
+            mCurrProcFunc = &daArrow_c::procStop_BG;
             fopAcM_OnStatus(this, fopAcStts_UNK4000_e);
             fopAcM_SetParam(this, 2);
             field_0x604 = 0x28;
@@ -800,14 +799,14 @@ BOOL daArrow_c::procMove() {
                 field_0x698 = false;
             } else if (mArrowType == TYPE_ICE) {
                 if (dComIfG_Bgsp()->ChkGrpInf(mLinChk, 0x200)) {
-                    fopAcM_create(PROC_Obj_Magmarock, NULL, &field_0x6a8, current.roomNo, NULL, NULL, -1, NULL);
+                    fopAcM_create(PROC_Obj_Magmarock, NULL, &field_0x6a8, current.roomNo);
                 } else {
                     dComIfGp_particle_setP1(0x29E, &field_0x6a8, &temp10);
                     
                     fopAcM_createChild(
                         PROC_ARROW_ICEEFF, fopAcM_GetID(this),
                         mArrowType, &field_0x6a8,
-                        current.roomNo, &field_0x6e6, NULL, -1, NULL
+                        current.roomNo, &field_0x6e6
                     );
                     
                     fopAcM_seStartCurrent(this, JA_SE_OBJ_ICE_ARW_EFF, 0);
@@ -828,7 +827,7 @@ BOOL daArrow_c::procMove() {
                 attribCode == dBgS_Attr_DAMAGE_e ||
                 attribCode == dBgS_Attr_FREEZE_e
             )) {
-                mCurrProcFunc = &procReturn;
+                mCurrProcFunc = &daArrow_c::procReturn;
                 fopAcM_SetParam(this, 3);
                 speed *= -0.1f;
                 speed.y += speed.absXZ();
@@ -848,7 +847,7 @@ BOOL daArrow_c::procMove() {
         // There was probably some code here that got commented out.
     }
     
-    if (mCurrProcFunc == &procWater) {
+    if (mCurrProcFunc == &daArrow_c::procWater) {
         mDoMtx_stack_c::transS(current.pos);
         mDoMtx_stack_c::ZXYrotM(shape_angle.x, shape_angle.y, 0);
         mpModel->setBaseTRMtx(mDoMtx_stack_c::get());
@@ -989,7 +988,7 @@ BOOL daArrow_c::procStop_BG() {
         if (mCoSph.ChkCoHit()) {
             dComIfGp_setItemArrowNumCount(1);
             fopAcM_createItemForSimpleDemo(&current.pos, ARROW_10, -1, NULL, NULL, 0.0f, 0.0f);
-            mDoAud_seStart(JA_SE_CONSUMP_ITEM_GET, NULL, 0, 0);
+            mDoAud_seStart(JA_SE_CONSUMP_ITEM_GET);
             fopAcM_delete(this);
             return TRUE;
         }
@@ -1061,10 +1060,10 @@ BOOL daArrow_c::createInit() {
         mpBtk = daPy_getPlayerLinkActorClass()->getIceArrowBtk();
     }
     
-    mCurrProcFunc = &procWait;
+    mCurrProcFunc = &daArrow_c::procWait;
     
     setKeepMatrix();
-    mCullMtx = mpModel->getBaseTRMtx();
+    fopAcM_SetMtx(this, mpModel->getBaseTRMtx());
     mCull.mBox.mMin.x = -6.0f;
     mCull.mBox.mMin.y = -6.0f;
     mCull.mBox.mMin.z = 0.0f;

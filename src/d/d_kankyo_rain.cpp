@@ -782,7 +782,7 @@ void dKyr_poison_light_colision() {
     dCcMassS_Mng * mass = &dComIfG_Ccsp()->mMass_Mng;
     dComIfG_Ccsp()->mMass_Mng.mCylAttr.SetR(220.0f);
     dComIfG_Ccsp()->mMass_Mng.mCylAttr.SetH(140.0f);
-    mass->field_0x200 = 0x0B;
+    mass->field_0x128 = 0x0B;
     mass->mResultCamBit = 0x03;
 #endif
 
@@ -1079,7 +1079,7 @@ void dKyr_drawSun(Mtx drawMtx, cXyz* pPos, GXColor& reg0, u8** pImg) {
                 GXTexCoord2s16(0xFF, 0xFF);
                 GXPosition3f32(pos[3].x, pos[3].y, pos[3].z);
                 GXTexCoord2s16(0, 0xFF);
-                GXEnd();                
+                GXEnd();
             }
         }
 
@@ -1171,7 +1171,7 @@ void dKyr_drawSun(Mtx drawMtx, cXyz* pPos, GXColor& reg0, u8** pImg) {
                 GXTexCoord2s16(0xFF, 0xFF);
                 GXPosition3f32(pos[3].x, pos[3].y, pos[3].z);
                 GXTexCoord2s16(0, 0xFF);
-                GXEnd();                
+                GXEnd();
             }
         }
 #if VERSION != VERSION_JPN
@@ -1841,12 +1841,12 @@ void dKyr_thunder_move() {
             cLib_addCalc(&pThunder->mFlashTimer, 1.0f, 0.3f, 0.2f, 0.001f);
             if (pThunder->mFlashTimer >= 1.0f) {
                 if (pThunder->mState < 10)
-                    mDoAud_seStart(0x69f7, NULL, 0, 0);
+                    mDoAud_seStart(JA_SE_OBJ_THUNDER_NEAR);
                 pThunder->mState++;
             }
 
             if (cM_rndF(1.0f) < 0.18f)
-                fopKyM_create(PROC_KY_THUNDER, -1, NULL, NULL, NULL);
+                fopKyM_create(PROC_KY_THUNDER, -1);
         }
         break;
     case 2:

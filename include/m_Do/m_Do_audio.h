@@ -7,9 +7,10 @@
 class mDoAud_zelAudio_c : public JAIZelBasic {
 public:
     mDoAud_zelAudio_c() {}
+    ~mDoAud_zelAudio_c() {}
 
     void reset();
-    
+
     static void calcLoadTimer();
 
     static bool isResetFlag() { return mResetFlag; }
@@ -93,7 +94,7 @@ inline void mDoAud_resetProcess() {
     }
 }
 
-inline void mDoAud_seStart(u32 i_sfxID, Vec* i_sePos, u32 param_2, s8 i_reverb) {
+inline void mDoAud_seStart(u32 i_sfxID, Vec* i_sePos = NULL, u32 param_2 = 0, s8 i_reverb = 0) {
     mDoAud_zelAudio_c::getInterface()->seStart(i_sfxID, i_sePos, param_2, i_reverb, 1.0f, 1.0f, -1.0f, -1.0f, 0);
 }
 

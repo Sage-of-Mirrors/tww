@@ -253,7 +253,7 @@ BOOL progSelDraw(dScnLogo_c* i_this) {
     if (i_this->field_0x1eb == 0) {
         if (i_this->mInterFlag == 0) {
             if (CPad_CHECK_HOLD_RIGHT(0) || g_mDoCPd_cpadInfo[0].mMainStickPosX > 0.5f) {
-                mDoAud_seStart(JA_SE_TALK_CURSOR, NULL, 0, 0);
+                mDoAud_seStart(JA_SE_TALK_CURSOR);
                 i_this->mInterFlag = 1;
                 i_this->field_0x1ee = 30;
                 i_this->field_0x1f0 = i_this->field_0x1ee;
@@ -261,7 +261,7 @@ BOOL progSelDraw(dScnLogo_c* i_this) {
             }
         } else {
             if (CPad_CHECK_HOLD_LEFT(0) || g_mDoCPd_cpadInfo[0].mMainStickPosX < -0.5f) {
-                mDoAud_seStart(JA_SE_TALK_CURSOR, NULL, 0, 0);
+                mDoAud_seStart(JA_SE_TALK_CURSOR);
                 i_this->mInterFlag = 0;
                 i_this->field_0x1ee = 30;
                 i_this->field_0x1f0 = i_this->field_0x1ee;
@@ -271,9 +271,9 @@ BOOL progSelDraw(dScnLogo_c* i_this) {
 
         if (CPad_CHECK_TRIG_A(0) || i_this->mTimer == 0) {
             if (i_this->mInterFlag == 0)
-                mDoAud_seStart(JA_SE_TALK_WIN_CLOSE, NULL, 0, 0);
+                mDoAud_seStart(JA_SE_TALK_WIN_CLOSE);
             else
-                mDoAud_seStart(JA_SE_TALK_SEL_CANCEL, NULL, 0, 0);
+                mDoAud_seStart(JA_SE_TALK_SEL_CANCEL);
 
             const int temp = VERSION_SELECT(240, 540, 540);
             if (i_this->mTimer > temp) {
@@ -880,7 +880,7 @@ s32 phase_2(dScnLogo_c* i_this) {
     rt = dComIfG_setObjectRes("Agb", JKRArchive::UNKNOWN_MOUNT_DIRECTION, NULL);
     JUT_ASSERT(VERSION_SELECT(1360, 1659, 1699), rt == 1);
 
-    l_anmCommand = aramMount("/res/Object/LkAnm.arc");                                                     
+    l_anmCommand = aramMount("/res/Object/LkAnm.arc");
     l_fmapCommand = aramMount("/res/Fmap/Fmap.arc");
     l_itemResCommand = aramMount("/res/Msg/itemres.arc");
     l_fmapResCommand = aramMount("/res/Msg/fmapres.arc");

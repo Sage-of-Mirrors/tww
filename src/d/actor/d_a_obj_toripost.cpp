@@ -5,7 +5,6 @@
 
 #include "d/actor/d_a_obj_toripost.h"
 #include "JSystem/JUtility/JUTAssert.h"
-#include "JSystem/JKernel/JKRHeap.h"
 #include "f_op/f_op_actor_mng.h"
 #include "d/actor/d_a_player.h"
 #include "d/d_com_inf_game.h"
@@ -40,23 +39,23 @@ const dCcD_SrcCyl daObjTpost_c::m_cyl_src = {
     // dCcD_SrcGObjInf
     {
         /* Flags             */ 0,
-        /* SrcObjAt Type     */ 0,
-        /* SrcObjAt Atp      */ 0,
-        /* SrcObjAt SPrm     */ 0,
-        /* SrcObjTg Type     */ ~(AT_TYPE_BOOMERANG),
-        /* SrcObjTg SPrm     */ 0x0F,
-        /* SrcObjCo SPrm     */ 0x79,
+        /* SrcObjAt  Type    */ 0,
+        /* SrcObjAt  Atp     */ 0,
+        /* SrcObjAt  SPrm    */ 0,
+        /* SrcObjTg  Type    */ ~(AT_TYPE_BOOMERANG),
+        /* SrcObjTg  SPrm    */ TG_SPRM_SET | TG_SPRM_GRP,
+        /* SrcObjCo  SPrm    */ CO_SPRM_SET | CO_SPRM_UNK8 | CO_SPRM_VSGRP,
         /* SrcGObjAt Se      */ 0,
         /* SrcGObjAt HitMark */ 0,
         /* SrcGObjAt Spl     */ 0,
         /* SrcGObjAt Mtrl    */ 0,
-        /* SrcGObjAt GFlag   */ 0,
+        /* SrcGObjAt SPrm    */ 0,
         /* SrcGObjTg Se      */ 0,
         /* SrcGObjTg HitMark */ 0,
         /* SrcGObjTg Spl     */ 0,
         /* SrcGObjTg Mtrl    */ 0,
-        /* SrcGObjTg GFlag   */ 0x07,
-        /* SrcGObjCo GFlag   */ 0,
+        /* SrcGObjTg SPrm    */ G_TG_SPRM_SHIELD | G_TG_SPRM_NO_CON_HIT | G_TG_SPRM_NO_HIT_MARK,
+        /* SrcGObjCo SPrm    */ 0,
     },
     // cM3dGCylS
     {
@@ -141,7 +140,7 @@ void daObjTpost_c::cutProc() {
         "DISP_LETTER"
     };
 
-    int staffIdx = dComIfGp_evmng_getMyStaffId("Tpost", 0, 0);
+    int staffIdx = dComIfGp_evmng_getMyStaffId("Tpost");
     if(staffIdx != -1) {
         int actIdx = dComIfGp_evmng_getMyActIdx(staffIdx, action_table, ARRAY_SIZE(action_table), 1, 0);
         if(actIdx == -1) {
@@ -182,7 +181,7 @@ void daObjTpost_c::cutPresentStart(int staffIdx) {
 }
 
 void daObjTpost_c::cutPresentProc(int staffIdx) {
-    u32 itemPID = fopAcM_createItemForPresentDemo(&current.pos, m_letter[mNumReadable].mItemNo, 0, -1, -1, 0, 0);
+    u32 itemPID = fopAcM_createItemForPresentDemo(&current.pos, m_letter[mNumReadable].mItemNo);
     if(itemPID != fpcM_ERROR_PROCESS_ID_e) {
         dComIfGp_event_setItemPartnerId(itemPID);
         dComIfGp_evmng_cutEnd(staffIdx);
@@ -270,7 +269,7 @@ s32 daObjTpost_c::getReadableLetterNum() {
 
 u8 daObjTpost_c::checkSendPrice() {
     static const u8 pay_type[49] = {
-        02, 
+        02,
         01,
         01,
         00,
@@ -618,7 +617,7 @@ void daObjTpost_c::setAnm(s8 param_1, bool param_2) {
     }
 
     if(field_0x6C8 == 0 && mMorf->getFrame() == 1.0f) {
-        mDoAud_seStart(JA_SE_OBJ_POST_EAT_LUGGAGE, 0, 0, 0);
+        mDoAud_seStart(JA_SE_OBJ_POST_EAT_LUGGAGE);
     }
 
     if(field_0x6C8 == 1) {
@@ -626,7 +625,7 @@ void daObjTpost_c::setAnm(s8 param_1, bool param_2) {
         scale.setall(1.0f);
         if(mMorf->getFrame() == 1.0f) {
             dComIfGp_particle_set(0x8190, &current.pos, &current.angle, &scale);
-            mDoAud_seStart(JA_SE_OBJ_POST_LUGGAGE_OUT, 0, 0, 0);
+            mDoAud_seStart(JA_SE_OBJ_POST_LUGGAGE_OUT);
         }
     }
 
@@ -918,7 +917,7 @@ void daObjTpost_c::createInit() {
     setMtx();
     mMorf->calc();
 
-    mCullMtx = mMorf->getModel()->getBaseTRMtx();
+    fopAcM_SetMtx(this, mMorf->getModel()->getBaseTRMtx());
     fopAcM_setCullSizeBox(this, -50.0f, 0.0f, -50.0f, 70.0f, 200.0f, 70.0f);
     mCullSizeFar = 10.0f;
 
@@ -930,7 +929,7 @@ void daObjTpost_c::createInit() {
     modeProc(PROC_INIT, 0);
 
     mAcchCir.SetWall(30.0f, 30.0f);
-    mAcch.Set(&current.pos, &next.pos, this, 1, &mAcchCir, &speed, 0, 0);
+    mAcch.Set(&current.pos, &next.pos, this, 1, &mAcchCir, &speed);
     mAcch.SetRoofNone();
     mGravity = -4.5f;
 

@@ -4,7 +4,6 @@
 //
 
 #include "d/actor/d_a_race_item.h"
-#include "JSystem/JKernel/JKRHeap.h"
 #include "d/d_com_inf_game.h"
 #include "d/actor/d_a_sea.h"
 #include "d/d_item_data.h"
@@ -16,23 +15,23 @@ static dCcD_SrcCyl l_cyl_src = {
     // dCcD_SrcGObjInf
     {
         /* Flags             */ 0,
-        /* SrcObjAt Type     */ 0,
-        /* SrcObjAt Atp      */ 0,
-        /* SrcObjAt SPrm     */ 0,
-        /* SrcObjTg Type     */ AT_TYPE_ALL,
-        /* SrcObjTg SPrm     */ 0x03,
-        /* SrcObjCo SPrm     */ 0x19,
+        /* SrcObjAt  Type    */ 0,
+        /* SrcObjAt  Atp     */ 0,
+        /* SrcObjAt  SPrm    */ 0,
+        /* SrcObjTg  Type    */ AT_TYPE_ALL,
+        /* SrcObjTg  SPrm    */ TG_SPRM_SET | TG_SPRM_UNK2,
+        /* SrcObjCo  SPrm    */ CO_SPRM_SET | CO_SPRM_UNK8 | CO_SPRM_UNK10,
         /* SrcGObjAt Se      */ 0,
         /* SrcGObjAt HitMark */ 0,
         /* SrcGObjAt Spl     */ 0,
         /* SrcGObjAt Mtrl    */ 0,
-        /* SrcGObjAt GFlag   */ 0,
+        /* SrcGObjAt SPrm    */ 0,
         /* SrcGObjTg Se      */ 0,
         /* SrcGObjTg HitMark */ 0,
         /* SrcGObjTg Spl     */ 0,
         /* SrcGObjTg Mtrl    */ 0,
-        /* SrcGObjTg GFlag   */ 0x04,
-        /* SrcGObjCo GFlag   */ 0,
+        /* SrcGObjTg SPrm    */ G_TG_SPRM_NO_HIT_MARK,
+        /* SrcGObjCo SPrm    */ 0,
     },
     // cM3dGCylS
     {
@@ -57,9 +56,9 @@ s32 daRaceItem_c::create() {
     fopAcM_SetupActor(this, daRaceItem_c);
 
     m_itemNo = fopAcM_GetParam(this) & 0xFF;
-    mPickupFlag = fopAcM_GetParam(this) >> 8 & 0x7F;
+    mItemBitNo = fopAcM_GetParam(this) >> 8 & 0x7F;
     
-    if(fopAcM_isItem(this, mPickupFlag) && mPickupFlag != 0x7F) {
+    if(fopAcM_isItem(this, mItemBitNo) && mItemBitNo != 0x7F) {
         setLoadError();
         return cPhs_ERROR_e;
     }
@@ -95,7 +94,7 @@ BOOL daRaceItem_c::CreateInit() {
     mCyl.SetH(height);
 
     mAcchCir.SetWall(30.0f, 30.0f);
-    mAcch.Set(&current.pos, &next.pos, this, 1, &mAcchCir, &speed, 0, 0);
+    mAcch.Set(&current.pos, &next.pos, this, 1, &mAcchCir, &speed);
     mAcch.ClrWaterNone();
     mAcch.ClrRoofNone();
     
