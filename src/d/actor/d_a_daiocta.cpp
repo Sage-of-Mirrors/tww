@@ -4,62 +4,341 @@
 //
 
 #include "d/actor/d_a_daiocta.h"
+#include "d/d_com_inf_game.h"
 #include "d/d_cc_d.h"
 #include "d/d_procname.h"
+#include "d/d_lib.h"
+#include "d/d_jnt_hit.h"
+#include "d/actor/d_a_bomb.h"
+#include "m_Do/m_Do_hostIO.h"
+
+class daDaiocta_HIO_c : mDoHIO_entry_c {
+public:
+    daDaiocta_HIO_c();
+
+    char m0004;
+    char m0005;
+    char m0006;
+    char m0007;
+
+    char m0008;
+    char m0009;
+    char m000A;
+    char m000B;
+
+    s16 m000C;
+    s16 m000E;
+
+    char pad[0xC];
+
+    cXyz m001C;
+    cXyz m0028;
+    cXyz m0034;
+    cXyz m0040;
+    cXyz m004C;
+    cXyz m0058;
+    cXyz m0064;
+    float m0070;
+    float m0074;
+};
+
+static daDaiocta_HIO_c l_HIO;
+
+const int daDaiocta_c::m_heapsize = 0x0000F740;
+const char daDaiocta_c::m_arc_name[] = "daiocta";
+
+const dCcD_SrcSph daDaiocta_c::m_sph_src = {
+    // dCcD_SrcGObjInf
+    {
+        /* Flags             */ 0,
+        /* SrcObjAt  Type    */ 0,
+        /* SrcObjAt  Atp     */ 0,
+        /* SrcObjAt  SPrm    */ 0,
+        /* SrcObjTg  Type    */ 0xFF1DFEBF,
+        /* SrcObjTg  SPrm    */ TG_SPRM_SET | TG_SPRM_IS_OTHER,
+        /* SrcObjCo  SPrm    */ 0x79,
+        /* SrcGObjAt Se      */ 0,
+        /* SrcGObjAt HitMark */ 0,
+        /* SrcGObjAt Spl     */ 0,
+        /* SrcGObjAt Mtrl    */ 0,
+        /* SrcGObjAt SPrm    */ 0,
+        /* SrcGObjTg Se      */ 0x23,
+        /* SrcGObjTg HitMark */ 0,
+        /* SrcGObjTg Spl     */ 0,
+        /* SrcGObjTg Mtrl    */ 0,
+        /* SrcGObjTg SPrm    */ 0,
+        /* SrcGObjCo SPrm    */ 0,
+    },
+    // cM3dGSphS
+    {
+        /* Center */ 0.0f, 0.0f, 0.0f,
+        /* Radius */ 180.0f,
+    }
+};
+
+const dCcD_SrcCps daDaiocta_c::m_cps_src = {
+    // dCcD_SrcGObjInf
+    {
+        /* Flags             */ 0,
+        /* SrcObjAt  Type    */ 0,
+        /* SrcObjAt  Atp     */ 0,
+        /* SrcObjTg  SPrm    */ 0,
+        /* SrcObjTg  Type    */ 0xFF1DFEBF,
+        /* SrcObjTg  SPrm    */ TG_SPRM_SET | TG_SPRM_IS_OTHER,
+        /* SrcObjCo  SPrm    */ 0x79,
+        /* SrcGObjAt Se      */ 0,
+        /* SrcGObjAt HitMark */ 0,
+        /* SrcGObjAt Spl     */ 0,
+        /* SrcGObjAt Mtrl    */ 0,
+        /* SrcGObjAt SPrm    */ 0,
+        /* SrcGObjTg Se      */ 0x23,
+        /* SrcGObjTg HitMark */ 0,
+        /* SrcGObjTg Spl     */ 0,
+        /* SrcGObjTg Mtrl    */ 0,
+        /* SrcGObjTg SPrm    */ 0,
+        /* SrcGObjCo SPrm    */ 0,
+    },
+    // cM3dGCpsS
+    {
+        /* Start  */ 0.0f, 0.0f, 0.0f,
+        /* End    */ 0.0f, 0.0f, 0.0f,
+        /* Radius */ 60.0f,
+    }
+};
+
+__jnt_hit_data_c search_data = {
+    // TODO: fill this in
+};
 
 /* 000000EC-000002B0       .text __ct__15daDaiocta_HIO_cFv */
 daDaiocta_HIO_c::daDaiocta_HIO_c() {
     /* Nonmatching */
+    int f = daDaiocta_c::m_heapsize;
+
+    m0004 = 0;
+    m0008 = 0;
+    m0006 = 0;
+    m0005 = 0;
+
+    m001C.set(600.0f, 500.0f, 450.0f);
+    m0028.set(350.0f, 350.0f, 300.0f);
+    m0034.set(60.0f, 60.0f, 60.0f);
+    m0040.set(60.0f, 60.0f, 60.0f);
+    m004C.set(60.0f, 60.0f, 60.0f);
+    m0058.set(60.0f, 100.0f, 100.0f);
+    m0064.set(250.0f, 100.0f, 150.0f);
+    m0070 = 100.0f;
+    m0074 = 150.0f;
+
+    m000C = 0x1E;
+    m000E = 0x3C;
+
+    // TODO: finish this
 }
 
 /* 00000334-00000358       .text coHit_CB__FP10fopAc_ac_cP12dCcD_GObjInfP10fopAc_ac_cP12dCcD_GObjInf */
-void coHit_CB(fopAc_ac_c*, dCcD_GObjInf*, fopAc_ac_c*, dCcD_GObjInf*) {
-    /* Nonmatching */
+void coHit_CB(fopAc_ac_c* daiocta, dCcD_GObjInf* p2, fopAc_ac_c* other, dCcD_GObjInf* p3) {
+    static_cast<daDaiocta_c*>(daiocta)->_coHit(other);
 }
 
 /* 00000358-000003DC       .text _coHit__11daDaiocta_cFP10fopAc_ac_c */
-void daDaiocta_c::_coHit(fopAc_ac_c*) {
-    /* Nonmatching */
+void daDaiocta_c::_coHit(fopAc_ac_c* other) {
+    if (other != NULL && other->base.mProcName == 0x128)
+    {
+        if ((m056C == 2 || m056C == 4 || m056C == 1 || m056C == 3) && static_cast<daBomb_c*>(other)->chk_state(daBomb_c::STATE_4))
+        {
+            modeProc(proc_ZERO_e, mode_FOUR_e);
+        }
+    }
 }
 
 /* 000003DC-00000470       .text nodeControl_CB__FP7J3DNodei */
-static BOOL nodeControl_CB(J3DNode*, int) {
+static BOOL nodeControl_CB(J3DNode* node, int p2) {
     /* Nonmatching */
+    if (p2 == 0)
+    {
+        J3DModel* mdl = j3dSys.mModel;
+
+        daDaiocta_c* daiocta = (daDaiocta_c*)mdl->getUserArea();
+        JUT_ASSERT(0x1A4, daiocta != NULL)
+
+        daiocta->_nodeControl(node, mdl);
+    }
+
+    return TRUE;
 }
 
 /* 00000470-0000066C       .text _nodeControl__11daDaiocta_cFP7J3DNodeP8J3DModel */
-void daDaiocta_c::_nodeControl(J3DNode*, J3DModel*) {
+void daDaiocta_c::_nodeControl(J3DNode* node, J3DModel* mdl) {
     /* Nonmatching */
+    u16 jntIdx = static_cast<J3DJoint*>(node)->getJntNo();
+    mDoMtx_stack_c::copy(mdl->mpNodeMtx[jntIdx]);
+
+    m290[jntIdx].x = mDoMtx_stack_c::now[0][3];
+    m290[jntIdx].y = mDoMtx_stack_c::now[1][3];
+    m290[jntIdx].z = mDoMtx_stack_c::now[2][3];
+
+    cXyz pos;
+
+    switch(jntIdx)
+    {
+        case 6:
+            pos.set(450.0f, 0.0f, 0.0f);
+            mDoMtx_stack_c::multVec(&pos, &m21B8);
+        break;
+        case 7:
+            pos.set(300.0f, 0.0f, 0.0f);
+            mDoMtx_stack_c::multVec(&pos, &m21D0);
+        break;
+        case 8:
+            pos.set(300.0f, 0.0f, 0.0f);
+            mDoMtx_stack_c::multVec(&pos, &m21E8);
+        break;
+        case 9:
+            pos.set(300.0f, -200.0f, 0.0f);
+            mDoMtx_stack_c::multVec(&pos, &m21C4);
+        break;
+        case 10:
+            pos.set(300.0f, 200.0f, 0.0f);
+            mDoMtx_stack_c::multVec(&pos, &m21DC);
+        break;
+        case 0x14:
+            pos.set(450.0f, 0.0f, 0.0f);
+            mDoMtx_stack_c::multVec(&pos, &m2434);
+        break;
+        case 0x1E:
+            pos.set(450.0f, 0.0f, 0.0f);
+            mDoMtx_stack_c::multVec(&pos, &m21A0);
+        break;
+        case 0x24:
+            pos.set(450.0f, 0.0f, 0.0f);
+            mDoMtx_stack_c::multVec(&pos, &m21AC);
+        break;
+    }
+
+    mDoMtx_stack_c::copy(j3dSys.mCurrentMtx);
+    mDoMtx_stack_c::copy(mdl->mpNodeMtx[jntIdx]);
 }
 
 /* 0000066C-0000068C       .text createHeap_CB__FP10fopAc_ac_c */
-static BOOL createHeap_CB(fopAc_ac_c*) {
-    /* Nonmatching */
+static BOOL createHeap_CB(fopAc_ac_c* actor) {
+    static_cast<daDaiocta_c*>(actor)->_createHeap();
 }
 
 /* 0000068C-00000708       .text _createHeap__11daDaiocta_cFv */
-void daDaiocta_c::_createHeap() {
-    /* Nonmatching */
+bool daDaiocta_c::_createHeap() {
+    if (!createBodyHeap())
+    {
+        return false;
+    }
+
+    if (!createSuikomiHeap())
+    {
+        return false;
+    }
+
+    if (!createAwaHeap())
+    {
+        return false;
+    }
+
+    BOOL result = createArrowHitHeap();
+    return result != FALSE;
 }
 
 /* 00000708-000009B8       .text createAwaHeap__11daDaiocta_cFv */
-void daDaiocta_c::createAwaHeap() {
+BOOL daDaiocta_c::createAwaHeap() {
     /* Nonmatching */
+    J3DModelData* modelData = (J3DModelData*)dComIfG_getObjectRes(m_arc_name, 0x12);
+    JUT_ASSERT(0x204, modelData != NULL)
+
+    J3DAnmTransform* bck = (J3DAnmTransform*)dComIfG_getObjectRes(m_arc_name, 0x0A);
+    JUT_ASSERT(0x208, bck != NULL)
+
+    J3DAnmTextureSRTKey* btk = (J3DAnmTextureSRTKey*)dComIfG_getObjectRes(m_arc_name, 0x25);
+    JUT_ASSERT(0x20C, btk != NULL)
+
+    J3DAnmTevRegKey* brk = (J3DAnmTevRegKey*)dComIfG_getObjectRes(m_arc_name, 0x1C);
+    JUT_ASSERT(0x210, brk != NULL)
+
+    for (int i = 0; i < 0x1E; i++)
+    {
+        mModels[i] = mDoExt_J3DModel__create(modelData, 0x80000, 0x11000222);
+        if (mModels[i] == NULL)
+        {
+            return FALSE;
+        }
+
+        if (mBcks[i].init(modelData, bck, TRUE, 0, 1.0f, 0, -1, false) == 0)
+        {
+            return FALSE;
+        }
+        if (mBtks[i].init(modelData, btk, TRUE, 0, 1.0f, 0, -1, false, 0) == 0)
+        {
+            return FALSE;
+        }
+        if (mBrks[i].init(modelData, brk, TRUE, 0, 1.0f, 0, -1, false, 0) == 0)
+        {
+            return FALSE;
+        }
+    }
+
+    return TRUE;
 }
 
 /* 000009B8-00000ABC       .text createSuikomiHeap__11daDaiocta_cFv */
-void daDaiocta_c::createSuikomiHeap() {
+BOOL daDaiocta_c::createSuikomiHeap() {
     /* Nonmatching */
+    J3DModelData* modelData = (J3DModelData*)dComIfG_getObjectRes(m_arc_name, 0x13);
+    JUT_ASSERT(0x227, modelData != NULL)
+
+    mSuikomiModel = mDoExt_J3DModel__create(modelData, 0x80000, 0x11000222);
+    if (mSuikomiModel == NULL)
+    {
+        return FALSE;
+    }
+
+    if (!dLib_brkInit(modelData, &mSuikomiBrk, m_arc_name, 0x1D) || !dLib_btkInit(modelData, &mSuikomiBtk, m_arc_name, 0x26))
+    {
+        return FALSE;
+    }
+
+    return TRUE;
 }
 
 /* 00000ABC-00000C04       .text createBodyHeap__11daDaiocta_cFv */
-void daDaiocta_c::createBodyHeap() {
+BOOL daDaiocta_c::createBodyHeap() {
     /* Nonmatching */
+    J3DModelData* modelData = (J3DModelData*)dComIfG_getObjectRes(m_arc_name, 0x11);
+    JUT_ASSERT(0x243, modelData != NULL)
+
+    if (!dLib_brkInit(modelData, &mBodyBrk, m_arc_name, 0x20))
+    {
+        return FALSE;
+    }
+
+    mBodyMorf = new mDoExt_McaMorf(modelData, NULL, NULL, NULL, -1, 1.0f, 0, -1, 1, NULL, 0x80000, 0x11000222);
+    if (mBodyMorf == NULL || mBodyMorf->mpModel == NULL)
+    {
+        return FALSE;
+    }
+
+    mBodyMorf->getModel()->setUserArea(reinterpret_cast<u32>(this));
+    return TRUE;
 }
 
 /* 00000C04-00000C64       .text createArrowHitHeap__11daDaiocta_cFv */
-void daDaiocta_c::createArrowHitHeap() {
+BOOL daDaiocta_c::createArrowHitHeap() {
     /* Nonmatching */
+    mJntHit = JntHit_create(mBodyMorf->getModel(), &search_data, 0x11);
+
+    if (mJntHit == NULL)
+    {
+        return FALSE;
+    }
+    
+    jntHit = mJntHit;
+    return TRUE;
 }
 
 /* 00000C64-00000D94       .text setMtx__11daDaiocta_cFv */
