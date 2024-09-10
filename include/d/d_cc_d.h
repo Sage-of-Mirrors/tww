@@ -35,7 +35,9 @@ enum CcG_Tg_HitMark {
     CcG_Tg_UNK_MARK_8 = 8,
 };
 
-enum dCcG_At_Spl {};
+enum dCcG_At_Spl {
+    AT_SPL_UNK1 = 1,
+};
 
 enum dCcG_Tg_Spl {};
 

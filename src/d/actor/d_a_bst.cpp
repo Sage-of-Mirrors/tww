@@ -35,7 +35,7 @@ daBst_HIO_c::daBst_HIO_c() {
 }
 
 /* 00000110-00000174       .text message_set__FP9bst_classUl */
-BOOL message_set(bst_class* i_bst, u32 i_msgIdx) {
+static BOOL message_set(bst_class* i_bst, u32 i_msgIdx) {
     if (msg == 0xFFFFFFFF) {
         msg = fopMsgM_messageSet(i_msgIdx, i_bst);
         msg_end = false;
@@ -47,7 +47,7 @@ BOOL message_set(bst_class* i_bst, u32 i_msgIdx) {
 }
 
 /* 00000174-000001FC       .text message_cont__FP9bst_class */
-void message_cont(bst_class* i_bst) {
+static void message_cont(bst_class* i_bst) {
     if (msg != 0xFFFFFFFF) {
         msg_class* msgPtr = fopMsgM_SearchByID(msg);
 
@@ -71,7 +71,7 @@ void message_cont(bst_class* i_bst) {
 }
 
 /* 000001FC-00000268       .text set_hand_AT__FP9bst_classUc */
-void set_hand_AT(bst_class* i_bst, u8 i_prm1) {
+static void set_hand_AT(bst_class* i_bst, u8 i_prm1) {
     for (int i = 0; i < 0x13; i++) {
         if (i_prm1 != 0) {
             i_bst->mHandColSphArray[i].OnAtSetBit();
@@ -85,7 +85,7 @@ void set_hand_AT(bst_class* i_bst, u8 i_prm1) {
 }
 
 /* 00000268-000002C0       .text set_hand_CO__FP9bst_classUc */
-void set_hand_CO(bst_class* i_bst, u8 i_prm1) {
+static void set_hand_CO(bst_class* i_bst, u8 i_prm1) {
     for (int i = 0; i < 0x13; i++) {
         if (i_prm1 != 0) {
             i_bst->mHandColSphArray[i].OnCoSetBit();
@@ -97,7 +97,7 @@ void set_hand_CO(bst_class* i_bst, u8 i_prm1) {
 }
 
 /* 000002C0-000003E8       .text anm_init__FP9bst_classifUcfi */
-void anm_init(bst_class* i_bst, int i_anmIdx, float i_morfTime, u8 i_loopMode, float i_speed, int i_anmSndIdx) {
+static void anm_init(bst_class* i_bst, int i_anmIdx, float i_morfTime, u8 i_loopMode, float i_speed, int i_anmSndIdx) {
     if (i_anmSndIdx >= 0) {
         void* anmSound = dComIfG_getObjectRes("Bst", i_anmSndIdx);
         J3DAnmTransform* anm = (J3DAnmTransform*)dComIfG_getObjectRes("Bst", i_anmIdx);
@@ -146,7 +146,7 @@ static BOOL nodeCallBackHead(J3DNode* i_node, int i_prm1) {
 }
 
 /* 00000550-000005B4       .text beam_draw__FP9bst_class */
-void beam_draw(bst_class* i_bst) {
+static void beam_draw(bst_class* i_bst) {
     /* Nonmatching */
     for (int i = 0; i < 10; i++) {
         if (i_bst->mBeamS8Array[i] != 0) {
