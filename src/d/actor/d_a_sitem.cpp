@@ -4,7 +4,12 @@
 //
 
 #include "d/actor/d_a_sitem.h"
+#include "d/d_kankyo.h"
 #include "d/d_procname.h"
+#include "m_Do/m_Do_mtx.h"
+#include "m_Do/m_Do_ext.h"
+#include "SSystem/SComponent/c_lib.h"
+#include "SSystem/SComponent/c_angle.h"
 
 /* 000000EC-000001FC       .text hand_draw__FP11sitem_class */
 void hand_draw(sitem_class*) {
@@ -12,13 +17,23 @@ void hand_draw(sitem_class*) {
 }
 
 /* 000001FC-00000248       .text daSitem_Draw__FP11sitem_class */
-static BOOL daSitem_Draw(sitem_class*) {
-    /* Nonmatching */
+static BOOL daSitem_Draw(sitem_class* i_this) {
+    g_env_light.settingTevStruct(TEV_TYPE_ACTOR, &i_this->eyePos, &i_this->tevStr);
+    hand_draw(i_this);
+
+    return TRUE;
 }
 
 /* 00000248-0000034C       .text hand_mtx_set__FP11sitem_class */
-void hand_mtx_set(sitem_class*) {
+void hand_mtx_set(sitem_class* i_this) {
     /* Nonmatching */
+    MtxTrans(i_this->mPos.x, i_this->mPos.y, i_this->mPos.z, FALSE);
+
+    cMtx_XrotM(*calc_mtx, i_this->mXRot);
+    cMtx_YrotM(*calc_mtx, i_this->mYRot);
+
+
+    i_this->mModel->setBaseTRMtx(*calc_mtx);
 }
 
 /* 00000388-00000410       .text control3__FP11sitem_class */
@@ -57,28 +72,30 @@ void hand_move(sitem_class*) {
 }
 
 /* 00002684-000026F4       .text daSitem_Execute__FP11sitem_class */
-static BOOL daSitem_Execute(sitem_class*) {
+static BOOL daSitem_Execute(sitem_class* i_this) {
     /* Nonmatching */
+    hand_move(i_this);
+    return TRUE;
 }
 
 /* 000026F4-000026FC       .text daSitem_IsDelete__FP11sitem_class */
 static BOOL daSitem_IsDelete(sitem_class*) {
-    /* Nonmatching */
+    return TRUE;
 }
 
 /* 000026FC-00002760       .text daSitem_Delete__FP11sitem_class */
-static BOOL daSitem_Delete(sitem_class*) {
+static BOOL daSitem_Delete(sitem_class* actor) {
     /* Nonmatching */
 }
 
 /* 00002760-00002824       .text useHeapInit__FP11sitem_class */
-void useHeapInit(sitem_class*) {
+BOOL useHeapInit(sitem_class* actor) {
     /* Nonmatching */
 }
 
 /* 00002824-00002844       .text daSitem_solidHeapCB__FP10fopAc_ac_c */
-static BOOL daSitem_solidHeapCB(fopAc_ac_c*) {
-    /* Nonmatching */
+static BOOL daSitem_solidHeapCB(fopAc_ac_c* actor) {
+    return useHeapInit(static_cast<sitem_class*>(actor));
 }
 
 /* 00002844-00002C04       .text daSitem_Create__FP10fopAc_ac_c */
